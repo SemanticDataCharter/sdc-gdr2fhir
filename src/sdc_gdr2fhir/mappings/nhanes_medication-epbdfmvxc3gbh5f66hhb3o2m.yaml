@@ -1,0 +1,52 @@
+# NHANES Medication (FAIR Data Demo) to HL7 FHIR R4 Bundle
+# Written by tools/build_mapping.py from tools/specs/nhanes_medication.py; labels in the comments.
+mapping:
+  id: nhanes-medication-fhir-r4
+  version: 1
+  author: Axius SDC, Inc.
+  date: '2026-10-25'
+  description: 'The NHANES Medication model''s values in a FHIR R4 Bundle of type collection: a Patient, a MedicationStatement
+    with its ICD-10-CM reasons, and the survey''s counts as QuestionnaireResponse items.'
+model:
+  ct_id: epbdfmvxc3gbh5f66hhb3o2m
+  schema_sha256: 26728c92987a1a2db68c120baf72767f00dd034c8e9499b348769a3a7249155f
+target:
+  name: HL7 FHIR
+  version: R4
+rules:
+  # NHANES Medication Governed Record
+  - {cluster: jo2kw48cijwgg64s6cud2el1, to: Bundle, attributes: {resourceType: Bundle, type: collection}}
+  # NHANES Medication
+  - {cluster: ncudsi2t2ij3rd2pmnnfr2j9, to: .}
+  # Audit Event
+  - {cluster: t2tvd3wylxrstdeu5aw6gkw1, to: '-', transform: omit, reason: 'the record''s provenance and audit: FHIR''s Provenance and AuditEvent require a recorded instant with a time zone, and the record''s times carry none'}
+  # PROV Activity
+  - {cluster: vmikfu0irht9fmq7q02t3oqs, to: '-', transform: omit, reason: 'the record''s provenance and audit: FHIR''s Provenance and AuditEvent require a recorded instant with a time zone, and the record''s times carry none'}
+  # PROV Agent
+  - {cluster: c179ilk2ns15cd5rzzdfd6f6, to: '-', transform: omit, reason: 'the record''s provenance and audit: FHIR''s Provenance and AuditEvent require a recorded instant with a time zone, and the record''s times carry none'}
+  # Respondent Sequence Number (SEQN)
+  - {component: uto4zszvpicva38wx77knz5y, to: =entry#patient/=resource/identifier/value, transform: copy, attributes: {resourceType: Patient}, also: [{to: =entry#patient/=resource/identifier/system, transform: constant, value: 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.htm#SEQN'}]}
+  # Taken Prescription Medicine, Past Month (RXDUSE)
+  - {component: a1zr74c1vayeeglk54da7gaf, to: =entry#med/=resource/status, transform: code, table: {'Yes': active, 'No': not-taken}, attributes: {resourceType: MedicationStatement, subject/reference: '{Patient}'}}
+  # Generic Drug Code (RXDDRGID)
+  - {component: wypildaam8rrd87zkkjxl732, to: =entry#med/=resource/medicationCodeableConcept/coding/code, transform: copy, attributes: {resourceType: MedicationStatement, subject/reference: '{Patient}'}, also: [{to: =entry#med/=resource/medicationCodeableConcept/coding/system, transform: constant, value: 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/RXQ_RX_J.htm#RXDDRGID'}]}
+  # Generic Drug Name (RXDDRUG)
+  - {component: lok5ozew80qmwah6h45jr69y, to: =entry#med/=resource/medicationCodeableConcept/coding/display, transform: copy, attributes: {resourceType: MedicationStatement, subject/reference: '{Patient}'}, also: [{to: =entry#med/=resource/medicationCodeableConcept/text, transform: copy}]}
+  # Medication Reason 1
+  - {cluster: i213d6dp9r4c0nmzxkgc0tja, to: ., order: 1}
+  # Medication Reason 2
+  - {cluster: u3qz0js9emqn2i7s5nyynmgt, to: ., order: 2}
+  # Medication Reason 3
+  - {cluster: rozfpmwczk4yuw4c2vom4gyx, to: ., order: 3}
+  # Diagnosis (ICD-10-CM)
+  - {cluster: jk4cboqk4me0yj2i04m8c2ad, to: =entry#med/=resource/reasonCode}
+  # Diagnosis Code (ICD-10-CM)
+  - {component: efimv7gxg5ompt8m6xb2b6k5, to: coding/code, transform: copy, also: [{to: coding/system, transform: constant, value: 'http://hl7.org/fhir/sid/icd-10-cm'}]}
+  # Code Display Text
+  - {component: eo5tlfr0576ypknys5alvcn0, to: coding/display, transform: copy}
+  # Code System: ICD-10-CM
+  - {component: jwgx8nvbtsim7ck4uqmpqyl2, to: coding/system, transform: copy}
+  # Number of Days Taken Medicine (RXDDAYS)
+  - {component: jwgah039kcz574bbjvpxvfdj, to: =entry#qr/=resource/+item/answer/valueQuantity/value, transform: copy, attributes: {resourceType: QuestionnaireResponse, status: completed, subject/reference: '{Patient}'}, also: [{to: =entry#qr/=resource/+item/linkId, transform: constant, value: jwgah039kcz574bbjvpxvfdj}, {to: =entry#qr/=resource/+item/text, transform: constant, value: Number of Days Taken Medicine (RXDDAYS)}], units: {to: '@unit', transform: copy}}
+  # Number of Prescription Medicines Taken (RXDCOUNT)
+  - {component: v28gzpjsaxkkgjm470icwipg, to: =entry#qr/=resource/+item/answer/valueQuantity/value, transform: copy, attributes: {resourceType: QuestionnaireResponse, status: completed, subject/reference: '{Patient}'}, also: [{to: =entry#qr/=resource/+item/linkId, transform: constant, value: v28gzpjsaxkkgjm470icwipg}, {to: =entry#qr/=resource/+item/text, transform: constant, value: Number of Prescription Medicines Taken (RXDCOUNT)}], units: {to: '@unit', transform: copy}}
