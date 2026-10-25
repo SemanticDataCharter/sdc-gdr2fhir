@@ -3,14 +3,17 @@
 Labels are the model's; paths are FHIR's JSON, relative to the element of the nearest enclosing cluster that has one.
 `+entry/resource/...` is a resource of the value's own; `=entry#patient/=resource/...` joins the Bundle's one Patient
 (the tag keeps it apart from other entries). A rule's `attributes` are constant members of the resource its value is
-in. `derive` copies from the model what it binds: a LOINC or SNOMED CT code, an answer's code, the component's own
-identifier.
+in. `derive` adds what the model binds: the code of the concept a component links to is a `link` rule, an answer's
+code a `binding` rule (sdc-mapper 4.3.0), so the mapping file says where each goes and the model supplies it at run
+time; the component's own identifier is copied in.
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from sdc_gdr2fhir.codes import LOINC, SNOMED, UCUM, coding  # noqa: E402
+from sdc_mapper.codes import EXACT_MATCH  # noqa: E402
+from sdc_mapper.codes import SUBJECT as DCTERMS_SUBJECT  # noqa: E402
 
 KNOWN_SYSTEMS = {SNOMED, "http://snomed.info/sct", "http://hl7.org/fhir/sid/icd-10-cm", LOINC}
 OBSERVATION_CATEGORY = "http://terminology.hl7.org/CodeSystem/observation-category"
@@ -32,27 +35,33 @@ def OMIT_C(label, reason, **kw):
     return {"cluster": label, "to": "-", "transform": "omit", "reason": reason, **kw}
 
 
+#: The predicates a spec names by their last part (`"#exactMatch"`, `"/subject"`), as sdc-mapper's link reads them.
+PREDICATES = {"#exactMatch": EXACT_MATCH, "/subject": DCTERMS_SUBJECT}
+
+
 def _links(component, *predicates):
     return [t for p, ts in (component.links or {}).items() if p.endswith(predicates) for t in ts]
 
 
 def concept(component, predicate="#exactMatch"):
-    """The LOINC or SNOMED CT concept the model binds a component to, as (system, code)."""
+    """The LOINC or SNOMED CT concept the model binds a component to."""
     for iri in _links(component, predicate):
         c = coding(iri)
-        if c and c[0] in (LOINC, SNOMED):
+        if c and c.system in (LOINC, SNOMED):
             return c
     return None
 
 
 def code_of(at: str, predicate="#exactMatch"):
-    """derive: `at`/coding with the concept the model binds the component to, and `at`/text with its label."""
+    """derive: `at`/text with the component's label and, where the model binds the component to a LOINC or SNOMED CT
+    concept, `at`/coding with its system and, by `link`, its code."""
     def derive(component, _enums):
         also = [{"to": f"{at}/text", "transform": "constant", "value": component.label}]
         c = concept(component, predicate)
         if c:
-            also += [{"to": f"{at}/coding/system", "transform": "constant", "value": c[0]},
-                     {"to": f"{at}/coding/code", "transform": "constant", "value": c[1]}]
+            also += [{"to": f"{at}/coding/system", "transform": "constant", "value": c.system},
+                     {"to": f"{at}/coding/code", "transform": "link", "system": c.system,
+                      "predicates": [PREDICATES[predicate]]}]
         return {"also": also}
     return derive
 
@@ -68,7 +77,7 @@ def system_of(at: str):
 
 
 def answer_codes(enums):
-    """The (system, code) the model binds each value of a token to, when every value has its own; else None."""
+    """The code the model binds each value of a token to, when every value has its own; else None."""
     pairs = {value: coding(iri) for value, iri in enums}
     if not pairs or any(p is None for p in pairs.values()) or len(set(pairs.values())) != len(pairs):
         return None
@@ -76,14 +85,17 @@ def answer_codes(enums):
 
 
 def coded(at: str):
-    """derive: a token as a Coding at `at`: its value as the display, the code and system the model binds it to."""
+    """derive: a token as a Coding at `at`: its value as the display, the system and (by `binding`) the code the
+    model binds it to. The system comes by a table: written with the code, not beside an Exceptional Value."""
     def derive(component, enums):
         pairs = answer_codes(enums)
         if pairs is None:
             return {}
+        systems = {p.system for p in pairs.values()}
+        code = ({"to": f"{at}/code", "transform": "binding", "system": next(iter(systems))} if len(systems) == 1 else
+                {"to": f"{at}/code", "transform": "code", "table": {v: p.code for v, p in pairs.items()}})
         return {"also": [
-            {"to": f"{at}/system", "transform": "code", "table": {v: p[0] for v, p in pairs.items()}},
-            {"to": f"{at}/code", "transform": "code", "table": {v: p[1] for v, p in pairs.items()}}]}
+            {"to": f"{at}/system", "transform": "code", "table": {v: p.system for v, p in pairs.items()}}, code]}
     return derive
 
 

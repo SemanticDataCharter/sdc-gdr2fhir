@@ -1,50 +1,36 @@
-"""Codes as FHIR writes them: an IRI the model binds a value to, as a (system, code) pair FHIR's Coding takes.
+"""Codes as FHIR writes them: an IRI the model names a concept by, as the (system, code) a FHIR Coding takes.
 
-A model binds an enumerated value to its definition (`rdfs:isDefinedBy`) and a component to concepts (`skos:exactMatch`,
-`dcterms:subject`). Where such an IRI names one concept of a code system FHIR knows, the pair below is that concept as a
-FHIR Coding; an IRI that names a whole system, or a page that defines a variable rather than one answer, gives none.
+The model binds an enumerated value to its definition (`rdfs:isDefinedBy`) and a component to concepts
+(`skos:exactMatch`, `dcterms:subject`). sdc-mapper (4.3.0) reads those IRIs as a code system and a code; FHIR adds one
+rule: a Coding names a code system, so only a concept of LOINC, SNOMED CT or the NCI Thesaurus, or an entry of an HL7
+code system, is one. A page that defines a variable (an NHANES documentation page's `#SEQN`) or an ontology term
+(`prov#Agent`) is read by the core but is not a Coding.
 """
 from __future__ import annotations
 
 import re
 
-LOINC = "http://loinc.org"
-SNOMED = "http://snomed.info/sct"
-NCIT = "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl"
+from sdc_mapper.codes import CONCEPT_LINKS, LOINC, NCIT, CodeRef, code_of
+from sdc_mapper.codes import SNOMED_CT as SNOMED
+
 UCUM = "http://unitsofmeasure.org"
-
-_PATTERNS = [
-    (re.compile(r"^https?://loinc\.org/((?:LA|LP|LG)?[0-9]+-[0-9])/?$"), LOINC),
-    (re.compile(r"^https?://snomed\.info/id/([0-9]+)$"), SNOMED),
-    (re.compile(r"^https?://purl\.obolibrary\.org/obo/NCIT_(C[0-9]+)$"), NCIT),
-]
-_FRAGMENT = re.compile(r"^(https?://(?:hl7\.org/fhir|terminology\.hl7\.org/CodeSystem)/[A-Za-z0-9./-]+)#([^#\s]+)$")
+_HL7_CODE_SYSTEM = re.compile(r"^https?://(?:hl7\.org/fhir|terminology\.hl7\.org/CodeSystem)/[A-Za-z0-9./-]+$")
 
 
-def coding(iri: str | None) -> tuple[str, str] | None:
-    """The (system, code) an IRI names, or None."""
-    if not iri:
-        return None
-    for pattern, system in _PATTERNS:
-        m = pattern.match(iri)
-        if m:
-            return system, m.group(1)
-    m = _FRAGMENT.match(iri)
-    if m:
-        return m.group(1), m.group(2)
+def coding(iri: str | None) -> CodeRef | None:
+    """The code an IRI names, when it is one a FHIR Coding can carry."""
+    ref = code_of(iri)
+    if ref and (ref.system in (LOINC, SNOMED, NCIT) or _HL7_CODE_SYSTEM.match(ref.system)):
+        return ref
     return None
 
 
-def bound_codes(value) -> set[str]:
-    """Every code the model binds a resolved value to: its enumeration value's definition, and the component's
-    exact matches and subjects. A target code that is one of these comes from the model: a lookup."""
-    iris = []
-    if value.code and value.code.defined_by:
-        iris.append(value.code.defined_by)
-    for predicate, targets in (value.links or {}).items():
-        if predicate.endswith(("#exactMatch", "/subject")):
-            iris.extend(targets)
-    return {c[1] for c in map(coding, iris) if c}
+def model_codes(value) -> set[str]:
+    """Every code the model names for a resolved value that a FHIR Coding can carry: its enumeration value's
+    definition and the component's concept links. A code written that is one of these came from the model: a lookup."""
+    iris = [value.code.defined_by] if value.code and value.code.defined_by else []
+    iris += [i for p in CONCEPT_LINKS for i in (value.links or {}).get(p, [])]
+    return {r.code for r in map(coding, iris) if r}
 
 
 #: The Default library's unit symbols that are not already UCUM codes.
