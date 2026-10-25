@@ -58,6 +58,31 @@ class Node:
         return next((c for c in self.children if c.element == element), None)
 
 
+BP_PANEL = "85354-9"
+BP_COMPONENTS = ("8480-6", "8462-4")              # systolic, diastolic: the profile's slices, in its order
+LOINC = "http://loinc.org"
+DATA_ABSENT_REASON = "http://terminology.hl7.org/CodeSystem/data-absent-reason"
+
+
+def _code_of(node: Node) -> str | None:
+    """The LOINC code of an Observation or a component (code/coding/code)."""
+    code = node.child("code")
+    coding = code.child("coding") if code else None
+    if coding is None or (coding.child("system") or Node("", ())).text != LOINC:
+        return None
+    return (coding.child("code") or Node("", ())).text
+
+
+def _absent_component(code: str) -> Node:
+    key = ("profile", code)
+    return Node("component", key, children=[
+        Node("code", key, children=[Node("coding", key, children=[Node("system", key, text=LOINC),
+                                                                  Node("code", key, text=code)])]),
+        Node("dataAbsentReason", key, children=[Node("coding", key, children=[
+            Node("system", key, text=DATA_ABSENT_REASON), Node("code", key, text="unknown")])]),
+    ])
+
+
 def _where(steps) -> str:
     return "/".join(n for n, _ in steps)
 
@@ -135,10 +160,34 @@ class Builder:
         identifier = Node("identifier", ("id",), children=[Node("system", ("id",), text=RECORD_SYSTEM),
                                                            Node("value", ("id",), text=instance_id)])
         self.root.children = [*rest, identifier, *entries]
+        for e in entries:
+            self._profiles(e.child("resource"))
         self._references(self.root, urls)
         bundle = self._json(self.root, schema()["definitions"]["Bundle"])
         self._validate(bundle)
         return _dumps(bundle).encode("utf-8")
+
+    @staticmethod
+    def _profiles(resource: Node):
+        """What FHIR R4 asks of an Observation beyond what the record says (declared, in the README).
+
+        - An effective time: the mapping dates an Observation by the survey cycle, and a record that carries its own
+          date keeps it, so a period beside an effectiveDateTime is dropped.
+        - A blood pressure panel (LOINC 85354-9) has a systolic and a diastolic component (the vital signs profile).
+          A reading the record has only one of gets the other with dataAbsentReason unknown: the record does not say
+          why it is missing.
+        """
+        if resource is None or (resource.child("resourceType") or Node("", ())).text != "Observation":
+            return
+        if resource.child("effectiveDateTime") is not None and resource.child("effectivePeriod") is not None:
+            resource.children.remove(resource.child("effectivePeriod"))
+        if _code_of(resource) != BP_PANEL:
+            return
+        have = {_code_of(c): c for c in resource.children if c.element == "component"}
+        filled = [have.get(code) or _absent_component(code) for code in BP_COMPONENTS]
+        others = [c for c in resource.children if c.element != "component"]
+        extra = [c for c in resource.children if c.element == "component" and _code_of(c) not in BP_COMPONENTS]
+        resource.children = others + filled + extra
 
     @staticmethod
     def _resource_type(entry: Node) -> str:

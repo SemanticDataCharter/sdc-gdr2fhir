@@ -210,3 +210,51 @@ def test_the_hl7_validator_finds_no_errors(engine, tmp_path):
         f.write_bytes(run(engine, model, records(model)[0].read_bytes()).files["Bundle.json"])
         out = subprocess.run(["java", "-jar", VALIDATOR, str(f), "-version", "4.0.1"], capture_output=True, text=True)
         assert "*FAILURE*" not in out.stdout and out.returncode == 0, out.stdout[-4000:]
+
+
+# ---------------------------------------------------------------- what FHIR R4 asks beyond the record (4.0.3)
+SURVEY_CYCLE = {"start": "2017-01-01", "end": "2018-12-31"}
+
+
+def test_every_observation_is_dated_by_the_survey_cycle(engine):
+    """NHANES records carry no examination date; FHIR R4's vital signs profiles require one (declared)."""
+    _, r = with_participant(engine, lambda b: bool(resources(b, "Observation")))
+    obs = resources(bundle(r), "Observation")
+    assert obs and all(o["effectivePeriod"] == SURVEY_CYCLE and "effectiveDateTime" not in o for o in obs)
+
+
+def test_a_record_s_own_date_wins_over_the_survey_cycle():
+    from sdc_gdr2fhir.writer import Builder, Node
+    k = ("t",)
+    obs = Node("resource", k, children=[Node("resourceType", k, text="Observation"),
+                                        Node("effectiveDateTime", k, text="2018-03-04"),
+                                        Node("effectivePeriod", k, children=[Node("start", k, text="2017-01-01")])])
+    Builder._profiles(obs)
+    assert obs.child("effectivePeriod") is None and obs.child("effectiveDateTime").text == "2018-03-04"
+
+
+def test_a_quantity_says_its_unit_as_people_read_it(engine):
+    _, r = with_participant(engine, lambda b: any(o["code"].get("text") == "Blood pressure panel"
+                                                 for o in resources(b, "Observation")))
+    for c in observation(bundle(r), "Blood pressure panel")["component"]:
+        if "valueQuantity" in c:
+            assert (c["valueQuantity"]["unit"], c["valueQuantity"]["code"]) == ("mmHg", "mm[Hg]")
+
+
+def test_a_blood_pressure_reading_missing_a_component_says_why(engine):
+    """The vital signs profile requires systolic and diastolic; the one the record lacks is absent, reason unknown."""
+    _, r = with_participant(engine, lambda b: any(
+        "dataAbsentReason" in c for o in resources(b, "Observation") for c in o.get("component", [])))
+    for bp in (o for o in resources(bundle(r), "Observation") if o["code"].get("text") == "Blood pressure panel"):
+        assert [c["code"]["coding"][0]["code"] for c in bp["component"]] == ["8480-6", "8462-4"]
+        for c in bp["component"]:
+            assert ("valueQuantity" in c) != ("dataAbsentReason" in c)
+            if "dataAbsentReason" in c:
+                assert c["dataAbsentReason"]["coding"][0]["code"] == "unknown"
+
+
+def test_a_coding_display_is_never_the_model_s_label(engine):
+    """A Coding's display is the code system's; the model's label is the CodeableConcept's text."""
+    for model in MODELS:
+        for f in records(model)[:20]:
+            assert '"display"' not in run(engine, model, f.read_bytes()).files["Bundle.json"].decode()

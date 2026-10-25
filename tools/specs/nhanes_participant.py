@@ -6,8 +6,8 @@ the concept the model binds (LOINC for smoking status, the SNOMED CT subject of 
 answer's LOINC answer code; every other survey answer an item of one QuestionnaireResponse. A condition indicator is an
 answer to "has a doctor ever told you", so it is an Observation of the answer, not a Condition.
 """
-from common import (OBSERVATION_CATEGORY, PATIENT, SUBJECT, C, V, answer_observation, bundle, item,
-                    observation, system_of, code_of)
+from common import (OBSERVATION_CATEGORY, PATIENT, SUBJECT, SURVEY_CYCLE, C, V, answer_observation, bundle,
+                    item, observation, system_of, code_of)
 from sdc_gdr2fhir.codes import LOINC, UCUM, UCUM_CODES
 
 TITLE = "NHANES Participant (FAIR Data Demo) to HL7 FHIR R4 Bundle"
@@ -73,14 +73,15 @@ RULES = [
     C("Blood Pressure", "+entry/resource", attributes={
         "resourceType": "Observation", **SUBJECT,
         "category/coding/system": OBSERVATION_CATEGORY, "category/coding/code": "vital-signs",
-        "code/coding/system": LOINC, "code/coding/code": "85354-9", "code/text": "Blood pressure panel"}),
+        "code/coding/system": LOINC, "code/coding/code": "85354-9", "code/text": "Blood pressure panel",
+        **SURVEY_CYCLE}),
     V("Observation Status", "status", "binding", prefix="http://hl7.org/fhir/observation-status"),
     V("Observation Date Time", "effectiveDateTime", "format", format="%Y-%m-%d"),
     bp_component("Systolic Blood Pressure"),
     bp_component("Diastolic Blood Pressure"),
     C("Body Site (SNOMED CT)", "bodySite"),
     V("Body Site Code (SNOMED CT)", "coding/code", derive=system_of("coding/system")),
-    V("Code Display Text", "coding/display"),
+    V("Code Display Text", "text"),               # the record's own words for the code: the CodeableConcept's text
     V("Code System: SNOMED CT", "coding/system"),
     observation("Heart Rate", "vital-signs"),
 
