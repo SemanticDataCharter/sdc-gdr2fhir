@@ -19,6 +19,10 @@ KNOWN_SYSTEMS = {SNOMED, "http://snomed.info/sct", "http://hl7.org/fhir/sid/icd-
 OBSERVATION_CATEGORY = "http://terminology.hl7.org/CodeSystem/observation-category"
 SEQN_SYSTEM = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.htm#SEQN"
 SUBJECT = {"subject/reference": "{Patient}"}
+#: NHANES records carry no examination date. FHIR R4's vital signs profiles require an effective time, so an
+#: Observation is dated by the survey cycle it was collected in (declared): NHANES 2017-2018 (cycle J). A record that
+#: carries its own date keeps it; the writer drops the period beside an effectiveDateTime.
+SURVEY_CYCLE = {"effectivePeriod/start": "2017-01-01", "effectivePeriod/end": "2018-12-31"}
 PROVENANCE_REASON = ("the record's provenance and audit: FHIR's Provenance and AuditEvent require a recorded instant "
                      "with a time zone, and the record's times carry none")
 
@@ -85,8 +89,9 @@ def answer_codes(enums):
 
 
 def coded(at: str):
-    """derive: a token as a Coding at `at`: its value as the display, the system and (by `binding`) the code the
-    model binds it to. The system comes by a table: written with the code, not beside an Exceptional Value."""
+    """derive: a token as a Coding at `at`: the system and (by `binding`) the code the model binds it to. The system
+    comes by a table: written with the code, not beside an Exceptional Value. The value's label is not the Coding's
+    display (that is the code system's); a caller writes it as text where FHIR has a place for it."""
     def derive(component, enums):
         pairs = answer_codes(enums)
         if pairs is None:
@@ -133,17 +138,18 @@ def observation(label: str, category: str, status: str = "unknown"):
     r = "+entry/resource"
     return V(label, f"{r}/valueQuantity/value",
              units={"to": "@code", "transform": "copy"},
-             attributes={"resourceType": "Observation", "status": status, **SUBJECT,
+             attributes={"resourceType": "Observation", "status": status, **SUBJECT, **SURVEY_CYCLE,
                          "category/coding/system": OBSERVATION_CATEGORY, "category/coding/code": category},
              also=[{"to": f"{r}/valueQuantity/system", "transform": "constant", "value": UCUM}],
              derive=code_of(f"{r}/code"))
 
 
 def answer_observation(label: str, category: str, predicate="#exactMatch"):
-    """A coded answer as an Observation of its own: the concept the model binds as the code, the answer as a Coding."""
+    """A coded answer as an Observation of its own: the concept the model binds as the code, the answer as a Coding.
+    The answer's label is the CodeableConcept's text: a Coding's display is the code system's, not the model's."""
     r = "+entry/resource"
-    return V(label, f"{r}/valueCodeableConcept/coding/display",
-             attributes={"resourceType": "Observation", "status": "unknown", **SUBJECT,
+    return V(label, f"{r}/valueCodeableConcept/text",
+             attributes={"resourceType": "Observation", "status": "unknown", **SUBJECT, **SURVEY_CYCLE,
                          "category/coding/system": OBSERVATION_CATEGORY, "category/coding/code": category},
              derive=both(code_of(f"{r}/code", predicate), coded(f"{r}/valueCodeableConcept/coding")))
 
@@ -162,8 +168,10 @@ def item(label: str):
         rule = {"also": [{"to": f"{QR}/+item/linkId", "transform": "constant", "value": component.ct_id},
                          {"to": f"{QR}/+item/text", "transform": "constant", "value": component.label}]}
         if t == "XdToken" and answer_codes(enums):
-            rule["to"] = f"{at}/valueCoding/display"
-            rule["also"] += coded(f"{at}/valueCoding")(component, enums)["also"]
+            # valueCoding has no text, and its display is the code system's: the answer is the code the model binds
+            system, code = coded(f"{at}/valueCoding")(component, enums)["also"]
+            rule.update({k: v for k, v in code.items()})
+            rule["also"].append(system)
         elif t in ("XdCount", "XdQuantity"):
             rule["to"] = f"{at}/valueQuantity/value"
             rule["units"] = {"to": "@unit", "transform": "copy"}

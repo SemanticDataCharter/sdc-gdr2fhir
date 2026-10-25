@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.0.3 (2026-10-25)
+
+What HL7's FHIR validator (7.0.3) found in 4.0.2's output, fixed. On the 400 sample Bundles its errors fall from 2,164
+(196 Participant and 10 Medication Bundles) to 9 (the NHANES reason codes ICD-10-CM does not have, carried as the
+record holds them). Every value keeps its coverage class.
+
+- **No `Coding.display` from the model's labels.** A display is the code system's ("Pulse regular", not "Regular"); the
+  label is now the CodeableConcept's `text`, and a QuestionnaireResponse answer is the code the model binds.
+- **The vital signs profiles.** Every Observation is dated by the survey cycle (`effectivePeriod` 2017-01-01 to
+  2018-12-31, declared; a record's own date wins); a Quantity carries its `unit` beside its UCUM `code`; a blood
+  pressure panel the record has one reading of gets the other with `dataAbsentReason` `unknown`.
+- The validator's own test runs where Java is available, and passes.
+
 ## 4.0.2 (2026-10-25)
 
 Uses sdc-mapper 4.3.0's code reading in place of this package's own; no change to any output (all 400 sample

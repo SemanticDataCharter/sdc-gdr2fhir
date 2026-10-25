@@ -66,6 +66,8 @@ class FHIRMapper:
                 writes.append((self._steps(p.steps, p.attribute), p.text, v.position))
                 if p.units_attribute and p.units_text is not None:
                     writes.append((self._steps(p.steps, p.units_attribute), p.units_text, None))
+                    if p.units_attribute == "code" and v.units:   # a Quantity: the unit as people read it
+                        writes.append((self._steps(p.steps, "unit"), v.units.symbol, None))
             own = list(p.steps[:-1])           # the element the value is written in (a valueQuantity)
             for e in p.extras:
                 if e.text is None:

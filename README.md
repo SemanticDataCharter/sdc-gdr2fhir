@@ -5,7 +5,7 @@ Governed Data Records as HL7 FHIR R4 Bundles. A target mapper for
 against its model and reports each one; this package says which FHIR resource and element each value goes in and
 writes the Bundle. Outbound only. Apache 2.0.
 
-**Status:** 4.0.2. Models so far, from the FAIR Data Demo:
+**Status:** 4.0.3. Models so far, from the FAIR Data Demo:
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
@@ -35,8 +35,14 @@ Thesaurus codes appear only as the models bind them and the records carry them.
 
 Every Bundle this package writes is valid against the FHIR R4 JSON schema, resource by resource and as a Bundle, or is
 not written. The schema checks structure, types, required members and code patterns; it does not check FHIR's
-invariants or terminology bindings. `tests/` runs the HL7 FHIR validator (`validator_cli.jar`) too, where Java and the
-validator are installed (`FHIR_VALIDATOR_JAR`); it has not been run for this version.
+invariants or terminology bindings. HL7's FHIR validator does (`validator_cli.jar`, which checks codes and displays
+against HL7's terminology server): `tests/` runs it where Java and the validator are installed (`FHIR_VALIDATOR_JAR`).
+
+**HL7's FHIR validator, 7.0.3, on all 400 sample Bundles (25 October 2026):** no errors in any Participant Bundle; 9
+errors in 9 Medication Bundles, every one a reason code the record gives as ICD-10-CM that ICD-10-CM does not have
+(`I51.9P`, `D75.9P`, `E11.P` and others: NHANES's own codes, carried as the record holds them). The warnings are best
+practice, not conformance: no narrative, no performer, NCI Thesaurus codes the terminology server checks only in part,
+the NHANES drug code system it does not know, and one UCUM annotation.
 
 ## Where values go
 
@@ -61,6 +67,18 @@ SNOMED CT subject, an answer's LOINC answer code, an administrative gender, an o
 is the model's own and the value is a **lookup**; `tools/build_mapping.py` copies those bindings from the model into
 the mapping file, and the mapper checks at run time that the code it writes is one the model binds. Which resource and
 element a value goes in is **declared**, one mapping file per model.
+
+**What FHIR asks that the record does not say (declared).**
+
+- An Observation's effective time. NHANES records carry no examination date, and FHIR R4's vital signs profiles require
+  one, so every Observation is dated by the survey cycle it was collected in: `effectivePeriod` 2017-01-01 to
+  2018-12-31 (NHANES 2017-2018). A record that carries its own date keeps it.
+- Both readings of a blood pressure panel. The vital signs profile requires a systolic and a diastolic component; where
+  the record holds only one, the other is written with `dataAbsentReason` `unknown`, since the record does not say why.
+- A Quantity's `unit`, beside its UCUM `code`: the model's unit symbol (`mmHg` beside `mm[Hg]`).
+- A Coding's `display` is the code system's, which this package does not ship, so it is never written. The model's
+  label for a value is the CodeableConcept's `text`; a QuestionnaireResponse answer, which FHIR gives no text, is the
+  code the model binds.
 
 For the 200 sample records of each model:
 
