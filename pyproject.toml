@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdc-gdr2fhir"
+version = "4.0.0"
+description = "Governed Data Records as HL7 FHIR R4 Bundles, through sdc-mapper: one mapping file per model, every value reported, Exceptional Values preserved."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Axius SDC, Inc." }]
+keywords = ["sdc", "semantic data charter", "governed data record", "fhir", "hl7", "r4", "mapping", "null flavor"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "sdc-mapper>=4.2,<5",     # placements, '=name' joins, declared cluster order (4.2.0)
+    "jsonschema>=4.20",       # the FHIR R4 JSON schema (draft-06)
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pyyaml>=6.0", "lxml>=5.0"]
+
+[project.entry-points."sdc_mapper.targets"]
+fhir = "sdc_gdr2fhir:FHIRMapper"
+
+[project.urls]
+Repository = "https://github.com/SemanticDataCharter/sdc-gdr2fhir"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sdc_gdr2fhir = ["mappings/*.yaml", "schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["validator: needs Java and the HL7 FHIR validator jar"]

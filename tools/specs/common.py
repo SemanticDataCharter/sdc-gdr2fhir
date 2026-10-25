@@ -1,0 +1,163 @@
+"""Rules both NHANES models share with FHIR R4, and the helpers that copy what the model binds into a rule.
+
+Labels are the model's; paths are FHIR's JSON, relative to the element of the nearest enclosing cluster that has one.
+`+entry/resource/...` is a resource of the value's own; `=entry#patient/=resource/...` joins the Bundle's one Patient
+(the tag keeps it apart from other entries). A rule's `attributes` are constant members of the resource its value is
+in. `derive` copies from the model what it binds: a LOINC or SNOMED CT code, an answer's code, the component's own
+identifier.
+"""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from sdc_gdr2fhir.codes import LOINC, SNOMED, UCUM, coding  # noqa: E402
+
+KNOWN_SYSTEMS = {SNOMED, "http://snomed.info/sct", "http://hl7.org/fhir/sid/icd-10-cm", LOINC}
+OBSERVATION_CATEGORY = "http://terminology.hl7.org/CodeSystem/observation-category"
+SEQN_SYSTEM = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.htm#SEQN"
+SUBJECT = {"subject/reference": "{Patient}"}
+PROVENANCE_REASON = ("the record's provenance and audit: FHIR's Provenance and AuditEvent require a recorded instant "
+                     "with a time zone, and the record's times carry none")
+
+
+def C(label, to, **kw):
+    return {"cluster": label, "to": to, **kw}
+
+
+def V(label, to, transform="copy", **kw):
+    return {"component": label, "to": to, "transform": transform, **kw}
+
+
+def OMIT_C(label, reason, **kw):
+    return {"cluster": label, "to": "-", "transform": "omit", "reason": reason, **kw}
+
+
+def _links(component, *predicates):
+    return [t for p, ts in (component.links or {}).items() if p.endswith(predicates) for t in ts]
+
+
+def concept(component, predicate="#exactMatch"):
+    """The LOINC or SNOMED CT concept the model binds a component to, as (system, code)."""
+    for iri in _links(component, predicate):
+        c = coding(iri)
+        if c and c[0] in (LOINC, SNOMED):
+            return c
+    return None
+
+
+def code_of(at: str, predicate="#exactMatch"):
+    """derive: `at`/coding with the concept the model binds the component to, and `at`/text with its label."""
+    def derive(component, _enums):
+        also = [{"to": f"{at}/text", "transform": "constant", "value": component.label}]
+        c = concept(component, predicate)
+        if c:
+            also += [{"to": f"{at}/coding/system", "transform": "constant", "value": c[0]},
+                     {"to": f"{at}/coding/code", "transform": "constant", "value": c[1]}]
+        return {"also": also}
+    return derive
+
+
+def system_of(at: str):
+    """derive: the code system the model names for a coded string (SNOMED CT for a body site, ICD-10-CM)."""
+    def derive(component, _enums):
+        for iri in _links(component, "#exactMatch", "/source"):
+            if iri in KNOWN_SYSTEMS:
+                return {"also": [{"to": at, "transform": "constant", "value": iri}]}
+        return {}
+    return derive
+
+
+def answer_codes(enums):
+    """The (system, code) the model binds each value of a token to, when every value has its own; else None."""
+    pairs = {value: coding(iri) for value, iri in enums}
+    if not pairs or any(p is None for p in pairs.values()) or len(set(pairs.values())) != len(pairs):
+        return None
+    return pairs
+
+
+def coded(at: str):
+    """derive: a token as a Coding at `at`: its value as the display, the code and system the model binds it to."""
+    def derive(component, enums):
+        pairs = answer_codes(enums)
+        if pairs is None:
+            return {}
+        return {"also": [
+            {"to": f"{at}/system", "transform": "code", "table": {v: p[0] for v, p in pairs.items()}},
+            {"to": f"{at}/code", "transform": "code", "table": {v: p[1] for v, p in pairs.items()}}]}
+    return derive
+
+
+def both(*derives):
+    def derive(component, enums):
+        out = {}
+        for d in derives:
+            for k, v in d(component, enums).items():
+                out[k] = [*out.get(k, []), *v] if k == "also" else v
+        return out
+    return derive
+
+
+# ---------------------------------------------------------------- the Bundle and the Patient
+def bundle(governed: str, data: str):
+    return [
+        C(governed, "Bundle", attributes={"resourceType": "Bundle", "type": "collection"}),
+        C(data, "."),
+        OMIT_C("Audit Event", PROVENANCE_REASON),
+        OMIT_C("PROV Activity", PROVENANCE_REASON),
+        OMIT_C("PROV Agent", PROVENANCE_REASON),
+    ]
+
+
+PATIENT = [
+    V("Respondent Sequence Number (SEQN)", "=entry#patient/=resource/identifier/value",
+      attributes={"resourceType": "Patient"},
+      also=[{"to": "=entry#patient/=resource/identifier/system", "transform": "constant", "value": SEQN_SYSTEM}]),
+]
+
+
+# ---------------------------------------------------------------- one Observation per value
+def observation(label: str, category: str, status: str = "unknown"):
+    """A measured value as an Observation of its own: the LOINC code the model binds, UCUM units, the subject."""
+    r = "+entry/resource"
+    return V(label, f"{r}/valueQuantity/value",
+             units={"to": "@code", "transform": "copy"},
+             attributes={"resourceType": "Observation", "status": status, **SUBJECT,
+                         "category/coding/system": OBSERVATION_CATEGORY, "category/coding/code": category},
+             also=[{"to": f"{r}/valueQuantity/system", "transform": "constant", "value": UCUM}],
+             derive=code_of(f"{r}/code"))
+
+
+def answer_observation(label: str, category: str, predicate="#exactMatch"):
+    """A coded answer as an Observation of its own: the concept the model binds as the code, the answer as a Coding."""
+    r = "+entry/resource"
+    return V(label, f"{r}/valueCodeableConcept/coding/display",
+             attributes={"resourceType": "Observation", "status": "unknown", **SUBJECT,
+                         "category/coding/system": OBSERVATION_CATEGORY, "category/coding/code": category},
+             derive=both(code_of(f"{r}/code", predicate), coded(f"{r}/valueCodeableConcept/coding")))
+
+
+# ---------------------------------------------------------------- the questionnaire answers
+QR = "=entry#qr/=resource"
+QR_ATTRIBUTES = {"resourceType": "QuestionnaireResponse", "status": "completed", **SUBJECT}
+
+
+def item(label: str):
+    """A survey answer as an item of the record's QuestionnaireResponse: linkId the component's identifier, text its
+    label, the answer by its type (a Coding where the model binds each value to a code)."""
+    def derive(component, enums):
+        t = component.sdc_type
+        at = f"{QR}/+item/answer"
+        rule = {"also": [{"to": f"{QR}/+item/linkId", "transform": "constant", "value": component.ct_id},
+                         {"to": f"{QR}/+item/text", "transform": "constant", "value": component.label}]}
+        if t == "XdToken" and answer_codes(enums):
+            rule["to"] = f"{at}/valueCoding/display"
+            rule["also"] += coded(f"{at}/valueCoding")(component, enums)["also"]
+        elif t in ("XdCount", "XdQuantity"):
+            rule["to"] = f"{at}/valueQuantity/value"
+            rule["units"] = {"to": "@unit", "transform": "copy"}
+        elif t == "XdBoolean":
+            rule["to"] = f"{at}/valueBoolean"
+        else:
+            rule["to"] = f"{at}/valueString"
+        return rule
+    return V(label, "-", attributes=QR_ATTRIBUTES, derive=derive)
