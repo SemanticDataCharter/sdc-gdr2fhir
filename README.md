@@ -5,11 +5,12 @@ Governed Data Records as HL7 FHIR R4 Bundles. A target mapper for
 against its model and reports each one; this package says which FHIR resource and element each value goes in and
 writes the Bundle. Outbound only. Apache 2.0.
 
-**Status:** 4.0.3. Models so far, from the FAIR Data Demo:
+**Status:** 4.0.4. Models so far, from the FAIR Data Demo:
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
-| NHANES Participant | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.2.3 | `eehpfapwgvxtzdrofgstdcfs` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.2.0 (superseded) | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Medication | `epbdfmvxc3gbh5f66hhb3o2m` | Patient, MedicationStatement, QuestionnaireResponse | 18 |
 
 ## Use
@@ -18,7 +19,7 @@ writes the Bundle. Outbound only. Apache 2.0.
 from sdc_mapper import Engine, load_mapping
 from sdc_gdr2fhir import FHIRMapper, mapping_path
 
-result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("xy8upneajsb8vdcmnve01g6g")))
+result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("eehpfapwgvxtzdrofgstdcfs")))
 result.files["Bundle.json"]     # a FHIR R4 Bundle of type collection
 result.report                   # every value: lookup, declared or not representable; every Exceptional Value
 ```
@@ -84,7 +85,8 @@ For the 200 sample records of each model:
 
 | Model | lookup | declared | not representable |
 |---|---|---|---|
-| NHANES Participant | 9,093 (65.8% of the data values) | 4,733 | 5,400 (provenance and audit) |
+| NHANES Participant 4.2.3 | 9,645 (66.5% of the data values) | 4,868 | 5,400 (provenance and audit) |
+| NHANES Participant 4.2.0 | 9,093 (65.8% of the data values) | 4,733 | 5,400 (provenance and audit) |
 | NHANES Medication | 0 | 1,591 (100% of the data values) | 5,400 (provenance and audit) |
 
 The medication model binds its ICD-10-CM and drug code components to their code systems, not each value to a code,

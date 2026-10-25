@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sdc-gdr2fhir"
-version = "4.0.3"
+version = "4.0.4"
 description = "Governed Data Records as HL7 FHIR R4 Bundles, through sdc-mapper: one mapping file per model, every value reported, Exceptional Values preserved."
 readme = "README.md"
 requires-python = ">=3.12"

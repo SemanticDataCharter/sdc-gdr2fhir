@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.0.4 (2026-10-25)
+
+Maps the FAIR Data Demo's NHANES Participant 4.2.3 (`eehpfapwgvxtzdrofgstdcfs`), the revision of 4.2.0
+(`xy8upneajsb8vdcmnve01g6g`) that composes the NIH CDE library's correction of "Are you pregnant now?"
+(`zmpqfc6tb0o2hgu8qs6lj8tp`). Source erratum E-2026-10-01 (FAIR Data Demo 4.2.3; the NIH CDE library's
+`SOURCE-ERRATA.md`): the NIH CDE Repository's record for Current Pregnancy Indicator (`LiUWCWluP`) binds each answer to
+the next value's LOINC code, and the 4.2.0 model carried that binding.
+
+- **New mapping file** `nhanes_participant-eehpfapwgvxtzdrofgstdcfs.yaml` (112 rules), built by
+  `tools/build_mapping.py` from the same spec as 4.2.0's. A QuestionnaireResponse answer to the pregnancy question is
+  now the answer's own code: Yes `LA15173-0`, No `LA26683-5`, Unknown `LA4489-6` (4.2.0: `LA26683-5`, `LA4489-6`,
+  `LA15173-0`).
+- **New sample** `samples/nhanes-participant-4.2.3/`: the model's schema and 200 records drawn from the demo's 9,254
+  (seed 423). HL7's FHIR validator (7.0.3): no errors in the 200 Bundles.
+- The 4.2.0 mapping file and sample stay: records made on 4.2.0 remain valid against it and still map.
+- Tests run over all three models, with one for the pregnancy codes.
+
 ## 4.0.3 (2026-10-25)
 
 What HL7's FHIR validator (7.0.3) found in 4.0.2's output, fixed. On the 400 sample Bundles its errors fall from 2,164

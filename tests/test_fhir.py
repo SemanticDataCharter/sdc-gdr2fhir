@@ -18,7 +18,8 @@ from sdc_gdr2fhir import FHIRMapper, mapping_path
 from sdc_gdr2fhir.writer import _validator
 
 ROOT = Path(__file__).resolve().parents[1]
-MODELS = [("nhanes-participant", "xy8upneajsb8vdcmnve01g6g"), ("nhanes-medication", "epbdfmvxc3gbh5f66hhb3o2m")]
+MODELS = [("nhanes-participant", "xy8upneajsb8vdcmnve01g6g"), ("nhanes-medication", "epbdfmvxc3gbh5f66hhb3o2m"),
+          ("nhanes-participant-4.2.3", "eehpfapwgvxtzdrofgstdcfs")]   # 4.2.3: the corrected pregnancy codes
 PARTICIPANT = MODELS[0]
 SDC4 = "https://semanticdatacharter.com/ns/sdc4/"
 
@@ -258,3 +259,24 @@ def test_a_coding_display_is_never_the_model_s_label(engine):
     for model in MODELS:
         for f in records(model)[:20]:
             assert '"display"' not in run(engine, model, f.read_bytes()).files["Bundle.json"].decode()
+
+
+# ---------------------------------------------------------------- E-2026-10-01 (4.0.4)
+PARTICIPANT_423 = MODELS[2]
+PREGNANCY = {"Yes": "LA15173-0", "No": "LA26683-5", "Unknown": "LA4489-6"}
+
+
+def test_nhanes_participant_4_2_3_answers_pregnancy_with_the_corrected_codes(engine):
+    """NHANES Participant 4.2.3 composes the NIH CDE library's correction of "Are you pregnant now?" (E-2026-10-01):
+    each answer's LOINC code is the answer's own, not the next value's as in NIH's record and the 4.2.0 model."""
+    seen = {}
+    for f in records(PARTICIPANT_423):
+        if b"ms-zmpqfc6tb0o2hgu8qs6lj8tp" not in f.read_bytes():
+            continue
+        b = bundle(run(engine, PARTICIPANT_423, f.read_bytes()))
+        qr = resources(b, "QuestionnaireResponse")[0]
+        for it in qr["item"]:
+            if it["text"] == "Are you pregnant now?":
+                coding = it["answer"][0]["valueCoding"]
+                seen[coding["code"]] = coding["system"]
+    assert seen and set(seen) <= set(PREGNANCY.values()) and set(seen.values()) == {"http://loinc.org"}

@@ -2,13 +2,13 @@
 
     from sdc_mapper import Engine, load_mapping
     from sdc_gdr2fhir import FHIRMapper, mapping_path
-    result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("xy8upneajsb8vdcmnve01g6g")))
+    result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("eehpfapwgvxtzdrofgstdcfs")))
 
 One mapping file per model, in `mappings/`. Registered with sdc-mapper as the target `fhir`.
 """
 from pathlib import Path
 
-__version__ = "4.0.3"
+__version__ = "4.0.4"
 
 MAPPINGS = Path(__file__).with_name("mappings")
 
