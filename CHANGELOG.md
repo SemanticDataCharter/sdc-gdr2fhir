@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.0.2 (2026-10-25)
+
+Uses sdc-mapper 4.3.0's code reading in place of this package's own; no change to any output (all 400 sample
+Bundles byte-identical, every value's class the same).
+
+- **Codes:** `codes.coding()` reads an IRI with `sdc_mapper.codes.code_of`, then keeps FHIR's one rule: a Coding is a
+  concept of LOINC, SNOMED CT or the NCI Thesaurus, or an entry of an HL7 code system (the core also reads a variable
+  page's or an ontology term's `#fragment`, which no Coding names). The package's own LOINC, SNOMED CT, NCIt and
+  fragment patterns are gone. `codes.model_codes()` replaces `bound_codes()`.
+- **Mapping files:** where the model binds a code, the mapping file now says so: the code of the concept a component
+  links to is a `link` rule (47 in the Participant mapping), an answer's code a `binding` rule (41), where 4.0.1 copied
+  each code in as a constant or a table at authoring time. A value placed by either is a lookup
+  (`sdc_mapper.LOOKUP_TRANSFORMS`).
+- **Joins:** `=name` writes are resolved shallowest first (`sdc_mapper.join_depth`).
+- Requires sdc-mapper 4.3.
+
 ## 4.0.1 (2026-10-25)
 
 Rebuilt with the release job's pip pinned by hash: CI and the release workflow install pip 26.2.2 from a hash-pinned

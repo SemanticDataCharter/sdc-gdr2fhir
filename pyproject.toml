@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sdc-gdr2fhir"
-version = "4.0.1"
+version = "4.0.2"
 description = "Governed Data Records as HL7 FHIR R4 Bundles, through sdc-mapper: one mapping file per model, every value reported, Exceptional Values preserved."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "sdc-mapper>=4.2,<5",     # placements, '=name' joins, declared cluster order (4.2.0)
+    "sdc-mapper>=4.3,<5",     # placements, '=name' joins, cluster order (4.2.0); codes, link, join_depth (4.3.0)
     "jsonschema>=4.20",       # the FHIR R4 JSON schema (draft-06)
 ]
 

@@ -10,12 +10,12 @@ data-absent-reason has no code for, the iso21090-nullFlavor extension with the e
 """
 from __future__ import annotations
 
-from sdc_mapper import (DECLARED, JOIN, LOOKUP, NOT_REPRESENTABLE, PRESERVED, EVRule, IncompleteMapping, MapResult,
-                        MappingError, ValueOutcome, place)
+from sdc_mapper import (DECLARED, JOIN, LOOKUP, LOOKUP_TRANSFORMS, NOT_REPRESENTABLE, PRESERVED, EVRule, IncompleteMapping, MapResult,
+                        MappingError, ValueOutcome, join_depth, place)
 from sdcreader.record import EXCEPTIONAL_VALUES
 
 from . import __version__
-from .codes import absent, bound_codes
+from .codes import absent, model_codes
 from .writer import FHIR_VERSION, Builder
 
 #: FHIR R4 writes every ISO 21090 null flavor exactly (codes.absent).
@@ -80,7 +80,7 @@ class FHIRMapper:
                     later.append(w)             # '=name' joins wait until every element they may join exists
                 else:
                     b.put(*w)
-        for w in later:
+        for w in sorted(later, key=lambda w: join_depth(w[0])):   # shallowest join first (sdc-mapper 4.3.0)
             b.put(*w)
         for c in clusters:
             node = b.find(c.steps)
@@ -104,7 +104,7 @@ class FHIRMapper:
                 outcomes.append(ValueOutcome(v.position, NOT_REPRESENTABLE, note=notes[v.position]))
             else:
                 written = {p.text, p.units_text, *(e.text for e in p.extras)} - {None}
-                lookup = p.rule.transform == "binding" or bool(written & bound_codes(v))
+                lookup = p.rule.transform in LOOKUP_TRANSFORMS or bool(written & model_codes(v))
                 outcomes.append(ValueOutcome(v.position, LOOKUP if lookup else DECLARED, location=self._where(p)))
         if missing:
             raise IncompleteMapping(f"mapping {mapping.id} has no rule for {len(missing)} value(s): " + "; ".join(missing[:5]))
