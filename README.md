@@ -10,7 +10,7 @@ writes the Bundle. Outbound only. Apache 2.0.
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
 | NHANES Participant 4.2.3 | `eehpfapwgvxtzdrofgstdcfs` | Patient, Observation, QuestionnaireResponse | 112 |
-| NHANES Participant 4.2.0 (superseded) | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.2.0 (retired) | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Medication | `epbdfmvxc3gbh5f66hhb3o2m` | Patient, MedicationStatement, QuestionnaireResponse | 18 |
 
 ## Use
