@@ -19,7 +19,8 @@ from sdc_gdr2fhir.writer import _validator
 
 ROOT = Path(__file__).resolve().parents[1]
 MODELS = [("nhanes-participant", "xy8upneajsb8vdcmnve01g6g"), ("nhanes-medication", "epbdfmvxc3gbh5f66hhb3o2m"),
-          ("nhanes-participant-4.2.3", "eehpfapwgvxtzdrofgstdcfs")]   # 4.2.3: the corrected pregnancy codes
+          ("nhanes-participant-4.2.3", "eehpfapwgvxtzdrofgstdcfs"),   # 4.2.3: the corrected pregnancy codes
+          ("nhanes-participant-4.2.4", "tp5pg0u4dasqarie0b3ujn2u")]   # 4.2.4: the corrected value bindings
 PARTICIPANT = MODELS[0]
 SDC4 = "https://semanticdatacharter.com/ns/sdc4/"
 
@@ -280,3 +281,56 @@ def test_nhanes_participant_4_2_3_answers_pregnancy_with_the_corrected_codes(eng
                 coding = it["answer"][0]["valueCoding"]
                 seen[coding["code"]] = coding["system"]
     assert seen and set(seen) <= set(PREGNANCY.values()) and set(seen.values()) == {"http://loinc.org"}
+
+
+# ---------------------------------------------------------------- E-2026-10-03 (4.0.5)
+PARTICIPANT_424 = MODELS[3]
+NCIT = "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl"
+
+
+def _answers(engine, model):
+    """(item text, answer) for every QuestionnaireResponse answer in the model's sample."""
+    for f in records(model):
+        for qr in resources(bundle(run(engine, model, f.read_bytes())), "QuestionnaireResponse"):
+            for it in qr["item"]:
+                for a in it.get("answer", []):
+                    yield it["text"], a
+
+
+def test_a_value_the_model_defines_by_a_codebook_is_never_a_coding(engine):
+    """E-2026-10-03 defines some values by the agency's codebook (`DEMO_J.htm#DMDCITZN`), not a code: the answer is
+    its text, a valueString, while the list's coded values stay Codings; no Coding names a codebook page."""
+    strings, codings = set(), set()
+    for text, a in _answers(engine, PARTICIPANT_424):
+        assert not ("valueCoding" in a and "valueString" in a), (text, a)
+        if "valueCoding" in a:
+            c = a["valueCoding"]
+            assert c.get("code") and c.get("system") and "cdc.gov" not in c["system"], (text, c)
+            codings.add((text, c["code"]))
+        elif text in ("Citizenship Status (DMDCITZN)", "Education Level - Adults 20+ (DMDEDUC2)"):
+            strings.add((text, a["valueString"]))
+    assert ("Citizenship Status (DMDCITZN)", "Not a citizen of the US") in strings
+    assert ("Education Level - Adults 20+ (DMDEDUC2)", "Less than 9th grade") in strings
+    assert ("Citizenship Status (DMDCITZN)", "C90516") in codings
+
+
+def test_nhanes_participant_4_2_4_answers_with_the_corrected_codes(engine):
+    """NHANES Participant 4.2.4 binds each value to a code its terminology confirms (E-2026-10-03): the difficulty
+    scale's levels, pregnancy at exam, Mexican American, and the SI cholesterol's LOINC code."""
+    seen = {}
+    for text, a in _answers(engine, PARTICIPANT_424):
+        if "valueCoding" in a:
+            seen.setdefault(text, set()).add((a["valueCoding"]["system"], a["valueCoding"]["code"]))
+    assert {(NCIT, "C121736"), (NCIT, "C121739")} <= seen["Difficulty Dressing Yourself (PFQ061L)"]
+    assert (NCIT, "C17998") not in seen["Difficulty Dressing Yourself (PFQ061L)"]
+    assert (NCIT, "C82475") in seen["Pregnancy Status at Exam (RIDEXPRG)"]
+    assert (NCIT, "C67114") in seen["Race/Hispanic Origin with NH Asian (RIDRETH3)"]
+    for f in records(PARTICIPANT_424):
+        b = bundle(run(engine, PARTICIPANT_424, f.read_bytes()))
+        si = [o for o in resources(b, "Observation") if o.get("valueQuantity", {}).get("code") == "mmol/L"]
+        if si:
+            assert si[0]["code"]["coding"][0]["code"] == "14647-2"
+            break
+    else:
+        pytest.skip("no sample record has a cholesterol in mmol/L")
+

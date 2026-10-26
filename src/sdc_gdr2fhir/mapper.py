@@ -59,9 +59,11 @@ class FHIRMapper:
             writes = []
             if v.exceptional:
                 writes += self._absent(p.steps, p.attribute, v.exceptional.code)
-            elif p.text is None:
+            elif p.text is None and not _stands_in(p):
                 notes[v.position] = p.note or "no value to write"
                 continue
+            elif p.text is None:
+                pass                              # an `also` writes the value as another value[x] of the same element
             else:
                 writes.append((self._steps(p.steps, p.attribute), p.text, v.position))
                 if p.units_attribute and p.units_text is not None:
@@ -142,6 +144,28 @@ class FHIRMapper:
     @staticmethod
     def _where(p) -> str:
         return _join(p.steps) + (f"/{p.attribute}" if p.attribute else "")
+
+
+def _value_at(steps) -> int:
+    """The index of the last value[x] step (FHIR's choice element: valueCoding, valueString), or -1."""
+    for i in range(len(steps) - 1, -1, -1):
+        if steps[i][0].split("#", 1)[0].startswith("value"):
+            return i
+    return -1
+
+
+def _stands_in(p) -> bool:
+    """A main rule that writes nothing (a `binding` with no code for this value) is stood in for when one of its
+    `also` rules writes the value as another value[x] of the same element: a QuestionnaireResponse answer the model
+    defines by a codebook, not a code, is a valueString where its siblings are a valueCoding (4.0.5)."""
+    i = _value_at(p.steps)
+    if i < 0:
+        return False
+    for e in p.extras:
+        j = _value_at(e.steps)
+        if e.text is not None and j == i and list(e.steps[:j]) == list(p.steps[:i]) and e.steps[j][0] != p.steps[i][0]:
+            return True
+    return False
 
 
 def _join(steps) -> str:

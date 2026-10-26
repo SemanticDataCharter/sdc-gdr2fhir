@@ -5,12 +5,13 @@ Governed Data Records as HL7 FHIR R4 Bundles. A target mapper for
 against its model and reports each one; this package says which FHIR resource and element each value goes in and
 writes the Bundle. Outbound only. Apache 2.0.
 
-**Status:** 4.0.4. Models so far, from the FAIR Data Demo:
+**Status:** 4.0.5. Models so far, from the FAIR Data Demo:
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
-| NHANES Participant 4.2.3 | `eehpfapwgvxtzdrofgstdcfs` | Patient, Observation, QuestionnaireResponse | 112 |
-| NHANES Participant 4.2.0 (superseded) | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.2.4 | `tp5pg0u4dasqarie0b3ujn2u` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.2.3 (retired) | `eehpfapwgvxtzdrofgstdcfs` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.2.0 (retired) | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Medication | `epbdfmvxc3gbh5f66hhb3o2m` | Patient, MedicationStatement, QuestionnaireResponse | 18 |
 
 ## Use
@@ -19,7 +20,7 @@ writes the Bundle. Outbound only. Apache 2.0.
 from sdc_mapper import Engine, load_mapping
 from sdc_gdr2fhir import FHIRMapper, mapping_path
 
-result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("eehpfapwgvxtzdrofgstdcfs")))
+result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("tp5pg0u4dasqarie0b3ujn2u")))
 result.files["Bundle.json"]     # a FHIR R4 Bundle of type collection
 result.report                   # every value: lookup, declared or not representable; every Exceptional Value
 ```
@@ -80,11 +81,16 @@ element a value goes in is **declared**, one mapping file per model.
 - A Coding's `display` is the code system's, which this package does not ship, so it is never written. The model's
   label for a value is the CodeableConcept's `text`; a QuestionnaireResponse answer, which FHIR gives no text, is the
   code the model binds.
+- A value the model defines by an agency's codebook rather than a code ("Not a citizen of the US", defined by the
+  NHANES documentation's `DMDCITZN`) is never a Coding: a codebook page is not a code system. It is the
+  CodeableConcept's `text` alone, or a QuestionnaireResponse `valueString`, while the same list's coded values stay
+  Codings.
 
 For the 200 sample records of each model:
 
 | Model | lookup | declared | not representable |
 |---|---|---|---|
+| NHANES Participant 4.2.4 | 10,215 (73.3% of the data values) | 3,719 | 5,400 (provenance and audit) |
 | NHANES Participant 4.2.3 | 9,645 (66.5% of the data values) | 4,868 | 5,400 (provenance and audit) |
 | NHANES Participant 4.2.0 | 9,093 (65.8% of the data values) | 4,733 | 5,400 (provenance and audit) |
 | NHANES Medication | 0 | 1,591 (100% of the data values) | 5,400 (provenance and audit) |

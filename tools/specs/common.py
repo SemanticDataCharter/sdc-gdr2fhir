@@ -81,26 +81,36 @@ def system_of(at: str):
 
 
 def answer_codes(enums):
-    """The code the model binds each value of a token to, when every value has its own; else None."""
-    pairs = {value: coding(iri) for value, iri in enums}
-    if not pairs or any(p is None for p in pairs.values()) or len(set(pairs.values())) != len(pairs):
+    """The code the model binds each value of a token to, for the values bound to a code a Coding can carry; None when
+    no value is, or when two values share one (a target could not tell them apart). A value defined by an agency's
+    codebook (`DEMO_J.htm#DMDCITZN`) is not a code: it is left out, and written as text (4.0.5)."""
+    pairs = {value: c for value, iri in enums if (c := coding(iri)) is not None}
+    if not pairs or len(set(pairs.values())) != len(pairs):
         return None
     return pairs
+
+
+def uncoded(enums) -> list[str]:
+    """The values of a token the model defines by something other than a code (an agency's codebook)."""
+    pairs = answer_codes(enums) or {}
+    return [value for value, _ in enums if value not in pairs]
 
 
 def coded(at: str):
     """derive: a token as a Coding at `at`: the system and (by `binding`) the code the model binds it to. The system
     comes by a table: written with the code, not beside an Exceptional Value. The value's label is not the Coding's
-    display (that is the code system's); a caller writes it as text where FHIR has a place for it."""
+    display (that is the code system's); a caller writes it as text where FHIR has a place for it. A value with no code
+    (`uncoded`) gets no Coding: both parts miss and are left out."""
     def derive(component, enums):
         pairs = answer_codes(enums)
         if pairs is None:
             return {}
+        partial = {"on_miss": "omit"} if uncoded(enums) else {}
         systems = {p.system for p in pairs.values()}
-        code = ({"to": f"{at}/code", "transform": "binding", "system": next(iter(systems))} if len(systems) == 1 else
-                {"to": f"{at}/code", "transform": "code", "table": {v: p.code for v, p in pairs.items()}})
+        code = ({"to": f"{at}/code", "transform": "binding", "system": next(iter(systems)), **partial} if len(systems) == 1 else
+                {"to": f"{at}/code", "transform": "code", "table": {v: p.code for v, p in pairs.items()}, **partial})
         return {"also": [
-            {"to": f"{at}/system", "transform": "code", "table": {v: p.system for v, p in pairs.items()}}, code]}
+            {"to": f"{at}/system", "transform": "code", "table": {v: p.system for v, p in pairs.items()}, **partial}, code]}
     return derive
 
 
@@ -172,6 +182,10 @@ def item(label: str):
             system, code = coded(f"{at}/valueCoding")(component, enums)["also"]
             rule.update({k: v for k, v in code.items()})
             rule["also"].append(system)
+            if uncoded(enums):
+                # a value the model defines by a codebook, not a code: the answer is its text, valueString
+                rule["also"].append({"to": f"{at}/valueString", "transform": "code", "on_miss": "omit",
+                                     "table": {v: v for v in uncoded(enums)}})
         elif t in ("XdCount", "XdQuantity"):
             rule["to"] = f"{at}/valueQuantity/value"
             rule["units"] = {"to": "@unit", "transform": "copy"}
