@@ -1,5 +1,27 @@
 # Changelog
 
+## 4.0.5 (2026-10-26)
+
+Maps the FAIR Data Demo's NHANES Participant 4.2.4 (`tp5pg0u4dasqarie0b3ujn2u`), the revision of 4.2.3
+(`eehpfapwgvxtzdrofgstdcfs`) whose value bindings name codes their terminologies confirm. FAIR Data Demo erratum
+E-2026-10-03 (its `SOURCE-ERRATA.md`): 24 of its records named codes for something else (Mexican American as NCIt
+C67175, a drug regimen; every level of the difficulty scale as Unknown; both pregnancy-at-exam answers as one code), and
+the SI total cholesterol carried the mg/dL LOINC code.
+
+- **New mapping file** `nhanes_participant-tp5pg0u4dasqarie0b3ujn2u.yaml` (112 rules) and **sample**
+  `samples/nhanes-participant-4.2.4/` (200 of the demo's 9,254 records, seed 424). Same participant, 4.2.3 then 4.2.4:
+  Mexican American `C67175` then `C67114`; "Not pregnant at exam" text then `C82475`; "Much difficulty" text then
+  `C121740`; SI cholesterol LOINC `2093-3` then `14647-2`.
+- **A value the model defines by a codebook is never a Coding.** E-2026-10-03 defines a value with no exact concept by
+  the agency's codebook (`DEMO_J.htm#DMDCITZN`). Such a value is written as text (the CodeableConcept's `text`, or a
+  QuestionnaireResponse `valueString`), and the list's other values keep their Codings: before, one uncoded value made
+  the whole list text. A main rule that writes nothing is stood in for by an `also` that writes the value as another
+  value[x] of the same element.
+- HL7's FHIR validator (7.0.3) on the 200 Bundles: no errors. The NCI Thesaurus codes it reports as unknown are in its
+  partial copy of the NCI Thesaurus; each was looked up in NCI's EVS (the demo's `build/verified-codes.json`).
+- The 4.2.3 and 4.2.0 mapping files and samples stay, for records made on those (retired) models. Tests run over all
+  four models.
+
 ## 4.0.4 (2026-10-25)
 
 Maps the FAIR Data Demo's NHANES Participant 4.2.3 (`eehpfapwgvxtzdrofgstdcfs`), the revision of 4.2.0
