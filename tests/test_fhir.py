@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -20,7 +21,9 @@ from sdc_gdr2fhir.writer import _validator
 ROOT = Path(__file__).resolve().parents[1]
 MODELS = [("nhanes-participant", "xy8upneajsb8vdcmnve01g6g"), ("nhanes-medication", "epbdfmvxc3gbh5f66hhb3o2m"),
           ("nhanes-participant-4.2.3", "eehpfapwgvxtzdrofgstdcfs"),   # 4.2.3: the corrected pregnancy codes
-          ("nhanes-participant-4.2.4", "tp5pg0u4dasqarie0b3ujn2u")]   # 4.2.4: the corrected value bindings
+          ("nhanes-participant-4.2.4", "tp5pg0u4dasqarie0b3ujn2u"),   # 4.2.4: the corrected value bindings
+          ("nhanes-participant-4.3.0", "drjvqb171q9pqwcdq6nxxrr4"),   # 4.3.0: Exceptional Values
+          ("nhanes-medication-4.3.0", "plc9gto1kzy244g1r2op257f")]    # 4.3.0: Exceptional Values, NHANES prevention codes
 PARTICIPANT = MODELS[0]
 SDC4 = "https://semanticdatacharter.com/ns/sdc4/"
 
@@ -334,3 +337,62 @@ def test_nhanes_participant_4_2_4_answers_with_the_corrected_codes(engine):
     else:
         pytest.skip("no sample record has a cholesterol in mmol/L")
 
+
+
+PARTICIPANT_430, MEDICATION_430 = MODELS[4], MODELS[5]
+DAR_CODES = {"ASKR": "asked-declined", "ASKU": "asked-unknown", "UNK": "unknown"}
+NHANES_RX = "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/RXQ_RX_J.htm"
+ICD10CM = "http://hl7.org/fhir/sid/icd-10-cm"
+
+
+def _leaves(o, path=""):
+    if isinstance(o, dict):
+        for k, v in o.items():
+            yield from _leaves(v, f"{path}/{k}")
+    elif isinstance(o, list):
+        for i, v in enumerate(o):
+            yield from _leaves(v, f"{path}[{i}]")
+    else:
+        yield path, o
+
+
+@pytest.mark.parametrize("model", [PARTICIPANT_430, MEDICATION_430], ids=lambda m: m[0])
+def test_a_refused_or_unknown_answer_is_a_data_absent_reason_never_a_value(engine, model):
+    """4.3.0 (FAIR Data Demo): a refused or don't-know answer is ASKR or ASKU, a medication file's 55555 UNK, in
+    place of the value. FHIR writes each as data-absent-reason (dataAbsentReason on an Observation value, the
+    extension on any other element) with the matching code, and no value beside it."""
+    seen = set()
+    for f in records(model):
+        xml = f.read_bytes()
+        evs = set(re.findall(rb"<sdc4:(ASKR|ASKU|UNK)>", xml))
+        if not evs:
+            continue
+        b = bundle(run(engine, model, xml))
+        leaves = list(_leaves(b))
+        written = {v for p, v in leaves if (p.endswith("dataAbsentReason/coding[0]/code") or p.endswith("/valueCode"))}
+        for ev in evs:
+            assert DAR_CODES[ev.decode()] in written, (f.name, ev)
+            seen.add(ev.decode())
+        for p, v in leaves:   # an absent value's element carries the extension, never the value itself
+            if "/_" in p and p.endswith("/valueCode"):
+                el = p.split("/_", 1)[1].split("/", 1)[0]
+                parent = p.split("/_", 1)[0]
+                assert not any(q == f"{parent}/{el}" for q, _ in leaves), (f.name, p)
+    assert seen, "no sample record carries an Exceptional Value"
+
+
+def test_a_prevention_code_is_nhanes_s_own_never_icd10cm(engine):
+    """4.3.0: NHANES's prevention reason codes (I21.P, prevent heart attack) are not ICD-10-CM; each is a reasonCode
+    Coding under the RXQ_RX_J documentation, the system the model fixes, with NHANES's description as the text."""
+    n = 0
+    for f in records(MEDICATION_430):
+        b = bundle(run(engine, MEDICATION_430, f.read_bytes()))
+        for st in resources(b, "MedicationStatement"):
+            for rc in st.get("reasonCode", []):
+                for c in rc.get("coding", []):
+                    if c.get("system") == ICD10CM:
+                        assert not c.get("code", "").endswith("P"), (f.name, c)
+                    if c.get("system") == NHANES_RX:
+                        assert c["code"].endswith("P") and rc.get("text", "").lower().startswith("prevent"), (f.name, rc)
+                        n += 1
+    assert n >= 10, n
