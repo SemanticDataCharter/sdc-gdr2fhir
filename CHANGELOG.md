@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.7 (2026-10-27)
+
+- **FAIR Data Demo 4.3.1:** NHANES Participant 4.3.1 (`fafj69kdii37997sy7dpsz13`): its mapping and a sample of the
+  same 200 participants as the 4.3.0 sample. 4.3.1's four NIH CDE answers carry their compound concept as
+  `dcterms:subject` parts, with no exact-match claim (NIH CDE library R-2026-10-27). This mapper writes those answers as
+  QuestionnaireResponse items whose codes are the answers' value bindings, never the components' concept links, so the
+  mapping is the 4.3.0 one with new identifiers and the Bundles are the 4.3.0 ones apart from identifiers. HL7's FHIR
+  validator (7.0.3) on the 200 new Bundles: no errors. The 4.3.0 mapping stays, for records made on that model.
+
 ## 4.0.6 (2026-10-27)
 
 The FAIR Data Demo's 4.3.0 models: **NHANES Participant 4.3.0** (`drjvqb171q9pqwcdq6nxxrr4`) and **NHANES Medication

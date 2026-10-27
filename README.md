@@ -5,11 +5,12 @@ Governed Data Records as HL7 FHIR R4 Bundles. A target mapper for
 against its model and reports each one; this package says which FHIR resource and element each value goes in and
 writes the Bundle. Outbound only. Apache 2.0.
 
-**Status:** 4.0.6. Models so far, from the FAIR Data Demo:
+**Status:** 4.0.7. Models so far, from the FAIR Data Demo:
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
-| NHANES Participant 4.3.0 | `drjvqb171q9pqwcdq6nxxrr4` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.3.1 | `fafj69kdii37997sy7dpsz13` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.3.0 (retired) | `drjvqb171q9pqwcdq6nxxrr4` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Medication 4.3.0 | `plc9gto1kzy244g1r2op257f` | Patient, MedicationStatement, QuestionnaireResponse | 21 |
 | NHANES Participant 4.2.4 (retired) | `tp5pg0u4dasqarie0b3ujn2u` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Participant 4.2.3 (retired) | `eehpfapwgvxtzdrofgstdcfs` | Patient, Observation, QuestionnaireResponse | 112 |
@@ -22,7 +23,7 @@ writes the Bundle. Outbound only. Apache 2.0.
 from sdc_mapper import Engine, load_mapping
 from sdc_gdr2fhir import FHIRMapper, mapping_path
 
-result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("tp5pg0u4dasqarie0b3ujn2u")))
+result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("fafj69kdii37997sy7dpsz13")))
 result.files["Bundle.json"]     # a FHIR R4 Bundle of type collection
 result.report                   # every value: lookup, declared or not representable; every Exceptional Value
 ```
@@ -92,6 +93,7 @@ For the 200 sample records of each model:
 
 | Model | lookup | declared | not representable |
 |---|---|---|---|
+| NHANES Participant 4.3.1 | 9,883 (73.5% of the data values) | 3,559 | 5,400 (provenance and audit) |
 | NHANES Participant 4.3.0 | 9,883 (73.5% of the data values) | 3,559 | 5,400 (provenance and audit) |
 | NHANES Medication 4.3.0 | 0 | 1,537 (100% of the data values) | 5,400 (provenance and audit) |
 | NHANES Participant 4.2.4 | 10,215 (73.3% of the data values) | 3,719 | 5,400 (provenance and audit) |
