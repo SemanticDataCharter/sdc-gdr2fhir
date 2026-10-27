@@ -1,5 +1,27 @@
 # Changelog
 
+## 4.0.6 (2026-10-27)
+
+The FAIR Data Demo's 4.3.0 models: **NHANES Participant 4.3.0** (`drjvqb171q9pqwcdq6nxxrr4`) and **NHANES Medication
+4.3.0** (`plc9gto1kzy244g1r2op257f`), their mappings and a seeded 200-record sample of each, drawn to include Exceptional
+Values and prevention codes. The earlier mappings stay, for records made on those models.
+
+- **A refused or unknown answer is data-absent-reason, never a value.** FAIR 4.3.0 carries NHANES's refused and
+  don't-know answers as ASKR and ASKU, and the medication file's unknowns as UNK, in place of the value. The mapper
+  writes each as FHIR does: `dataAbsentReason` on an Observation value (asked-declined, asked-unknown, unknown), the
+  data-absent-reason extension on any other element (a QuestionnaireResponse answer's `_valueString`, a quantity's
+  `_value`, a reason's `_code`), with no value beside it. No code change: the 4.0.0 mapper already did this; the tests
+  now hold it on records that have them.
+- **NHANES prevention codes under NHANES's own system.** `I21.P` (prevent heart attack) is not ICD-10-CM. A Prevention
+  Reason (NHANES) is a reasonCode Coding whose system is the RXQ_RX_J documentation
+  (`https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/RXQ_RX_J.htm`), copied from the model's own
+  `skos:exactMatch` (`tools/specs/nhanes_medication_430.py`), with NHANES's description as the text; never
+  `http://hl7.org/fhir/sid/icd-10-cm`. The 4.0.x medication Bundles carried those codes as ICD-10-CM and HL7's
+  validator reported them; on the 4.3.0 sample there are none.
+- HL7's FHIR validator 7.0.3 on the 400 new Bundles: no errors. The NHANES system is a warning, "A definition for
+  CodeSystem ... could not be found, so the code cannot be validated" (52), as for any code system the terminology
+  server does not hold.
+
 ## 4.0.5 (2026-10-26)
 
 Maps the FAIR Data Demo's NHANES Participant 4.2.4 (`tp5pg0u4dasqarie0b3ujn2u`), the revision of 4.2.3

@@ -5,14 +5,16 @@ Governed Data Records as HL7 FHIR R4 Bundles. A target mapper for
 against its model and reports each one; this package says which FHIR resource and element each value goes in and
 writes the Bundle. Outbound only. Apache 2.0.
 
-**Status:** 4.0.5. Models so far, from the FAIR Data Demo:
+**Status:** 4.0.6. Models so far, from the FAIR Data Demo:
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
-| NHANES Participant 4.2.4 | `tp5pg0u4dasqarie0b3ujn2u` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Participant 4.3.0 | `drjvqb171q9pqwcdq6nxxrr4` | Patient, Observation, QuestionnaireResponse | 112 |
+| NHANES Medication 4.3.0 | `plc9gto1kzy244g1r2op257f` | Patient, MedicationStatement, QuestionnaireResponse | 21 |
+| NHANES Participant 4.2.4 (retired) | `tp5pg0u4dasqarie0b3ujn2u` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Participant 4.2.3 (retired) | `eehpfapwgvxtzdrofgstdcfs` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Participant 4.2.0 (retired) | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
-| NHANES Medication | `epbdfmvxc3gbh5f66hhb3o2m` | Patient, MedicationStatement, QuestionnaireResponse | 18 |
+| NHANES Medication (retired) | `epbdfmvxc3gbh5f66hhb3o2m` | Patient, MedicationStatement, QuestionnaireResponse | 18 |
 
 ## Use
 
@@ -90,10 +92,17 @@ For the 200 sample records of each model:
 
 | Model | lookup | declared | not representable |
 |---|---|---|---|
+| NHANES Participant 4.3.0 | 9,883 (73.5% of the data values) | 3,559 | 5,400 (provenance and audit) |
+| NHANES Medication 4.3.0 | 0 | 1,537 (100% of the data values) | 5,400 (provenance and audit) |
 | NHANES Participant 4.2.4 | 10,215 (73.3% of the data values) | 3,719 | 5,400 (provenance and audit) |
 | NHANES Participant 4.2.3 | 9,645 (66.5% of the data values) | 4,868 | 5,400 (provenance and audit) |
 | NHANES Participant 4.2.0 | 9,093 (65.8% of the data values) | 4,733 | 5,400 (provenance and audit) |
 | NHANES Medication | 0 | 1,591 (100% of the data values) | 5,400 (provenance and audit) |
+
+Each sample has 200 records. The 4.3.0 samples are drawn to include Exceptional Values and, for medication, NHANES
+prevention codes; their Exceptional Values are counted apart from the data values: 53 preserved in the participant
+sample (13 ASKR, 40 ASKU) and 46 in the medication sample (36 ASKU, 6 UNK, 4 ASKR), each written as FHIR's
+data-absent-reason.
 
 The medication model binds its ICD-10-CM and drug code components to their code systems, not each value to a code,
 so its codes are written as the record holds them: declared.

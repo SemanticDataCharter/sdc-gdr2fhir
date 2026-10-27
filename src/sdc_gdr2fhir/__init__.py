@@ -8,7 +8,7 @@ One mapping file per model, in `mappings/`. Registered with sdc-mapper as the ta
 """
 from pathlib import Path
 
-__version__ = "4.0.5"
+__version__ = "4.0.6"
 
 MAPPINGS = Path(__file__).with_name("mappings")
 
