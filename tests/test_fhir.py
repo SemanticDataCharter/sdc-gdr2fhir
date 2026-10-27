@@ -23,7 +23,8 @@ MODELS = [("nhanes-participant", "xy8upneajsb8vdcmnve01g6g"), ("nhanes-medicatio
           ("nhanes-participant-4.2.3", "eehpfapwgvxtzdrofgstdcfs"),   # 4.2.3: the corrected pregnancy codes
           ("nhanes-participant-4.2.4", "tp5pg0u4dasqarie0b3ujn2u"),   # 4.2.4: the corrected value bindings
           ("nhanes-participant-4.3.0", "drjvqb171q9pqwcdq6nxxrr4"),   # 4.3.0: Exceptional Values
-          ("nhanes-medication-4.3.0", "plc9gto1kzy244g1r2op257f")]    # 4.3.0: Exceptional Values, NHANES prevention codes
+          ("nhanes-medication-4.3.0", "plc9gto1kzy244g1r2op257f"),    # 4.3.0: Exceptional Values, NHANES prevention codes
+          ("nhanes-participant-4.3.1", "fafj69kdii37997sy7dpsz13")]   # 4.3.1: NIH CDE answers without exact-match claims
 PARTICIPANT = MODELS[0]
 SDC4 = "https://semanticdatacharter.com/ns/sdc4/"
 
