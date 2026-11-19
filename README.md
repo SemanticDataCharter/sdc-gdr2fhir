@@ -5,7 +5,7 @@ Governed Data Records as HL7 FHIR R4 Bundles. A target mapper for
 against its model and reports each one; this package says which FHIR resource and element each value goes in and
 writes the Bundle. Outbound only. Apache 2.0.
 
-**Status:** 4.0.7. Models so far, from the FAIR Data Demo:
+**Status:** 4.1.0. Models so far, from the FAIR Data Demo:
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
@@ -24,9 +24,12 @@ from sdc_mapper import Engine, load_mapping
 from sdc_gdr2fhir import FHIRMapper, mapping_path
 
 result = Engine().map_record(xml, FHIRMapper(), load_mapping(mapping_path("fafj69kdii37997sy7dpsz13")))
-result.files["Bundle.json"]     # a FHIR R4 Bundle of type collection
+result.files["Bundle.json"]     # a FHIR R4 Bundle of the type the mapping gives (these: collection)
 result.report                   # every value: lookup, declared or not representable; every Exceptional Value
 ```
+
+`FHIRMapper()` writes FHIR R4; `FHIRMapper.for_mapping(mapping)` gives the mapper for the version the mapping's
+`target.version` names, and a version this package does not ship is refused.
 
 Through sdc-mapper's CLI and MCP server the mapper is the target `fhir`.
 
@@ -38,10 +41,17 @@ endorsement and no altered specification is published as FHIR. HL7® and FHIR® 
 carries the FHIR R4 JSON schema unmodified (see `NOTICE`) and ships no terminology: LOINC, SNOMED CT, ICD-10-CM and NCI
 Thesaurus codes appear only as the models bind them and the records carry them.
 
+R4 is the one version this package ships. The writer takes its schema from the mapping's `target.version` (the table
+`VERSIONS` in `writer.py`), so another version would be a second schema there, not a second writer.
+
 Every Bundle this package writes is valid against the FHIR R4 JSON schema, resource by resource and as a Bundle, or is
 not written. The schema checks structure, types, required members and code patterns; it does not check FHIR's
 invariants or terminology bindings. HL7's FHIR validator does (`validator_cli.jar`, which checks codes and displays
 against HL7's terminology server): `tests/` runs it where Java and the validator are installed (`FHIR_VALIDATOR_JAR`).
+The schema cannot check a profile either. `tests/` also runs the validator with an implementation guide's package
+loaded (`-ig`, the package named by `FHIR_VALIDATOR_IG`, by default `hl7.fhir.eu.laboratory#2.1.0`), on a synthetic
+document Bundle that claims only FHIR's own profiles: it checks that the path works, not that any mapping conforms to
+the guide.
 
 **HL7's FHIR validator, 7.0.3, on all 400 sample Bundles (25 October 2026):** no errors in any Participant Bundle; 9
 errors in 9 Medication Bundles, every one a reason code the record gives as ICD-10-CM that ICD-10-CM does not have
@@ -49,9 +59,38 @@ errors in 9 Medication Bundles, every one a reason code the record gives as ICD-
 practice, not conformance: no narrative, no performer, NCI Thesaurus codes the terminology server checks only in part,
 the NHANES drug code system it does not know, and one UCUM annotation.
 
+## Mapping options
+
+A mapping file is sdc-mapper's, whose schema is closed, so the options below are written in the Bundle rule's
+`attributes` and in each resource's attributes. FHIR's own elements (`type`, `timestamp`, `meta/profile`) are written
+as given. Keys starting with `@` are directives to the writer. It reads them and never writes them; no FHIR element name
+starts with `@`.
+
+- **Bundle type** (`type`): `collection`, the default when the mapping gives none, or `document`. The writer refuses
+  any other type. For a `document` it requires what FHIR R4 asks of one and refuses a Bundle that breaks it:
+  - bdl-9, an `identifier` with a system and a value: the mapping's own, or the record's instance id, which the writer
+    adds as it does for a collection;
+  - bdl-10, a `timestamp`: the mapping places it, since the writer does not make one up;
+  - bdl-11, a Composition as the first entry.
+- **Entry order** (`@first`): the resource types whose entries come first, in order, space-separated. The default is
+  `Patient` for a collection and `Composition Patient` for a document. Every other entry keeps the record's order. For a
+  document, `@first` must start with `Composition`.
+- **Profiles** (`meta/profile` among a resource's attributes): the canonical URL of each profile the entry claims. A
+  tag gives a second one (`meta/profile#1`, `meta/profile#2`). The JSON schema checks only the URL's form; whether an
+  entry meets the profile is for HL7's validator with the guide's package (above).
+- **Observation rules** (`@observation`): what the writer adds to or removes from an Observation beyond what the
+  record says, space-separated. A rule applies only when the mapping names it:
+  - `date-time-over-period`: an Observation dated both ways keeps the record's `effectiveDateTime`, and the
+    `effectivePeriod` the mapping gave every Observation is dropped;
+  - `blood-pressure-components`: a blood pressure panel (LOINC 85354-9) gets a systolic and a diastolic component, in
+    that order, and the one the record lacks is written with `dataAbsentReason` `unknown`.
+
+  The NHANES Participant mappings name both. The NHANES Medication mappings write no Observation and name neither.
+- **FHIR version** (`target.version`): `R4`.
+
 ## Where values go
 
-Each record is one Bundle of type `collection`, identified by the record's instance id
+The NHANES mappings write each record as one Bundle of type `collection`, identified by the record's instance id
 (`https://semanticdatacharter.com/ns/sdc4/instance`). Entry ids and `urn:uuid` fullUrls are derived from the instance
 id, so the same record gives the same bytes.
 
@@ -73,7 +112,8 @@ is the model's own and the value is a **lookup**; `tools/build_mapping.py` copie
 the mapping file, and the mapper checks at run time that the code it writes is one the model binds. Which resource and
 element a value goes in is **declared**, one mapping file per model.
 
-**What FHIR asks that the record does not say (declared).**
+**What FHIR asks that the record does not say (declared).** The first two are the NHANES Participant mappings'
+`@observation` rules (above). No other mapping gets them unless it names them.
 
 - An Observation's effective time. NHANES records carry no examination date, and FHIR R4's vital signs profiles require
   one, so every Observation is dated by the survey cycle it was collected in: `effectivePeriod` 2017-01-01 to
@@ -152,4 +192,7 @@ python -m pytest
 ```
 
 Every sample record is mapped and each resource validated against the FHIR R4 JSON schema; Bundles are byte-stable;
-lookups, Exceptional Values and refused mappings are exercised.
+lookups, Exceptional Values and refused mappings are exercised. The tests also cover document Bundles (built from a
+synthetic set of values, and from an NHANES mapping edited to write a document), profiles, the writer's directives and
+the FHIR version. The HL7 validator tests are marked `validator` and are skipped without Java and
+`FHIR_VALIDATOR_JAR`.

@@ -21,8 +21,12 @@ SEQN_SYSTEM = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.htm#SEQN"
 SUBJECT = {"subject/reference": "{Patient}"}
 #: NHANES records carry no examination date. FHIR R4's vital signs profiles require an effective time, so an
 #: Observation is dated by the survey cycle it was collected in (declared): NHANES 2017-2018 (cycle J). A record that
-#: carries its own date keeps it; the writer drops the period beside an effectiveDateTime.
+#: carries its own date keeps it: the writer drops the period beside an effectiveDateTime (OBSERVATION_RULES).
 SURVEY_CYCLE = {"effectivePeriod/start": "2017-01-01", "effectivePeriod/end": "2018-12-31"}
+#: What the NHANES Participant mappings ask the writer to do to an Observation (the Bundle rule's `@observation`,
+#: 4.1.0): keep a record's own effectiveDateTime over the survey cycle, and give a blood pressure panel both of the vital
+#: signs profile's components. No other model gets either unless its mapping names it.
+OBSERVATION_RULES = "date-time-over-period blood-pressure-components"
 PROVENANCE_REASON = ("the record's provenance and audit: FHIR's Provenance and AuditEvent require a recorded instant "
                      "with a time zone, and the record's times carry none")
 
@@ -125,9 +129,14 @@ def both(*derives):
 
 
 # ---------------------------------------------------------------- the Bundle and the Patient
-def bundle(governed: str, data: str):
+def bundle(governed: str, data: str, observation: str | None = None):
+    """The Bundle (a collection) and what it omits. `observation` is the writer's `@observation` directive: the rules
+    it applies to Observations, by name (none unless named)."""
+    attributes = {"resourceType": "Bundle", "type": "collection"}
+    if observation:
+        attributes["@observation"] = observation
     return [
-        C(governed, "Bundle", attributes={"resourceType": "Bundle", "type": "collection"}),
+        C(governed, "Bundle", attributes=attributes),
         C(data, "."),
         OMIT_C("Audit Event", PROVENANCE_REASON),
         OMIT_C("PROV Activity", PROVENANCE_REASON),

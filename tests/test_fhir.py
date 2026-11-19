@@ -235,7 +235,7 @@ def test_a_record_s_own_date_wins_over_the_survey_cycle():
     obs = Node("resource", k, children=[Node("resourceType", k, text="Observation"),
                                         Node("effectiveDateTime", k, text="2018-03-04"),
                                         Node("effectivePeriod", k, children=[Node("start", k, text="2017-01-01")])])
-    Builder._profiles(obs)
+    Builder._profiles(obs, {"date-time-over-period"})         # the NHANES mappings' @observation (4.1.0)
     assert obs.child("effectivePeriod") is None and obs.child("effectiveDateTime").text == "2018-03-04"
 
 
@@ -397,3 +397,196 @@ def test_a_prevention_code_is_nhanes_s_own_never_icd10cm(engine):
                         assert c["code"].endswith("P") and rc.get("text", "").lower().startswith("prevent"), (f.name, rc)
                         n += 1
     assert n >= 10, n
+
+
+# ---------------------------------------------------------------- document Bundles, profiles, directives, versions (4.1.0)
+from sdc_mapper import MappingError  # noqa: E402
+from sdc_gdr2fhir import writer  # noqa: E402
+
+CORE = "http://hl7.org/fhir/StructureDefinition/"          # FHIR's own profiles: a synthetic test claims no guide's
+LOINC_SYSTEM = "http://loinc.org"
+
+
+def synthetic(values: dict[str, str], instance_id: str = "test-instance", version: str = "R4") -> dict:
+    """A Bundle written by the Builder from paths (`Bundle/entry#comp/resource/status`) and their values, in order."""
+    b = writer.Builder(version)
+    for path, text in values.items():
+        b.put([(step, ("t",)) for step in path.split("/")], text)
+    return json.loads(b.finish(instance_id))
+
+
+PATIENT_ENTRY = {"Bundle/entry#pat/resource/resourceType": "Patient",
+                 "Bundle/entry#pat/resource/identifier/value": "p-1"}
+COMPOSITION_ENTRY = {"Bundle/entry#comp/resource/resourceType": "Composition",
+                     "Bundle/entry#comp/resource/meta/profile": CORE + "Composition",
+                     "Bundle/entry#comp/resource/status": "final",
+                     "Bundle/entry#comp/resource/type/text": "Synthetic test document",
+                     "Bundle/entry#comp/resource/subject/reference": "{Patient}",
+                     "Bundle/entry#comp/resource/date": "2026-11-19",
+                     "Bundle/entry#comp/resource/author/reference": "{Patient}",
+                     "Bundle/entry#comp/resource/title": "Synthetic test document"}
+DOCUMENT = {"Bundle/resourceType": "Bundle", "Bundle/type": "document", "Bundle/timestamp": "2026-11-19T10:00:00Z",
+            "Bundle/meta/profile": CORE + "Bundle", **PATIENT_ENTRY, **COMPOSITION_ENTRY}
+
+
+def test_a_document_bundle_has_its_composition_first_an_identifier_and_a_timestamp():
+    """bdl-9, bdl-10, bdl-11: the record put the Patient first; the document's Composition is moved before it."""
+    b = synthetic(DOCUMENT)
+    assert b["type"] == "document" and b["timestamp"] == "2026-11-19T10:00:00Z"
+    assert b["identifier"] == {"system": writer.RECORD_SYSTEM, "value": "test-instance"}
+    assert [e["resource"]["resourceType"] for e in b["entry"]] == ["Composition", "Patient"]
+    composition, patient = b["entry"]
+    assert composition["resource"]["subject"]["reference"] == patient["fullUrl"]
+    assert composition["resource"]["meta"]["profile"] == [CORE + "Composition"] and b["meta"]["profile"] == [CORE + "Bundle"]
+
+
+def test_a_document_bundle_without_a_timestamp_is_refused():
+    with pytest.raises(MappingError, match="bdl-10"):
+        synthetic({k: v for k, v in DOCUMENT.items() if k != "Bundle/timestamp"})
+
+
+def test_a_document_bundle_without_a_composition_first_is_refused():
+    with pytest.raises(MappingError, match="bdl-11"):
+        synthetic({k: v for k, v in DOCUMENT.items() if k not in COMPOSITION_ENTRY})
+    with pytest.raises(MappingError, match="bdl-11"):
+        synthetic({**DOCUMENT, "Bundle/@first": "Patient Composition"})
+
+
+def test_a_document_bundle_s_own_identifier_needs_a_system_and_a_value():
+    with pytest.raises(MappingError, match="bdl-9"):
+        synthetic({**DOCUMENT, "Bundle/identifier/value": "doc-1"})
+    b = synthetic({**DOCUMENT, "Bundle/identifier/system": "urn:ietf:rfc:3986", "Bundle/identifier/value": "urn:uuid:"
+                   "0f6b4d7e-8a51-4f6e-9a0e-3a1f2b3c4d5e"})
+    assert b["identifier"]["system"] == "urn:ietf:rfc:3986"          # the mapping's own wins over the record's
+    with pytest.raises(MappingError, match="identifier repeats"):
+        synthetic({**DOCUMENT, "Bundle/identifier#1/system": "urn:ietf:rfc:3986", "Bundle/identifier#1/value": "a",
+                   "Bundle/identifier#2/system": "urn:ietf:rfc:3986", "Bundle/identifier#2/value": "b"})
+
+
+def test_a_bundle_is_a_collection_with_the_patient_first_unless_the_mapping_says_otherwise():
+    plain = {"Bundle/resourceType": "Bundle", **COMPOSITION_ENTRY, **PATIENT_ENTRY}
+    b = synthetic(plain)
+    assert b["type"] == "collection" and [e["resource"]["resourceType"] for e in b["entry"]] == ["Patient", "Composition"]
+    b = synthetic({**plain, "Bundle/@first": "Composition Patient"})
+    assert [e["resource"]["resourceType"] for e in b["entry"]] == ["Composition", "Patient"]
+    assert not any(k.startswith("@") for k in b)                     # a directive is read, never written
+
+
+@pytest.mark.parametrize("extra, message", [
+    ({"Bundle/type": "transaction"}, "collection and document"),
+    ({"Bundle/@frist": "Patient"}, "not a directive"),
+    ({"Bundle/@first": "Pateint"}, "not a resource"),
+    ({"Bundle/@observation": "survey-cycle"}, "not one of"),
+])
+def test_a_bundle_type_or_directive_the_writer_does_not_know_is_refused(extra, message):
+    with pytest.raises(MappingError, match=message):
+        synthetic({"Bundle/resourceType": "Bundle", **PATIENT_ENTRY, **extra})
+
+
+def test_an_entry_may_declare_more_than_one_profile():
+    b = synthetic({"Bundle/resourceType": "Bundle", **PATIENT_ENTRY,
+                   "Bundle/entry#pat/resource/meta/profile#1": CORE + "Patient",
+                   "Bundle/entry#pat/resource/meta/profile#2": CORE + "DomainResource"})
+    assert b["entry"][0]["resource"]["meta"]["profile"] == [CORE + "Patient", CORE + "DomainResource"]
+
+
+def _observation_bundle(directive: str | None) -> dict:
+    o = "Bundle/entry#bp/resource"
+    values = {"Bundle/resourceType": "Bundle", **PATIENT_ENTRY,
+              f"{o}/resourceType": "Observation", f"{o}/status": "final",
+              f"{o}/code/coding/system": LOINC_SYSTEM, f"{o}/code/coding/code": writer.BP_PANEL,
+              f"{o}/effectiveDateTime": "2018-03-04", f"{o}/effectivePeriod/start": "2017-01-01",
+              f"{o}/component/code/coding/system": LOINC_SYSTEM,
+              f"{o}/component/code/coding/code": writer.BP_COMPONENTS[0],
+              f"{o}/component/valueQuantity/value": "120"}
+    if directive is not None:
+        values["Bundle/@observation"] = directive
+    return next(e["resource"] for e in synthetic(values)["entry"] if e["resource"]["resourceType"] == "Observation")
+
+
+def test_the_observation_rules_apply_only_where_the_mapping_names_them():
+    """4.1.0: the survey-cycle dating rule and the blood pressure fill are the NHANES mappings', not the writer's."""
+    none = _observation_bundle(None)
+    assert "effectivePeriod" in none and "effectiveDateTime" in none and len(none["component"]) == 1
+    dated = _observation_bundle("date-time-over-period")
+    assert "effectivePeriod" not in dated and len(dated["component"]) == 1
+    both = _observation_bundle("date-time-over-period blood-pressure-components")
+    assert [c["code"]["coding"][0]["code"] for c in both["component"]] == list(writer.BP_COMPONENTS)
+    assert both["component"][1]["dataAbsentReason"]["coding"][0]["code"] == "unknown"
+
+
+def test_the_nhanes_participant_mappings_switch_the_observation_rules_on():
+    for model in MODELS:
+        doc = yaml.safe_load(mapping_path(model[1]).read_text())
+        attributes = next(r for r in doc["rules"] if r.get("to") == "Bundle")["attributes"]
+        if "participant" in model[0]:
+            assert attributes["@observation"].split() == list(writer.OBSERVATION_RULES), model
+        else:
+            assert "@observation" not in attributes, model           # the medication models write no Observation
+
+
+def test_without_the_directive_a_blood_pressure_reading_is_not_filled(engine, tmp_path):
+    xml, r = with_participant(engine, lambda b: any(
+        "dataAbsentReason" in c for o in resources(b, "Observation") for c in o.get("component", [])))
+
+    def change(d):
+        next(r for r in d["rules"] if r.get("to") == "Bundle")["attributes"].pop("@observation")
+    off = bundle(run(engine, PARTICIPANT, xml, edited(PARTICIPANT, tmp_path, change)))
+    panels = [o for o in resources(off, "Observation") if o["code"].get("text") == "Blood pressure panel"]
+    assert panels and not any("dataAbsentReason" in c for o in panels for c in o["component"])
+
+
+def test_a_mapping_makes_a_document_bundle_end_to_end(engine, tmp_path):
+    """The Bundle rule's attributes carry the type, the timestamp, a Composition and its profile: a document of an
+    NHANES record, through the engine, with the Composition first (a test of the path, not an NHANES mapping)."""
+    c = "entry#comp/resource"
+
+    def change(d):
+        next(r for r in d["rules"] if r.get("to") == "Bundle")["attributes"].update({
+            "type": "document", "timestamp": "2026-11-19T10:00:00Z", f"{c}/resourceType": "Composition",
+            f"{c}/meta/profile": CORE + "Composition", f"{c}/status": "final", f"{c}/type/text": "Synthetic test",
+            f"{c}/subject/reference": "{Patient}", f"{c}/date": "2026-11-19", f"{c}/author/reference": "{Patient}",
+            f"{c}/title": "Synthetic test"})
+    xml = records(PARTICIPANT)[0].read_bytes()
+    r = run(engine, PARTICIPANT, xml, edited(PARTICIPANT, tmp_path, change))
+    assert r.outcome == VALID, r.errors
+    b = bundle(r)
+    assert b["type"] == "document" and b["entry"][0]["resource"]["resourceType"] == "Composition"
+    assert b["entry"][0]["resource"]["subject"]["reference"] == b["entry"][1]["fullUrl"]
+    assert b["entry"][1]["resource"]["resourceType"] == "Patient"
+
+
+def test_the_fhir_version_is_the_mapping_s_target_version(engine, tmp_path):
+    """R4 is the one version shipped; the version a mapping names picks the schema, and another is refused."""
+    assert set(writer.VERSIONS) == {"R4"} and writer.FHIR_VERSION == writer.VERSIONS["R4"].number == "4.0.1"
+    mapping = load_mapping(mapping_path(PARTICIPANT[1]))
+    assert FHIRMapper().target_version == FHIRMapper.for_mapping(mapping).target_version == "R4"
+    r5 = edited(PARTICIPANT, tmp_path, lambda d: d["target"].update(version="R5"))
+    with pytest.raises(MappingError, match="R5"):
+        FHIRMapper.for_mapping(r5)
+    with pytest.raises(MappingError, match="R5"):
+        writer.Builder("R5")
+    r = run(engine, PARTICIPANT, records(PARTICIPANT)[0].read_bytes(), r5)
+    assert r.outcome == ERROR and "R5" in r.errors[0]["reason"]
+
+
+# HL7's validator with an implementation guide's package, where Java and the validator are installed. The guide is
+# named by FHIR_VALIDATOR_IG (default the HL7 Europe Laboratory Report guide the first SDCHealth proof uses). The
+# synthetic document claims only FHIR's own profiles: this proves the path (the guide loads, the document validates);
+# a mapping's claims to the guide's profiles are tested with that mapping.
+IG = os.environ.get("FHIR_VALIDATOR_IG", "hl7.fhir.eu.laboratory#2.1.0")
+
+
+def hl7_validate(path: Path, ig: str | None = None) -> subprocess.CompletedProcess:
+    cmd = ["java", "-jar", VALIDATOR, str(path), "-version", writer.FHIR_VERSION] + (["-ig", ig] if ig else [])
+    return subprocess.run(cmd, capture_output=True, text=True)
+
+
+@pytest.mark.validator
+@pytest.mark.skipif(not (shutil.which("java") and VALIDATOR and Path(VALIDATOR).exists()),
+                    reason="needs Java and FHIR_VALIDATOR_JAR (the HL7 FHIR validator, validator_cli.jar)")
+def test_the_hl7_validator_with_a_guide_finds_no_errors_in_a_document(tmp_path):
+    f = tmp_path / "document.json"
+    f.write_text(json.dumps(synthetic(DOCUMENT), indent=2))
+    out = hl7_validate(f, IG)
+    assert "*FAILURE*" not in out.stdout and out.returncode == 0, out.stdout[-4000:]

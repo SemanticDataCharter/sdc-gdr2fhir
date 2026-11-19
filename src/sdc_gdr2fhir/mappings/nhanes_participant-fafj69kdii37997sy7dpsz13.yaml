@@ -15,7 +15,7 @@ target:
   version: R4
 rules:
   # NHANES Participant Governed Record
-  - {cluster: frt9cct9bd5gpc4rkf76ub8e, to: Bundle, attributes: {resourceType: Bundle, type: collection}}
+  - {cluster: frt9cct9bd5gpc4rkf76ub8e, to: Bundle, attributes: {resourceType: Bundle, type: collection, '@observation': date-time-over-period blood-pressure-components}}
   # NHANES Participant
   - {cluster: qwyg9ps31mb50rfvom7tygjz, to: .}
   # Audit Event
