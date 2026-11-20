@@ -167,24 +167,28 @@ The mapping targets the HL7 Europe Laboratory Report guide, **version 2.1.0, pac
   decide. The spec cites the map for each rule (`tools/specs/sdchealth_lab_report.py`).
 
 **HL7's FHIR validator 7.0.6, `-version 4.0.1 -ig hl7.fhir.eu.laboratory#2.1.0`, on the 15 sample Bundles
-(20 November 2026): every Bundle fails, with 75 errors in all, 5 in each.** All of them come from what the model does
-not hold. The Bundles pass the FHIR R4 JSON schema.
+(20 November 2026): every Bundle fails, with 33 errors in all.** All of them come from what the model does not hold.
+The Bundles pass the FHIR R4 JSON schema.
 
 | Errors | What the validator reports | Cause |
 |---|---|---|
-| 45 | `Composition.section`: minimum 1, found 0. The DiagnosticReport's link to the Composition then matches neither Composition-eu-lab nor R5's Composition profile (15 each). | The model has no results, so no section (below). Validating the Composition alone against R5's profile gives only the section error. |
-| 30 | `ServiceRequest.identifier`: minimum 1, found 0. `DiagnosticReport.basedOn` then matches no ServiceRequest-eu-lab (15 each). | The model holds no order identifier. |
+| 30 | `ServiceRequest.identifier`: minimum 1, found 0. `DiagnosticReport.basedOn` then matches no ServiceRequest-eu-lab (15 each). | The model holds no order identifier, and neither does the record's metadata. |
+| 3 | `Composition.section`: minimum 1, found 0, in one record. The DiagnosticReport's link to the Composition then matches no Composition profile (2). | Its comment is an Exceptional Value (NAV), and the comment is the only section the model can fill. The profile requires a section's text. |
 
-Warnings: no narrative in any resource (dom-6), v2-0203 `NI` is not in R4's extensible identifier-type value set, and
-the attachment's content could not be checked (its URL is a URN).
+Warnings: no narrative in the resources other than the section (dom-6), v2-0203 `NI` is not in R4's extensible
+identifier-type value set, and the attachment's content could not be checked (its URL is a URN).
 
-The first run found 124 errors. The 49 on this side are fixed:
+The first run found 124 errors. The 91 on this side are fixed:
 - **The recipient's birth date** (30 errors): the samples gave none, and PatientEuCore requires one. They do now.
 - **The attachment URLs** (15 errors): the validator refuses `example.org`. The samples now use URNs (`urn:uuid:`).
 - **The ASKU on sex for clinical use** (4 errors): the extension's CodeableConcept had data-absent-reason only on its
   text, and the value set's binding is required. An Exceptional Value on the text of an extension's CodeableConcept
   now also writes the coding data-absent-reason `unknown`, which the value set includes and which subsumes
   asked-unknown, not-asked, asked-declined and temp-unknown. The extension on the text keeps the exact code.
+- **The Composition section** (42 errors): the guide's map sends the result comments to a section's text, or to
+  `DiagnosticReport.conclusion`, and the mapping had used only the conclusion. They now go to both. The section is
+  Composition-eu-lab's `annotations` slice: LOINC 48767-8, text only, with no entries. Its narrative is the comment,
+  escaped, as XHTML.
 
 **Needs unreleased versions.** The mapping says `reference_model: true`: it reads the record's reference-model parts
 as well as its data cluster. Those are the subject, the provider, the four Participations, the Attestation and the
@@ -219,12 +223,15 @@ system; v2-0203 identifier types; organization type; sex for clinical use. Every
     at its `committed` time);
   - custodian (the Organization);
   - the information recipient (extension);
-  - the link to the DiagnosticReport (extension).
+  - the link to the DiagnosticReport (extension);
+  - the language: the record's `dm-language`;
+  - a section (the guide's `annotations`): the result comments as narrative.
 - **DiagnosticReport:**
   - identifier, code, subject and status, as the Composition's;
   - `issued` and `effectivePeriod`;
   - the presented form: title, URL, media type, size;
   - `conclusion`: the result comments;
+  - the language, as the Composition's;
   - `basedOn` the ServiceRequest;
   - the link to the Composition (extension).
 - **Patient** (the subject): name, identifiers, gender, birth date, deceased, address, telecom, and the sex for
@@ -245,8 +252,22 @@ Several entries share a resource type, so each is tagged in the mapping (`entry#
   source does not say) and intent is `order` (the Participation names the order's placer).
 - **Document event type:** it is coded in SNOMED CT, and the guide's study-type category is bound (required) to LOINC
   codes. So it goes in `Composition.event.code`, as HL7 Europe Base's document map allows for R4.
-- **Result comments:** they go in `DiagnosticReport.conclusion`, which the guide's map allows. A section's text is
-  XHTML narrative, which this mapping does not write from plain text.
+- **Result comments:** they go to both places the guide's map allows: a Composition section's text and
+  `DiagnosticReport.conclusion`.
+  - The section is the `annotations` slice. Its title is "Comments, interpretation and recommendations" and its code is
+    the slice's, LOINC 48767-8 (looked up: active, LOINC 2.83).
+  - Its narrative status is `additional`: the section has no entries for the text to be generated from.
+  - A plain-text value written to a Narrative's `div` is escaped and put in the XHTML `div` FHIR requires (new in the
+    writer).
+  - A comment that is an Exceptional Value writes no section, and its reason is on the conclusion.
+- **The record's metadata:** the attributes under a record's root are the record's own, and a constant
+  `{record:<name>}` reads one (new in the writer).
+  - `dm-language` is the Composition's and the DiagnosticReport's language.
+  - `instance_id` is the Bundle's identifier.
+  - `creation_timestamp` and `current-state` could be the Bundle's timestamp and the document's status. They are not
+    mapped: the authored date and the workflow are.
+  - The model's own metadata (creator, publisher, rights) describes the model, not the report, so it fills no report
+    element.
 - **Bundle identifier:** the record's identifier has no system (its issuer is a name), and bdl-9 needs one. The Bundle
   carries the record's instance id instead.
 - **Document status:** the workflow's state is the Composition's status, and the same code is the DiagnosticReport's
@@ -272,14 +293,15 @@ Several entries share a resource type, so each is tagged in the mapping (`entry#
 - an identifier's issuing country: FHIR's Identifier has no such element.
 
 **What the guide asks for that the model does not give.**
-- **No results, specimens or body structures.** So the Bundle has no Observation, Specimen or BodyStructure. It also
-  has none of the Composition sections the guide requires (at least one, each with a title, a code and narrative).
+- **No results, specimens or body structures.** So the Bundle has no Observation, Specimen or BodyStructure, and no
+  specialty sections. The only section it can have is the comments' (the guide's `annotations`), which the validator
+  accepts but the guide's prose does not expect to stand alone.
 - **A Health Professional has no role, specialty or organisation**, so the Bundle has no PractitionerRole.
 - **The intended recipient can only be a patient.**
 - **No order identifier.** ServiceRequest-eu-lab requires one.
 - **A patient's birth date is optional.** PatientEuCore requires one, so a record without it fails the guide.
 - **A record dated by day alone** cannot make a document Bundle: the Bundle's timestamp is an instant, with a time
-  and a zone.
+  and a zone. The record's `creation_timestamp`, a dateTime, could be the timestamp instead (not mapped).
 
 ## Exceptional Values: every one preserved
 

@@ -163,6 +163,28 @@ def test_every_exceptional_value_is_preserved(engine, mapping):
     assert found == {"ASKU": PRESERVED, "NAV": PRESERVED, "UNK": PRESERVED, "ASKR": PRESERVED}
 
 
+def test_the_comments_are_the_guide_s_annotations_section_and_the_conclusion(engine, mapping):
+    """Composition-eu-lab's `annotations` section (LOINC 48767-8, no entries): the comment as XHTML narrative, and the
+    same comment as the DiagnosticReport's conclusion. The record whose comment is an Exceptional Value has no
+    section; the reason is on the conclusion."""
+    for f in records():
+        b = json.loads(run(engine, mapping, f).files["Bundle.json"])
+        comp, dr = b["entry"][0]["resource"], b["entry"][1]["resource"]
+        if "conclusion" not in dr:
+            assert "section" not in comp and dr["_conclusion"]["extension"][0]["valueCode"] == "temp-unknown", f.name
+            continue
+        [section] = comp["section"]
+        assert section["code"]["coding"][0]["code"] == "48767-8" and "entry" not in section
+        assert section["text"]["status"] == "additional"
+        assert section["text"]["div"] == f'<div xmlns="http://www.w3.org/1999/xhtml">{dr["conclusion"]}</div>'
+
+
+def test_the_record_s_language_is_the_documents(engine, mapping):
+    """dm-language, an attribute of the record's root (fixed by the model): `{record:dm-language}`."""
+    b = json.loads(run(engine, mapping, records()[0]).files["Bundle.json"])
+    assert b["entry"][0]["resource"]["language"] == b["entry"][1]["resource"]["language"] == "en-US"
+
+
 def test_an_unknown_sex_for_clinical_use_still_has_a_code_from_its_required_value_set(engine, mapping):
     """The ASKU: the extension's CodeableConcept carries data-absent-reason `unknown`, which Sex Parameter for
     Clinical Use includes, and its text the exact reason, asked-unknown."""

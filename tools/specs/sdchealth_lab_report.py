@@ -107,12 +107,14 @@ RULES = [
     V("Document Header Title", f"{COMP}/title", attributes={
         "resourceType": "Composition", "meta/profile": f"{LAB}Composition-eu-lab",
         "extension#dr/url": COMPOSITION_DR, "extension#dr/valueReference/reference": "{DiagnosticReport}",
-        "subject/reference": "{entry#patient}", "author/reference": "{entry#author}"},
+        "subject/reference": "{entry#patient}", "author/reference": "{entry#author}",
+        # the record's language (its dm-language, fixed by the model): what its text is written in
+        "language": "{record:dm-language}"},
       # the DiagnosticReport's constant members: written with the Composition, so the two always go together
       also=[k(f"{DR}/resourceType", "DiagnosticReport"), k(f"{DR}/meta/profile", f"{LAB}DiagnosticReport-eu-lab"),
             k(f"{DR}/extension#comp/url", DR_COMPOSITION),
             k(f"{DR}/extension#comp/valueReference/reference", "{Composition}"),
-            k(f"{DR}/subject/reference", "{entry#patient}")]),
+            k(f"{DR}/subject/reference", "{entry#patient}"), k(f"{DR}/language", "{record:dm-language}")]),
     # MAP header.date -> Composition.date; DOC (report) header.date -> DiagnosticReport.issued; the document's time is
     # the Bundle's timestamp (bdl-10). An instant needs a time and a zone: a record dated by day alone is refused.
     V("Authored Date", "timestamp", also=[{"to": f"{COMP}/date", "transform": "copy"},
@@ -172,9 +174,19 @@ RULES = [
     C("Lab Report Body", "."),
     C("Lab Report Result Data Section", "."),
     # MAP body.resultData.commentsInterpretationAndRecommendations -> Composition section:text, and/or
-    # DiagnosticReport.conclusion. A section's text is XHTML narrative, which this mapping does not write from a
-    # record's plain text: the conclusion.
-    V("Lab Report Result Data Comments Interpretation And Recommendations", f"{DR}/conclusion"),
+    # DiagnosticReport.conclusion: both. The section is Composition-eu-lab's `annotations` slice: "narrative
+    # expression of comments accompanying the report, such as suggestions for evaluation", no entries, its code the
+    # slice's pattern, LOINC 48767-8 (Annotation comment [Interpretation] Narrative; LOINC 2.83, looked up on
+    # tx.fhir.org 20 November 2026). Its text is the comment, escaped, as XHTML (the writer); `additional`, since the
+    # section has no entries the text could be generated from. A comment the record does not have (an Exceptional
+    # Value) writes no section: the reason is on the conclusion.
+    V("Lab Report Result Data Comments Interpretation And Recommendations", f"{DR}/conclusion",
+      also=[{"to": f"{COMP}/section#notes/text/div", "transform": "copy"},
+            k(f"{COMP}/section#notes/text/status", "additional"),
+            k(f"{COMP}/section#notes/title", "Comments, interpretation and recommendations"),
+            k(f"{COMP}/section#notes/code/coding/system", "http://loinc.org"),
+            k(f"{COMP}/section#notes/code/coding/code", "48767-8"),
+            k(f"{COMP}/section#notes/code/coding/display", "Annotation comment [Interpretation] Narrative")]),
     C("Lab Report Supporting Information Section", "."),
     # MAP body.supportingInformation.sexForClinicalUse -> Patient extension:sex-for-clinical-use (PatientEuCore), on
     # the Patient the record's subject makes (=entry#patient).

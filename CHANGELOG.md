@@ -4,7 +4,8 @@
 
 The first SDCHealth mapping: the Laboratory Report, as a FHIR R4 document Bundle following the HL7 Europe Laboratory
 Report guide 2.1.0 (`hl7.fhir.eu.laboratory#2.1.0`). HL7's FHIR validator 7.0.6 with the guide fails every sample
-Bundle, with 5 errors each, all from what the model does not hold: a Composition section and an order identifier.
+Bundle: 33 errors, all from what the model does not hold. 30 are the order identifier; 3 are a section in the one
+record whose comment is an Exceptional Value.
 Needs sdcreader 4.5.0 and sdc-mapper 4.4.0 (unreleased), so the `sdc-mapper` pin must become `>=4.4` at release.
 
 - **SDCHealth Laboratory Report** (`zptekdommw56yiz9lqjy5dga`): its mapping (100 rules, `reference_model: true`) and
@@ -16,6 +17,12 @@ Needs sdcreader 4.5.0 and sdc-mapper 4.4.0 (unreleased), so the `sdc-mapper` pin
     that the model lacks.
 - **Writer: references by tag.** `{entry#author}` is the fullUrl of the entry tagged `entry#author`, for a Bundle
   with several entries of one type. `{Patient}` still names the one Patient. The NHANES output does not change.
+- **Narrative from plain text.** A plain-text value written to a Narrative's `div` is escaped and put in the XHTML
+  `div` FHIR requires. The Laboratory Report's comments are a Composition section this way: the guide's `annotations`
+  slice, beside `DiagnosticReport.conclusion`. A comment that is an Exceptional Value writes no section.
+- **The record's metadata.** A constant `{record:<name>}` is the attribute of that name under the record's root
+  (`dm-language`, `creation_timestamp`, `current-state`, ...), and a record without it writes nothing there. The
+  Laboratory Report's language is the record's `dm-language`.
 - **An unknown extension value keeps a code.** An Exceptional Value on the text of an extension's CodeableConcept
   (data-absent-reason `unknown` or a concept under it) also writes the coding data-absent-reason `unknown`, so a
   required binding that includes it is met (Sex Parameter for Clinical Use). The extension on the text keeps the

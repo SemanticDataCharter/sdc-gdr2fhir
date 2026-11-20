@@ -607,3 +607,14 @@ def test_a_reference_may_name_a_tagged_entry_when_several_share_a_type():
     assert urls[comp["attester"][0]["party"]["reference"]]["name"][0]["family"] == "Legal"
     with pytest.raises(MappingError, match="0 entries tagged entry#nobody"):
         synthetic({**DOCUMENT, "Bundle/entry#comp/resource/custodian/reference": "{entry#nobody}"})
+
+
+def test_plain_text_in_a_narrative_div_is_escaped_xhtml_and_a_record_attribute_is_the_record_s():
+    from types import SimpleNamespace
+    from sdc_gdr2fhir.mapper import _record_value
+    div = [("section", ("k",)), ("text", ("k",)), ("div", ("k",))]
+    assert _record_value((div, "a < b & c", None), None)[1] == \
+        '<div xmlns="http://www.w3.org/1999/xhtml">a &lt; b &amp; c</div>'
+    record = SimpleNamespace(attributes={"dm-language": "en-US"})
+    assert _record_value(([("language", ("k",))], "{record:dm-language}", None), record)[1] == "en-US"
+    assert _record_value(([("language", ("k",))], "{record:source_instance_id}", None), record) is None

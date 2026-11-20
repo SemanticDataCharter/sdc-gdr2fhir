@@ -13,6 +13,8 @@ data-absent-reason has no code for, the iso21090-nullFlavor extension with the e
 """
 from __future__ import annotations
 
+import html
+
 from sdc_mapper import (DECLARED, JOIN, LOOKUP, LOOKUP_TRANSFORMS, NOT_REPRESENTABLE, PRESERVED, EVRule, IncompleteMapping, MapResult,
                         MappingError, ValueOutcome, join_depth, place)
 from sdcreader.record import EXCEPTIONAL_VALUES
@@ -91,14 +93,21 @@ class FHIRMapper:
                     if p.units_attribute == "code" and v.units:   # a Quantity: the unit as people read it
                         writes.append((self._steps(p.steps, "unit"), v.units.symbol, None))
             own = list(p.steps[:-1])           # the element the value is written in (a valueQuantity)
+            # an `also` copy with no value to copy (an Exceptional Value) leaves its tagged element out altogether: a
+            # section with a title and no text is not written for a comment the record does not have
+            empty = [_tagged(e.steps) for e, sub in zip(p.extras, p.rule.also)
+                     if e.text is None and sub.get("transform", "copy") == "copy" and _tagged(e.steps)]
             for e in p.extras:
                 if e.text is None:
                     continue
                 if v.exceptional and list(e.steps[: len(own)]) == own:
                     continue                      # with no value, nothing beside it (a quantity's system) either
+                if v.exceptional and any(list(e.steps[: len(t)]) == t for t in empty):
+                    continue
                 writes.append((self._steps(e.steps, e.attribute), e.text, None))
             writes += [(self._resource(p.steps) + [(part, ("attr",)) for part in k.split("/")], val, None)
                        for k, val in p.attributes.items()]
+            writes = [w for w in (_record_value(w, record) for w in writes) if w is not None]
             for w in writes:
                 if any(key == JOIN for _, key in w[0]):
                     later.append(w)             # '=name' joins wait until every element they may join exists
@@ -174,6 +183,30 @@ class FHIRMapper:
     @staticmethod
     def _where(p) -> str:
         return _join(p.steps) + (f"/{p.attribute}" if p.attribute else "")
+
+
+def _tagged(steps) -> list:
+    """The steps to the deepest tagged element (`section#notes`) on a path, or [] if it has none."""
+    for i in range(len(steps) - 1, -1, -1):
+        if "#" in steps[i][0]:
+            return list(steps[: i + 1])
+    return []
+
+
+def _record_value(write, record):
+    """A write as the Bundle takes it.
+    - A constant `{record:<name>}` is the record's own attribute of that name (`dm-language`, `creation_timestamp`,
+      `current-state`, ...: the attributes under the record's root). A record without it writes nothing there.
+    - Plain text written to a Narrative's `div` is that text, escaped, in the XHTML `div` FHIR requires."""
+    steps, text, position = write
+    if isinstance(text, str) and text.startswith("{record:") and text.endswith("}"):
+        text = (getattr(record, "attributes", None) or {}).get(text[len("{record:"):-1]) or None
+        if text is None:
+            return None
+    if steps and steps[-1][0] == "div" and len(steps) > 1 and steps[-2][0].split("#", 1)[0] == "text" \
+            and isinstance(text, str) and not text.lstrip().startswith("<div"):
+        text = f'<div xmlns="http://www.w3.org/1999/xhtml">{html.escape(text, quote=False)}</div>'
+    return steps, text, position
 
 
 def _value_at(steps) -> int:
