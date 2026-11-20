@@ -590,3 +590,20 @@ def test_the_hl7_validator_with_a_guide_finds_no_errors_in_a_document(tmp_path):
     f.write_text(json.dumps(synthetic(DOCUMENT), indent=2))
     out = hl7_validate(f, IG)
     assert "*FAILURE*" not in out.stdout and out.returncode == 0, out.stdout[-4000:]
+
+
+def test_a_reference_may_name_a_tagged_entry_when_several_share_a_type():
+    """`{entry#author}` is the fullUrl of the entry tagged `entry#author` (4.2.0): a document has several
+    Practitioners; `{Practitioner}` would be ambiguous, and a tag no entry carries is refused."""
+    b = synthetic({**DOCUMENT,
+                   "Bundle/entry#author/resource/resourceType": "Practitioner",
+                   "Bundle/entry#author/resource/name/family": "Author",
+                   "Bundle/entry#legal/resource/resourceType": "Practitioner",
+                   "Bundle/entry#legal/resource/name/family": "Legal",
+                   "Bundle/entry#comp/resource/attester/mode": "legal",
+                   "Bundle/entry#comp/resource/attester/party/reference": "{entry#legal}"})
+    urls = {e["fullUrl"]: e["resource"] for e in b["entry"]}
+    comp = b["entry"][0]["resource"]
+    assert urls[comp["attester"][0]["party"]["reference"]]["name"][0]["family"] == "Legal"
+    with pytest.raises(MappingError, match="0 entries tagged entry#nobody"):
+        synthetic({**DOCUMENT, "Bundle/entry#comp/resource/custodian/reference": "{entry#nobody}"})

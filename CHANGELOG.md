@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased (planned 4.2.0)
+
+The first SDCHealth mapping: the Laboratory Report, as a FHIR R4 document Bundle following the HL7 Europe Laboratory
+Report guide 2.1.0 (`hl7.fhir.eu.laboratory#2.1.0`). HL7's FHIR validator 7.0.6 with the guide fails every sample
+Bundle, with 5 errors each, all from what the model does not hold: a Composition section and an order identifier.
+Needs sdcreader 4.5.0 and sdc-mapper 4.4.0 (unreleased), so the `sdc-mapper` pin must become `>=4.4` at release.
+
+- **SDCHealth Laboratory Report** (`zptekdommw56yiz9lqjy5dga`): its mapping (100 rules, `reference_model: true`) and
+  15 synthetic sample records, valid against the model's XSD 1.1 schema. Every code in them was looked up.
+  - The Bundle holds a Composition, a DiagnosticReport, the Patient, a Practitioner for each professional party, the
+    custodian Organization, the intended recipient and a ServiceRequest for the order placer.
+  - For the 15 samples: 359 lookup, 1,380 declared, 154 not representable, and 5 Exceptional Values, all preserved.
+  - The README's new section lists the declared choices, what FHIR or the guide cannot hold, and what the guide asks
+    that the model lacks.
+- **Writer: references by tag.** `{entry#author}` is the fullUrl of the entry tagged `entry#author`, for a Bundle
+  with several entries of one type. `{Patient}` still names the one Patient. The NHANES output does not change.
+- **An unknown extension value keeps a code.** An Exceptional Value on the text of an extension's CodeableConcept
+  (data-absent-reason `unknown` or a concept under it) also writes the coding data-absent-reason `unknown`, so a
+  required binding that includes it is met (Sex Parameter for Clinical Use). The extension on the text keeps the
+  exact code. The NHANES output does not change.
+- **`tools/build_mapping.py`:**
+  - It walks the model's data cluster (the one `ms-` element its complex type names).
+  - A spec may set `REFERENCE_MODEL` and `PARTIES`, and name the reference-model parts by label, by the reference
+    model's element names, or with `element` rules. The coverage check then includes every part's values.
+  - It reads an ordinal's state definitions, written without `rdfs:Class`.
+  - The NHANES mapping files it regenerates are byte-identical.
+- `tools/make_lab_report_samples.py` writes the Laboratory Report samples from the catalog's instance template.
+
 ## 4.1.0 (2026-11-19)
 
 Engine changes so that a mapping can ask for the FHIR output an implementation guide expects: document Bundles,

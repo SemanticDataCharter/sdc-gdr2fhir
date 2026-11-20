@@ -10,7 +10,8 @@ version shipped (VERSIONS). From those it
 - writes an element FHIR repeats as an array, and refuses a second value where FHIR allows one;
 - writes numbers and booleans as JSON numbers and booleans, from the record's own text, so the bytes are stable;
 - gives every entry an id and a `urn:uuid` fullUrl derived from the record's instance id, and replaces a reference
-  written `{Patient}` with the fullUrl of the Bundle's one Patient;
+  written `{Patient}` with the fullUrl of the Bundle's one Patient, and one written `{entry#author}` with the fullUrl
+  of the entry the mapping tagged `entry#author` (for a Bundle with several entries of one type);
 - validates every resource, and the Bundle around them, against the FHIR JSON schema, and refuses a Bundle that
   does not conform;
 - writes a Bundle of the type the mapping gives it (`type`: `collection`, the default, or `document`), and refuses a
@@ -226,6 +227,8 @@ class Builder:
             at = 1 if resource.children and resource.children[0].element == "resourceType" else 0
             resource.children.insert(at, Node("id", ("id",), text=u))
             urls.setdefault(kinds[id(e)], []).append(f"urn:uuid:{u}")
+            if "#" in e.name:                                       # a tagged entry: `{entry#tag}` names it
+                urls.setdefault(f"entry#{e.name.split('#', 1)[1]}", []).append(f"urn:uuid:{u}")
         identifier = own or Node(                                    # the mapping's own, or the record's instance id
             "identifier", ("id",), children=[Node("system", ("id",), text=RECORD_SYSTEM),
                                              Node("value", ("id",), text=instance_id)])
@@ -285,7 +288,8 @@ class Builder:
             kind = node.text[1:-1]
             found = urls.get(kind, [])
             if len(found) != 1:
-                raise MappingError(f"a reference to {{{kind}}}: the Bundle has {len(found)} {kind} entries")
+                what = f"entries tagged {kind}" if kind.startswith("entry#") else f"{kind} entries"
+                raise MappingError(f"a reference to {{{kind}}}: the Bundle has {len(found)} {what}")
             node.text = found[0]
         for c in node.children:
             self._references(c, urls)

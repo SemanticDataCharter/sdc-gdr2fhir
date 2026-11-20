@@ -18,7 +18,7 @@ from sdc_mapper import (DECLARED, JOIN, LOOKUP, LOOKUP_TRANSFORMS, NOT_REPRESENT
 from sdcreader.record import EXCEPTIONAL_VALUES
 
 from . import __version__
-from .codes import absent, model_codes
+from .codes import DATA_ABSENT_REASON, absent, model_codes
 from .writer import DEFAULT_VERSION, FHIR_VERSION, VERSIONS, Builder, version
 
 #: FHIR R4 writes every ISO 21090 null flavor exactly (codes.absent).
@@ -30,6 +30,9 @@ CANNOT_HOLD = [
     "validity windows and the time a value was recorded (act, vtb, vte, tr)",
     "the definitions the model binds each component to, beyond the codes written",
 ]
+
+#: data-absent-reason's `unknown` and the concepts under it (data-absent-reason 4.0.1, looked up on tx.fhir.org).
+UNKNOWN = {"unknown", "asked-unknown", "temp-unknown", "not-asked", "asked-declined"}
 
 #: Elements whose value an Observation (or its component) qualifies with dataAbsentReason.
 _OBSERVATION_VALUES = {"valueQuantity", "valueCodeableConcept", "valueString", "valueBoolean", "valueInteger",
@@ -156,7 +159,17 @@ class FHIRMapper:
                 return [(at + [("system", ("dar",))], system, None), (at + [("code", ("dar",))], value, None)]
         last, key = steps[-1]
         at = list(steps[:-1]) + [(f"_{last}", key), ("extension", ("dar",))]
-        return [(at + [("url", ("dar",))], extension, None), (at + [("valueCode", ("dar",))], value, None)]
+        writes = [(at + [("url", ("dar",))], extension, None), (at + [("valueCode", ("dar",))], value, None)]
+        if last == "text" and len(steps) > 2 and steps[-2][0].split("#", 1)[0] == "valueCodeableConcept" \
+                and steps[-3][0].split("#", 1)[0] == "extension" and system == DATA_ABSENT_REASON and value in UNKNOWN:
+            # An extension's CodeableConcept value with only an absent text has no code, and a required binding needs
+            # one. Its coding is the concept that subsumes this one, data-absent-reason `unknown`, which value sets
+            # for what a person may not know include (Sex Parameter for Clinical Use, which PatientEuCore's
+            # patient-sexParameterForClinicalUse binds). The extension on the text keeps the exact code.
+            coding = list(steps[:-1]) + [("coding", ("dar",))]
+            writes += [(coding + [("system", ("dar",))], DATA_ABSENT_REASON, None),
+                       (coding + [("code", ("dar",))], "unknown", None)]
+        return writes
 
     @staticmethod
     def _where(p) -> str:
