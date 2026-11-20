@@ -1,4 +1,7 @@
-"""The FHIR R4 mapper: a Governed Data Record as a FHIR R4 Bundle of type collection, by a mapping file.
+"""The FHIR mapper: a Governed Data Record as a FHIR Bundle, by a mapping file.
+
+The mapping says the FHIR version (`target.version`; R4 is the one shipped) and the Bundle's type (`collection`, the
+default, or `document`); the writer does the rest.
 
 Where the model binds a value to a code FHIR knows (a LOINC code for a laboratory result, a SNOMED CT concept for a
 condition, an answer's LOINC answer code, an administrative gender), the code written is the model's own and the
@@ -16,7 +19,7 @@ from sdcreader.record import EXCEPTIONAL_VALUES
 
 from . import __version__
 from .codes import absent, model_codes
-from .writer import FHIR_VERSION, Builder
+from .writer import DEFAULT_VERSION, FHIR_VERSION, VERSIONS, Builder, version
 
 #: FHIR R4 writes every ISO 21090 null flavor exactly (codes.absent).
 EV_TABLE = {code: EVRule(PRESERVED, target_code=f"{absent(code)[0].rsplit('/', 1)[1]}#{absent(code)[1]}")
@@ -34,22 +37,36 @@ _OBSERVATION_VALUES = {"valueQuantity", "valueCodeableConcept", "valueString", "
 
 
 class FHIRMapper:
+    """The target `fhir`. `target_version` is the FHIR version it writes (R4 unless given): sdc-mapper refuses a
+    mapping whose `target.version` is another, and `for_mapping` gives the mapper a mapping asks for."""
     name = "fhir"
     target = "HL7 FHIR"
-    target_version = "R4"
+    target_version = DEFAULT_VERSION      # the class's default; an instance's own when given (for_mapping)
     package = "sdc-gdr2fhir"
     version = __version__
     ev_table = EV_TABLE
 
+    def __init__(self, target_version: str = DEFAULT_VERSION):
+        self.target_version = version(target_version).name
+
+    @classmethod
+    def for_mapping(cls, mapping) -> "FHIRMapper":
+        """The mapper for the FHIR version a mapping's `target.version` names."""
+        return cls(mapping.target_version)
+
     def map(self, record, mapping) -> MapResult:
         if mapping is None:
             raise MappingError("FHIR needs a mapping file: the model does not say which resource each value belongs to")
+        if mapping.target_version != self.target_version:
+            raise MappingError(f"mapping {mapping.id} is for FHIR {mapping.target_version}; this mapper writes FHIR "
+                               f"{self.target_version}")
         if mapping.carry_rejected:
             raise MappingError("carry_rejected is not available: a rejected value is never written as data")
         if mapping.exceptional_values:
-            raise MappingError("FHIR R4 writes every ISO 21090 code exactly; a mapping cannot change that")
+            raise MappingError(f"FHIR {self.target_version} writes every ISO 21090 code exactly; a mapping cannot "
+                               "change that")
         placements, clusters = place(record, mapping)
-        b = Builder()
+        b = Builder(mapping.target_version)
         notes: dict[int, str] = {}
         later = []
         for p in placements:
@@ -172,4 +189,4 @@ def _join(steps) -> str:
     return "/".join(n.split("#", 1)[0] for n, _ in steps)
 
 
-__all__ = ["FHIRMapper", "EV_TABLE", "FHIR_VERSION"]
+__all__ = ["FHIRMapper", "EV_TABLE", "FHIR_VERSION", "VERSIONS"]

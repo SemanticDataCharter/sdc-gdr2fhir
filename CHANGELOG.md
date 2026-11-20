@@ -1,5 +1,34 @@
 # Changelog
 
+## 4.1.0 (2026-11-19)
+
+Engine changes so that a mapping can ask for the FHIR output an implementation guide expects: document Bundles,
+declared profiles, writer rules that apply only where a mapping names them, and the FHIR version taken from the mapping.
+The NHANES output does not change: every sample Bundle (1,400, seven models) is byte-identical to 4.0.7's. No new
+mapping and no new model.
+
+- **Document Bundles.** The Bundle rule's `type` may be `document` (`collection` stays the default, and is written
+  when a mapping gives no type; any other type is refused). For a document the writer requires an identifier with a
+  system and a value (bdl-9; the record's instance id unless the mapping gives its own), a timestamp the mapping places
+  (bdl-10) and a Composition as the first entry (bdl-11), and refuses a Bundle that breaks any of them.
+- **Entry order** is the directive `@first` (the resource types written first, in order). Defaults: `Patient` for a
+  collection, as before; `Composition Patient` for a document.
+- **Profiles.** A resource's attributes may declare `meta/profile` (a second one by tag, `meta/profile#2`). A new
+  test, marked `validator`, runs HL7's FHIR validator with an implementation guide's package (`-ig`, from
+  `FHIR_VALIDATOR_IG`, default `hl7.fhir.eu.laboratory#2.1.0`) on a synthetic document Bundle that claims only FHIR's
+  own profiles. Like the existing validator test, it is skipped without Java and `FHIR_VALIDATOR_JAR`.
+- **NHANES rules out of the writer.** The survey-cycle dating rule (drop `effectivePeriod` beside
+  `effectiveDateTime`) and the vital signs blood pressure fill now apply only where a mapping names them, in the
+  directive `@observation` (`date-time-over-period`, `blood-pressure-components`). The five NHANES Participant mapping
+  files name both: one line each, the Bundle rule, so their SHA-256 changes and their mapping version stays 1. The
+  medication mappings are unchanged. `tools/specs/common.py` `bundle()` takes the directive.
+- **FHIR version from the mapping.** The writer's schema comes from a table of versions (`writer.VERSIONS`, R4 only)
+  chosen by the mapping's `target.version`. `FHIRMapper(target_version="R4")` and `FHIRMapper.for_mapping(mapping)`
+  refuse a version not shipped, and `map()` refuses a mapping for another version. No R5.
+- The mapping options are described in the README's new "Mapping options" section. Directives start with `@`, sit
+  among the Bundle rule's `attributes` (sdc-mapper's mapping schema is closed) and are never written; an unknown one is
+  refused.
+
 ## 4.0.7 (2026-10-27)
 
 - **FAIR Data Demo 4.3.1:** NHANES Participant 4.3.1 (`fafj69kdii37997sy7dpsz13`): its mapping and a sample of the

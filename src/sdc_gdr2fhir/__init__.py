@@ -1,4 +1,4 @@
-"""sdc-gdr2fhir: Governed Data Records as HL7 FHIR R4 Bundles, through sdc-mapper.
+"""sdc-gdr2fhir: Governed Data Records as HL7 FHIR Bundles (R4), through sdc-mapper.
 
     from sdc_mapper import Engine, load_mapping
     from sdc_gdr2fhir import FHIRMapper, mapping_path
@@ -8,7 +8,7 @@ One mapping file per model, in `mappings/`. Registered with sdc-mapper as the ta
 """
 from pathlib import Path
 
-__version__ = "4.0.7"
+__version__ = "4.1.0"
 
 MAPPINGS = Path(__file__).with_name("mappings")
 

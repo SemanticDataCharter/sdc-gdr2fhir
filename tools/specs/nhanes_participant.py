@@ -6,8 +6,8 @@ the concept the model binds (LOINC for smoking status, the SNOMED CT subject of 
 answer's LOINC answer code; every other survey answer an item of one QuestionnaireResponse. A condition indicator is an
 answer to "has a doctor ever told you", so it is an Observation of the answer, not a Condition.
 """
-from common import (OBSERVATION_CATEGORY, PATIENT, SUBJECT, SURVEY_CYCLE, C, V, answer_observation, bundle,
-                    item, observation, system_of, code_of)
+from common import (OBSERVATION_CATEGORY, OBSERVATION_RULES, PATIENT, SUBJECT, SURVEY_CYCLE, C, V, answer_observation,
+                    bundle, item, observation, system_of, code_of)
 from sdc_gdr2fhir.codes import LOINC, UCUM, UCUM_CODES
 
 TITLE = "NHANES Participant (FAIR Data Demo) to HL7 FHIR R4 Bundle"
@@ -62,7 +62,7 @@ def bp_component(label):
 
 
 RULES = [
-    *bundle("NHANES Participant Governed Record", "NHANES Participant"),
+    *bundle("NHANES Participant Governed Record", "NHANES Participant", observation=OBSERVATION_RULES),
     *PATIENT,
     V("Administrative Gender", "=entry#patient/=resource/gender", "binding", prefix="http://hl7.org/fhir/administrative-gender",
       attributes={"resourceType": "Patient"}),
