@@ -114,3 +114,16 @@ RULES = [
     C("party-details", "."),
     *PARTY_DETAILS,
 ]
+
+
+# ================================================================ the 2026-11-21 revision
+#: Service Request `i1jm5rf4ooomt8tbys75o017` (PRD decision 22) chains to the revised Laboratory Report, and its
+#: quantity's units are a UCUM code (any, by the pattern `[!-~]{1,60}`): the Quantity's code, with the system UCUM.
+REVISED = "i1jm5rf4ooomt8tbys75o017"
+
+
+def configure(ct_id):
+    global DATE, RULES
+    from sdchealth_parties import LAB_REPORT_2, REVISION_DATE, chained_to, ucum
+    if ct_id == REVISED:
+        DATE, RULES = REVISION_DATE, ucum(chained_to(RULES, LAB_REPORT_2))

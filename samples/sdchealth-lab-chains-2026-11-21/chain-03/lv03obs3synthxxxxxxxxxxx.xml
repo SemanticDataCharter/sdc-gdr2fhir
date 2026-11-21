@@ -1,0 +1,401 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sdc4:dm-ojjr56tqlxk808lqq8ig8vg0 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdc4="https://semanticdatacharter.com/ns/sdc4/" xsi:schemaLocation="https://semanticdatacharter.com/ns/sdc4/ https://semanticdatacharter.com/dmlib/dm-ojjr56tqlxk808lqq8ig8vg0.xsd">
+  <dm-label>Laboratory Observation</dm-label>
+  <dm-language>en-US</dm-language>
+  <dm-encoding>utf-8</dm-encoding>
+  <creation_timestamp>2026-10-04T08:15:00+01:00</creation_timestamp>
+  <instance_id>lv03obs3synthxxxxxxxxxxx</instance_id>
+  <instance_version>1</instance_version>
+  <sdc4:ms-lph7h0w9apwcfsge4y6sbubt>
+    <label>Laboratory Observation</label>
+    <sdc4:ms-j0805v0oz9nj1md7ancanxy2>
+      <label>Observation Method (SNOMED CT)</label>
+      <sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+        <sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+          <label>Code System: SNOMED CT</label>
+          <link>http://snomed.info/sct</link>
+          <relation>codeSystem</relation>
+          <relation-uri>http://hl7.org/fhir/R4/datatypes-definitions.html#Coding.system</relation-uri>
+        </sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+      </sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+      <sdc4:ms-deau6rxprq0zivzdddupk7cj>
+        <sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+          <label>Code Display Text</label>
+          <xdstring-value>Ion selective electrode measurement</xdstring-value>
+        </sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+      </sdc4:ms-deau6rxprq0zivzdddupk7cj>
+      <sdc4:ms-z26uhbdxcsc1f2sl2cyudehe>
+        <sdc4:ms-hokt5tpa6zhkifcly8vvz0x1>
+          <label>Observation Method Code (SNOMED CT)</label>
+          <xdstring-value>703445001</xdstring-value>
+        </sdc4:ms-hokt5tpa6zhkifcly8vvz0x1>
+      </sdc4:ms-z26uhbdxcsc1f2sl2cyudehe>
+    </sdc4:ms-j0805v0oz9nj1md7ancanxy2>
+    <sdc4:ms-ten110f26iih6smvw3z77mg8>
+      <label>Observation Result</label>
+      <sdc4:ms-p0mhaz5gtgm1o9ahvvcfrmee>
+        <sdc4:ms-ml062fqeg31cvcx0z4w2ut68>
+          <label>Result Quantity</label>
+          <xdquantity-value>142</xdquantity-value>
+          <xdquantity-units>
+            <label>UCUM Units</label>
+            <xdstring-value>mmol/L</xdstring-value>
+          </xdquantity-units>
+        </sdc4:ms-ml062fqeg31cvcx0z4w2ut68>
+      </sdc4:ms-p0mhaz5gtgm1o9ahvvcfrmee>
+    </sdc4:ms-ten110f26iih6smvw3z77mg8>
+    <sdc4:ms-nieu1e3llgra1v66p2x8jnwu>
+      <label>Record Identifier</label>
+      <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+        <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+          <label>Identifier Value</label>
+          <xdstring-value>OBS-2026-3-3</xdstring-value>
+        </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+      </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+      <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+        <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+          <label>Issuing Authority</label>
+          <xdstring-value>Example Regional Hospital Laboratory</xdstring-value>
+        </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+      </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+    </sdc4:ms-nieu1e3llgra1v66p2x8jnwu>
+    <sdc4:ms-eos099uh4pibbymesy1nxh0v>
+      <label>Result Code (LOINC)</label>
+      <sdc4:ms-h6eufv07gcqatkgq8q33pyf2>
+        <sdc4:ms-kar8kkxilj1e2fys88mg0dpc>
+          <label>Code System: LOINC</label>
+          <link>http://loinc.org</link>
+          <relation>codeSystem</relation>
+          <relation-uri>http://hl7.org/fhir/R4/datatypes-definitions.html#Coding.system</relation-uri>
+        </sdc4:ms-kar8kkxilj1e2fys88mg0dpc>
+      </sdc4:ms-h6eufv07gcqatkgq8q33pyf2>
+      <sdc4:ms-deau6rxprq0zivzdddupk7cj>
+        <sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+          <label>Code Display Text</label>
+          <xdstring-value>Sodium [Moles/volume] in Serum or Plasma</xdstring-value>
+        </sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+      </sdc4:ms-deau6rxprq0zivzdddupk7cj>
+      <sdc4:ms-cayajqsai8xc1luidcfvmpgn>
+        <sdc4:ms-t81b02q7upd0yy71097jqfse>
+          <label>Result Code Code (LOINC)</label>
+          <xdstring-value>2951-2</xdstring-value>
+        </sdc4:ms-t81b02q7upd0yy71097jqfse>
+      </sdc4:ms-cayajqsai8xc1luidcfvmpgn>
+    </sdc4:ms-eos099uh4pibbymesy1nxh0v>
+    <sdc4:ms-pedqv27bgljisfmrcpkmsvb8>
+      <sdc4:ms-imjsmm2gi8oe8n2b6s3mrr5t>
+        <label>Observation Order Reference</label>
+        <xdstring-value>urn:sdc4:record:lv03srq1synthxxxxxxxxxxx</xdstring-value>
+      </sdc4:ms-imjsmm2gi8oe8n2b6s3mrr5t>
+    </sdc4:ms-pedqv27bgljisfmrcpkmsvb8>
+    <sdc4:ms-yc1w5q855i6nxg1xl0o5gapi>
+      <sdc4:ms-k9nx1qiab57p9uj39ggeasg6>
+        <label>Observation Specimen Reference</label>
+        <xdstring-value>urn:sdc4:record:lv03spc1synthxxxxxxxxxxx</xdstring-value>
+      </sdc4:ms-k9nx1qiab57p9uj39ggeasg6>
+    </sdc4:ms-yc1w5q855i6nxg1xl0o5gapi>
+    <sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+      <sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+        <label>Parent Record Identifier</label>
+        <xdstring-value>LR-2026-1003</xdstring-value>
+      </sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+    </sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+    <sdc4:ms-tn1sbi0vbjvrlyhl1faun9wu>
+      <sdc4:ms-zvkk8ztob9gmrvvkzyibyrzk>
+        <label>Note</label>
+        <xdstring-value>Synthetic sample result.</xdstring-value>
+      </sdc4:ms-zvkk8ztob9gmrvvkzyibyrzk>
+    </sdc4:ms-tn1sbi0vbjvrlyhl1faun9wu>
+    <sdc4:ms-zn3ow396a98ercq6xt1szfed>
+      <sdc4:ms-nej63g3npolq6yjl88wt21lr>
+        <label>Interpretation Code</label>
+        <xdtoken-value>N</xdtoken-value>
+      </sdc4:ms-nej63g3npolq6yjl88wt21lr>
+    </sdc4:ms-zn3ow396a98ercq6xt1szfed>
+    <sdc4:ms-ff7i1of52y9suz5zbqm82nlq>
+      <sdc4:ms-q9vmn1cvdclgr757aer5v1rg>
+        <label>Observation Status</label>
+        <xdtoken-value>final</xdtoken-value>
+      </sdc4:ms-q9vmn1cvdclgr757aer5v1rg>
+    </sdc4:ms-ff7i1of52y9suz5zbqm82nlq>
+    <sdc4:ms-napfyd7sikk7d4k8ksjd8buv>
+      <sdc4:ms-dkyyj01tksb7h7akq2w7moum>
+        <label>Observation Date Time</label>
+        <xdtemporal-datetime>2026-10-04T08:15:00+01:00</xdtemporal-datetime>
+      </sdc4:ms-dkyyj01tksb7h7akq2w7moum>
+    </sdc4:ms-napfyd7sikk7d4k8ksjd8buv>
+  </sdc4:ms-lph7h0w9apwcfsge4y6sbubt>
+  <subject>
+    <label>Patient</label>
+    <party-details>
+      <label>Patient</label>
+      <sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+        <label>Address</label>
+        <sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+          <label>Country</label>
+          <sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+            <sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+              <label>Country Code ISO 3166</label>
+              <xdtoken-value>IT</xdtoken-value>
+            </sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+          </sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+        </sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+        <sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+          <sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+            <label>Address (Line 1)</label>
+            <xdstring-value>Via Indipendenza 33</xdstring-value>
+          </sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+        </sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+        <sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+          <sdc4:ms-a69l16mqaotn0py958oxahhz>
+            <label>City Name</label>
+            <xdstring-value>Bologna</xdstring-value>
+          </sdc4:ms-a69l16mqaotn0py958oxahhz>
+        </sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+        <sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+          <sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+            <label>Postal Code</label>
+            <xdstring-value>40121</xdstring-value>
+          </sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+        </sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+        <sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+          <sdc4:ms-b25dj42zxhm19pih328ga8pl>
+            <label>Address Use</label>
+            <xdtoken-value>home</xdtoken-value>
+          </sdc4:ms-b25dj42zxhm19pih328ga8pl>
+        </sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+      </sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+      <sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+        <label>Human Name</label>
+        <sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+          <sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+            <label>Given Name (Person)</label>
+            <xdstring-value>Luca</xdstring-value>
+          </sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+        </sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+        <sdc4:ms-rf76ozkskw3wyc1on48jm375>
+          <sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+            <label>Surname (Person)</label>
+            <xdstring-value>Bianchi</xdstring-value>
+          </sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+        </sdc4:ms-rf76ozkskw3wyc1on48jm375>
+        <sdc4:ms-t2lvqlgc6iz59pxm211yidob>
+          <sdc4:ms-bfqinvm7qrgi9jjw1i637moh>
+            <label>Name Use</label>
+            <xdtoken-value>official</xdtoken-value>
+          </sdc4:ms-bfqinvm7qrgi9jjw1i637moh>
+        </sdc4:ms-t2lvqlgc6iz59pxm211yidob>
+      </sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+      <sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+        <label>Person Identifier</label>
+        <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+          <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+            <label>Identifier Value</label>
+            <xdstring-value>IT-CF-900000104</xdstring-value>
+          </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+        </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+        <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+          <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+            <label>Issuing Authority</label>
+            <xdstring-value>AdE</xdstring-value>
+          </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+        </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+        <sdc4:ms-lsdfdpz5hrxqayv21s92fy7m>
+          <sdc4:ms-h2pd0ns7lx2vzey41z6ggt8r>
+            <label>Person Identifier Type</label>
+            <xdtoken-value>NI</xdtoken-value>
+          </sdc4:ms-h2pd0ns7lx2vzey41z6ggt8r>
+        </sdc4:ms-lsdfdpz5hrxqayv21s92fy7m>
+      </sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+      <sdc4:ms-cpcvbb0xq072zk086ukfl41m>
+        <sdc4:ms-gxzbm758mhdz51xd4bawlfhh>
+          <label>Administrative Gender</label>
+          <xdtoken-value>male</xdtoken-value>
+        </sdc4:ms-gxzbm758mhdz51xd4bawlfhh>
+      </sdc4:ms-cpcvbb0xq072zk086ukfl41m>
+      <sdc4:ms-c5ueyww5kg8b7h3h3ipno6sk>
+        <sdc4:ms-js564tazefb6udqlh12rj04l>
+          <label>Date of Birth</label>
+          <xdtemporal-date>1975-01-21</xdtemporal-date>
+        </sdc4:ms-js564tazefb6udqlh12rj04l>
+      </sdc4:ms-c5ueyww5kg8b7h3h3ipno6sk>
+    </party-details>
+  </subject>
+  <provider>
+    <label>Author</label>
+    <party-details>
+      <label>Health Professional</label>
+      <sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+        <label>Address</label>
+        <sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+          <label>Country</label>
+          <sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+            <sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+              <label>Country Code ISO 3166</label>
+              <xdtoken-value>FR</xdtoken-value>
+            </sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+          </sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+        </sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+        <sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+          <sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+            <label>Address (Line 1)</label>
+            <xdstring-value>Rue de la République 5</xdstring-value>
+          </sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+        </sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+        <sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+          <sdc4:ms-a69l16mqaotn0py958oxahhz>
+            <label>City Name</label>
+            <xdstring-value>Lyon</xdstring-value>
+          </sdc4:ms-a69l16mqaotn0py958oxahhz>
+        </sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+        <sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+          <sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+            <label>Postal Code</label>
+            <xdstring-value>69002</xdstring-value>
+          </sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+        </sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+        <sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+          <sdc4:ms-b25dj42zxhm19pih328ga8pl>
+            <label>Address Use</label>
+            <xdtoken-value>work</xdtoken-value>
+          </sdc4:ms-b25dj42zxhm19pih328ga8pl>
+        </sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+      </sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+      <sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+        <label>Human Name</label>
+        <sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+          <sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+            <label>Given Name (Person)</label>
+            <xdstring-value>Elena</xdstring-value>
+          </sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+        </sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+        <sdc4:ms-ay24ls9755kuftez8htgarb5>
+          <sdc4:ms-yahxccv0l1z6ykjxayzkdlkq>
+            <label>Name Prefix</label>
+            <xdstring-value>Dr.</xdstring-value>
+          </sdc4:ms-yahxccv0l1z6ykjxayzkdlkq>
+        </sdc4:ms-ay24ls9755kuftez8htgarb5>
+        <sdc4:ms-rf76ozkskw3wyc1on48jm375>
+          <sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+            <label>Surname (Person)</label>
+            <xdstring-value>Moreau</xdstring-value>
+          </sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+        </sdc4:ms-rf76ozkskw3wyc1on48jm375>
+      </sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+      <sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+        <label>Person Identifier</label>
+        <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+          <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+            <label>Identifier Value</label>
+            <xdstring-value>FR-RPPS-800000201</xdstring-value>
+          </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+        </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+        <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+          <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+            <label>Issuing Authority</label>
+            <xdstring-value>ANS</xdstring-value>
+          </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+        </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+      </sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+      <sdc4:ms-lv6uk4agn7as0er1bely65oi>
+        <label>Telecom</label>
+        <sdc4:ms-f2caqwqmsl0fnkscaz4uhrya>
+          <sdc4:ms-zpfwg52r88j6jdypj7rg71ke>
+            <label>Phone Number</label>
+            <xdstring-value>+351 210 000 000</xdstring-value>
+          </sdc4:ms-zpfwg52r88j6jdypj7rg71ke>
+        </sdc4:ms-f2caqwqmsl0fnkscaz4uhrya>
+        <sdc4:ms-b31lflr8prid6hdega5v93zf>
+          <sdc4:ms-miqo30r5b554nyj7ubryw43x>
+            <label>Contact Method</label>
+            <xdtoken-value>phone</xdtoken-value>
+          </sdc4:ms-miqo30r5b554nyj7ubryw43x>
+        </sdc4:ms-b31lflr8prid6hdega5v93zf>
+        <sdc4:ms-rv5pul6lm3ntpxynzxmkpeus>
+          <sdc4:ms-vmruk4j9y1orvvz8cwafrax5>
+            <label>Contact Use</label>
+            <xdtoken-value>work</xdtoken-value>
+          </sdc4:ms-vmruk4j9y1orvvz8cwafrax5>
+        </sdc4:ms-rv5pul6lm3ntpxynzxmkpeus>
+      </sdc4:ms-lv6uk4agn7as0er1bely65oi>
+    </party-details>
+  </provider>
+  <sdc4:ms-j58p0u9bes6xu205dug7sysf>
+    <label>Performer Participation</label>
+    <performer>
+      <label>Performer</label>
+      <party-details>
+        <label>Organisation</label>
+        <sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+          <label>Address</label>
+          <sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+            <label>Country</label>
+            <sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+              <sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+                <label>Country Code ISO 3166</label>
+                <xdtoken-value>DE</xdtoken-value>
+              </sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+            </sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+          </sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+          <sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+            <sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+              <label>Address (Line 1)</label>
+              <xdstring-value>Liebigstraße 20</xdstring-value>
+            </sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+          </sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+          <sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+            <sdc4:ms-a69l16mqaotn0py958oxahhz>
+              <label>City Name</label>
+              <xdstring-value>Leipzig</xdstring-value>
+            </sdc4:ms-a69l16mqaotn0py958oxahhz>
+          </sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+          <sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+            <sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+              <label>Postal Code</label>
+              <xdstring-value>04103</xdstring-value>
+            </sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+          </sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+          <sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+            <sdc4:ms-b25dj42zxhm19pih328ga8pl>
+              <label>Address Use</label>
+              <xdtoken-value>work</xdtoken-value>
+            </sdc4:ms-b25dj42zxhm19pih328ga8pl>
+          </sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+        </sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+        <sdc4:ms-mdxhqrhcerkkdn66hrjex66w>
+          <label>Organization Identifier</label>
+          <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+            <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+              <label>Identifier Value</label>
+              <xdstring-value>LAB-900302</xdstring-value>
+            </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+          </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+          <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+            <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+              <label>Issuing Authority</label>
+              <xdstring-value>Synthetic Registry</xdstring-value>
+            </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+          </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+        </sdc4:ms-mdxhqrhcerkkdn66hrjex66w>
+        <sdc4:ms-mpweekufi4296o2qdi0wfd9a>
+          <sdc4:ms-xcn8r67fg7soty17homzok44>
+            <label>Organization Name</label>
+            <xdstring-value>Example Regional Hospital Laboratory</xdstring-value>
+          </sdc4:ms-xcn8r67fg7soty17homzok44>
+        </sdc4:ms-mpweekufi4296o2qdi0wfd9a>
+        <sdc4:ms-qqqavw7mu6lu6upapdi1qbe4>
+          <sdc4:ms-wx5x3zn4hmo7qjtzvwz5nhrb>
+            <label>Organization Type</label>
+            <xdtoken-value>dept</xdtoken-value>
+          </sdc4:ms-wx5x3zn4hmo7qjtzvwz5nhrb>
+        </sdc4:ms-qqqavw7mu6lu6upapdi1qbe4>
+      </party-details>
+    </performer>
+    <function>
+      <label>Participation Function (Performer)</label>
+      <xdstring-value>performer</xdstring-value>
+    </function>
+    <start>2026-10-04T08:15:00+01:00</start>
+    <end>2026-10-04T08:15:00+01:00</end>
+  </sdc4:ms-j58p0u9bes6xu205dug7sysf>
+</sdc4:dm-ojjr56tqlxk808lqq8ig8vg0>

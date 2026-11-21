@@ -193,10 +193,17 @@ def test_the_report_alone_is_unchanged_by_the_chain_support(engine):
 @pytest.mark.validator
 @pytest.mark.skipif(not (shutil.which("java") and VALIDATOR and Path(VALIDATOR).exists()),
                     reason="needs Java and FHIR_VALIDATOR_JAR (the HL7 FHIR validator, validator_cli.jar)")
-def test_the_hl7_validator_with_the_lab_guide_finds_no_errors_in_the_chains(engine, tmp_path):
+def test_the_hl7_validator_with_the_lab_guide_finds_only_the_model_s_known_errors_in_the_chains(engine, tmp_path):
+    """28 errors, all from the superseded Laboratory Observation model (README): a data absent reason beside every
+    value (obs-6, 14) and the DiagnosticReport's references to those results then matching no profile (14). The
+    revised models' chains validate with no error (tests/test_lab_revision.py)."""
+    paths = []
     for d in chains():
-        out_file = tmp_path / f"{d.name}.json"
-        out_file.write_bytes(map_files(engine, *files(d)).files["Bundle.json"])
-        out = subprocess.run(["java", "-jar", VALIDATOR, str(out_file), "-version", FHIR_VERSION, "-ig", IG],
-                             capture_output=True, text=True)
-        assert "*FAILURE*" not in out.stdout and out.returncode == 0, out.stdout[-4000:]
+        paths.append(tmp_path / f"{d.name}.json")
+        paths[-1].write_bytes(map_files(engine, *files(d)).files["Bundle.json"])
+    out = subprocess.run(["java", "-jar", VALIDATOR, *map(str, paths), "-version", FHIR_VERSION, "-ig", IG],
+                         capture_output=True, text=True).stdout
+    errors = [line for line in out.splitlines() if line.strip().startswith("Error @")]
+    assert len(errors) == 28, "\n".join(errors)[:4000]
+    assert sum("obs-6" in e for e in errors) == 14
+    assert all("obs-6" in e or "Unable to find a profile match" in e for e in errors), "\n".join(errors)[:4000]

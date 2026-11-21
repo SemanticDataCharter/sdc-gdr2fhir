@@ -59,6 +59,16 @@ class FHIRMapper:
         """The mapper for the FHIR version a mapping's `target.version` names."""
         return cls(mapping.target_version)
 
+    @staticmethod
+    def mapping_for(ct_id: str):
+        """The mapping file this package ships for a model, or None (sdc-mapper 4.5.0's optional hook: `sdc-map
+        map-chain fhir --chain chain.json` and the MCP `map_chain` tool find each record's mapping by its model)."""
+        from . import mapping_path
+        try:
+            return mapping_path(ct_id)
+        except FileNotFoundError:
+            return None
+
     def _check(self, mapping):
         if mapping is None:
             raise MappingError("FHIR needs a mapping file: the model does not say which resource each value belongs to")

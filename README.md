@@ -197,7 +197,8 @@ The first run found 124 errors. The 91 on this side are fixed:
 
 **Needs sdcreader 4.5.0 and sdc-mapper 4.4.0.** The mapping says `reference_model: true`: it reads the record's reference-model parts
 as well as its data cluster. Those are the subject, the provider, the four Participations, the Attestation and the
-workflow. That needs **sdcreader 4.5.0 and sdc-mapper 4.4.0** (released 20 November 2026; the pin is `sdc-mapper>=4.4`).
+workflow. That needs **sdcreader 4.5.0 and sdc-mapper 4.4.0** (released 20 November 2026); the chains need sdc-mapper
+4.5.0, and the pin is `sdc-mapper>=4.5`.
 
 **The samples** (`samples/sdchealth-lab-report/`) are 15 synthetic records: no person, professional, organisation or
 report in them is real.
@@ -333,11 +334,16 @@ result.files["Bundle.json"]                  # the one Bundle
 `map_files` gates and reads them first, each against its own model's schema, and builds each record's report as
 sdc-mapper does for one record.
 
-The call surfaces (a CLI command and an MCP tool) belong in sdc-mapper. They are designed in
-`docs/chained-records.md`, not yet implemented.
+sdc-mapper 4.5.0 calls it from its CLI and its MCP `map_chain` tool. `FHIRMapper.mapping_for(ct_id)` gives each
+record the mapping this package ships for its model, so a chain manifest alone is enough:
+
+```bash
+sdc-map map-chain fhir --chain samples/sdchealth-lab-chains-2026-11-21/chain-00/chain.json --packages samples -o out
+```
 
 **Which records belong.** A record that doesn't belong refuses the whole chain (`ChainError`):
-- a child whose Parent Record Identifier is not the parent's Record Identifier;
+- a child whose Parent Record Identifier is neither the parent's Record Identifier nor the identifier of one other
+  record of the chain (its Record Identifier, or a specimen's Accession Identifier);
 - a child without one that no record of the chain names;
 - a child whose subject shares no identifier with the parent's (another patient).
 
@@ -349,6 +355,11 @@ The call surfaces (a CLI command and an MCP tool) belong in sdc-mapper. They are
 - Its own entries are kept apart from its siblings': the second child's `entry#obs` is `entry#obs.2`, and
   `{entry#obs}` names its own. So is every element it adds (`+result`: one per child).
 - Such a mapping maps only with its parent. Mapped alone it is refused.
+- **A record chained to a child** (a Reference Range to its Laboratory Observation, a Specimen Collection to its
+  Specimen) names that child's model and entry in its `@chained-to` (`ojjr56tqlxk808lqq8ig8vg0 obs`). There,
+  `=entry#obs` is the entry of the very child it is chained to (`entry#obs.3`), so each range goes in its own
+  Observation. The directive may sit on the data-cluster rule that places the record
+  (`=entry#obs/=resource/referenceRange`); it is read, never written.
 
 **References between records.**
 - An element on a path tagged `#record` (`specimen#record/reference`) holds a record's IRI. It is written as the
@@ -429,6 +440,91 @@ child, the report's subject already written once. The rest are omitted with thei
   doesn't say what that IRI is. sdc-gdr2fhir matches an IRI that ends with the record's instance id, or a business
   identifier.
 
+## The 2026-11-21 revision of the SDCHealth Laboratory models
+
+On 21 November 2026 the SDCHealth library published new versions of its Laboratory models (PRD decision 22).
+Requiredness no longer comes from Xt-EHR's "able to populate" obligations, so many members are optional. Observation
+Result holds a value or a data absent reason, one assertion. Patient's Date of Birth is required. Quantities take any
+UCUM code. Reference Range and Specimen Collection are new models, each a record chained to another chained record.
+
+Each new model has its own mapping. The mappings for the superseded models stay, unchanged, for records made on them:
+their files, samples and output are byte-identical.
+
+| Model | New ct_id (rules) | Supersedes | What changed in the mapping |
+|---|---|---|---|
+| Laboratory Report | `rguwjl3y1d2cxmcv7vooocji` (100) | `zptekdommw56yiz9lqjy5dga` | nothing but the model |
+| Order Information | `zfh7quqpqxk176c2j4gdestb` (14) | `l6m7g3jk6y6tvnisd35l16pw` | chains to the new report |
+| Laboratory Observation | `ojjr56tqlxk808lqq8ig8vg0` (123) | `d5b3007cqbmejx7xgs7i484r` | chains to the new report; UCUM units |
+| Specimen | `dkzoy1j9aw2u7i7x5lseo7ro` (56) | `qws8pcquvnqc55okidyqll83` | chains to the new report; no collector (moved to Specimen Collection) |
+| Service Request | `i1jm5rf4ooomt8tbys75o017` (92) | `nz971o74u4kuk3ifcxc2llq2` | chains to the new report; UCUM units |
+| Reference Range | `yg61wcme1sjlnezxh0ho6nh0` (16) | new | `Observation.referenceRange` of its observation |
+| Specimen Collection | `idprzkpm6sdqgib5w5wzc3ys` (64) | new | `Specimen.collection` of its specimen, with its collector |
+
+One spec writes both revisions of a model (`configure(ct_id)` in `tools/specs/`, called by `build_mapping.py`).
+
+**Where the new values go** (the guide's maps, cited in `tools/specs/sdchealth_reference_range.py` and
+`sdchealth_specimen_collection.py`):
+- **Units:** a quantity's units are its UCUM code. The Quantity gets `code`, `unit` (the same symbol) and the system
+  `http://unitsofmeasure.org`.
+- **Reference Range** → `Observation.referenceRange`: low, high, type (referencerange-meaning, the code the model
+  binds: a lookup), appliesTo, age, text. Normal Value has no R4 element (R5 only): omitted. The Parent Record
+  Identifier holds the observation's Record Identifier.
+- **Specimen Collection** → `Specimen.collection`: collectedDateTime or collectedPeriod, quantity, method, bodySite
+  (the site's code, as R4's CodeableConcept), and the collector (a Practitioner). The device has no R4 element (R5
+  only): omitted. A Specimen has no Record Identifier, so the Parent Record Identifier holds its Accession Identifier.
+  R4 has one collection per specimen: a second Specimen Collection for the same specimen refuses the chain.
+
+**Samples:**
+- `samples/sdchealth-lab-report-2026-11-21/`: 15 report records (`tools/make_lab_report_samples.py --revised`), each
+  valid against the new model's XSD 1.1 schema. Three leave out the Attachment, and two the practice setting and
+  period, which the revision made optional.
+- `samples/sdchealth-lab-chains-2026-11-21/`: five chains (`tools/make_lab_chain_samples.py --revised`). Each is a
+  report with an Order Information, a Specimen and its Specimen Collection, a Service Request, three Laboratory
+  Observations and a Reference Range for each: 50 records, each valid against its model. Results are in mg/dL and
+  mmol/L. A pending result carries a data absent reason and no value; a result with a value carries no reason.
+- Every code was looked up on tx.fhir.org (21 November 2026): SNOMED CT 28520004 Venipuncture for blood test and
+  49852007 Structure of median cubital vein (International 20260701, both active); UCUM mg/dL, mmol/L and mL (valid);
+  referencerange-meaning `normal`. The other codes are the first revision's (the sample READMEs list them).
+
+**Value counts** across the five revised chains, 2,268 values in 55 records:
+
+| Records | lookup | declared | not representable | Exceptional Values |
+|---|---|---|---|---|
+| 5 reports | 119 | 458 | 51 | 1, preserved |
+| 5 Order Information | 0 | 35 | 70 | 0 |
+| 5 Service Requests | 25 | 85 | 70 | 0 |
+| 5 Specimens | 5 | 30 | 65 | 0 |
+| 5 Specimen Collections | 5 | 90 | 80 | 0 |
+| 15 Laboratory Observations | 105 | 464 | 240 | 0 |
+| 15 Reference Ranges | 15 | 45 | 210 | 0 |
+
+The 15 revised reports alone: 359 lookup, 1,366 declared, 148 not representable, 5 Exceptional Values, all preserved.
+
+**HL7's FHIR validator 7.0.6, `-version 4.0.1 -ig hl7.fhir.eu.laboratory#2.1.0` (21 November 2026):**
+- **The five revised chains validate against the guide: 0 errors.** The 28 errors of the superseded models' chains
+  (obs-6: a data absent reason beside every value, and their knock-on reference errors) are gone. So are the warnings
+  that LOINC's result codes "require units".
+- **The 15 revised reports, each mapped alone: 33 errors,** the same two causes as on the superseded model:
+
+| Errors | What the validator reports | Cause |
+|---|---|---|
+| 30 | `ServiceRequest.identifier`: minimum 1, found 0, and `DiagnosticReport.basedOn` then matches no ServiceRequest-eu-lab (15 each). | A report alone has no order identifier: it is the Order Information's, a chained record. With its chain the report has one. |
+| 3 | `Composition.section`: minimum 1, found 0, and the DiagnosticReport's link to the Composition then matches no Composition profile (2), in `labrev07`. | Its comment is an Exceptional Value (NAV), and alone the report has no other section. With results it has the results section. |
+
+- Warnings, in both: no narrative in the resources other than the sections (dom-6); v2-0203 `NI` is not in R4's
+  extensible identifier-type value set; a Composition reference matching both the R5 cross-version Composition profile
+  and R4's.
+
+**What the revised models still lack** (library findings; component changes are Tim's call):
+- **Collected time and period may both be given.** Specimen Collection asks for one of them (an assertion) and allows
+  both. FHIR's `collected[x]` takes one, so a record with both makes a Specimen the validator refuses. The same holds
+  for a Laboratory Observation's date time and period (`effective[x]`).
+- **A Specimen Collection names its specimen by Accession Identifier.** The model says "chained to its Specimen by
+  Parent Record Identifier", and a Specimen has no Record Identifier. sdc-gdr2fhir accepts the accession identifier;
+  the library doesn't say which identifier is meant.
+- Unchanged from the first revision: authored dates are dates (Observation.issued is an instant), a record's IRI has
+  no defined form, one order per report, and each chained record repeats the patient's details.
+
 ## Exceptional Values: every one preserved
 
 FHIR is the target that can say what an Exceptional Value says. Where the data-absent-reason code system
@@ -491,5 +587,17 @@ The chained-records tests (`tests/test_lab_chain.py`) cover the following:
   a chained mapping used alone;
 - the report alone, byte-identical through the chain path.
 
-HL7's validator with the guide's package is a `validator` test in both files, skipped without Java and
-`FHIR_VALIDATOR_JAR`.
+The 2026-11-21 revision's tests (`tests/test_lab_revision.py`) cover the following:
+- a mapping for each new model, beside the superseded model's;
+- the revised reports and chains against their models' schemas, mapped to conformant, byte-stable Bundles;
+- UCUM units, a value or a data absent reason (never both), each Reference Range in its own Observation, and the
+  Specimen Collection in its Specimen with its collector;
+- the value counts;
+- the refusals: a range of an observation outside the chain, a second collection of one specimen, and a range chained
+  to a record of another model than its mapping names;
+- sdc-mapper's `map_chain` from a manifest alone (`FHIRMapper.mapping_for`).
+
+HL7's validator with the guide's package is a `validator` test in all three files, skipped without Java and
+`FHIR_VALIDATOR_JAR`. Each expects exactly the errors this README lists: none in the revised chains; for a report
+mapped alone, only the two known model causes; for the superseded models' chains, only the 28 obs-6 errors and their
+knock-on reference errors.

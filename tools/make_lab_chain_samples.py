@@ -1,6 +1,7 @@
 """Write synthetic chained-record sets for the SDCHealth Laboratory Report, and check each record against its model.
 
-    python tools/make_lab_chain_samples.py
+    python tools/make_lab_chain_samples.py            # the first revision's models
+    python tools/make_lab_chain_samples.py --revised  # the 2026-11-21 revision's (samples/sdchealth-lab-chains-2026-11-21/)
 
 Each set is one Laboratory Report sample (samples/sdchealth-lab-report/records/) and the records chained to it
 (library decision 12), in samples/sdchealth-lab-chains/chain-NN/:
@@ -10,6 +11,13 @@ Each set is one Laboratory Report sample (samples/sdchealth-lab-report/records/)
 - three Laboratory Observations: the results, each naming the specimen and the request.
 `chain.json` lists the parent and the children. Each child's Parent Record Identifier is the report's Record
 Identifier, its subject is the report's patient (the report's subject details, copied), and its author the report's.
+
+The 2026-11-21 revision's sets (PRD decision 22) differ where the models do: each result's units are its UCUM code
+(mg/dL, mmol/L); a result carries a value or a Data Absent Reason, not both; the test kit, calibrator and a pending
+result's interpretation are left out (optional now); each result has a Reference Range record chained to it (its
+Parent Record Identifier is the result's Record Identifier); and the specimen's collection, with its collector, is a
+Specimen Collection record chained to the specimen (its Parent Record Identifier is the specimen's Accession
+Identifier, a Specimen having no Record Identifier).
 
 The records are made up: no person, professional, organisation, order, specimen or result in them is real. Every LOINC,
 SNOMED CT and UCUM code was looked up on HL7's terminology server (tx.fhir.org, 20 November 2026; see the README in
@@ -34,7 +42,17 @@ REPORT = ROOT / "samples" / "sdchealth-lab-report"
 OUT = ROOT / "samples" / "sdchealth-lab-chains"
 MODELS = {"order-information": "l6m7g3jk6y6tvnisd35l16pw", "specimen": "qws8pcquvnqc55okidyqll83",
           "service-request": "nz971o74u4kuk3ifcxc2llq2", "lab-observation": "d5b3007cqbmejx7xgs7i484r"}
+MODELS_REVISED = {"order-information": "zfh7quqpqxk176c2j4gdestb", "specimen": "dkzoy1j9aw2u7i7x5lseo7ro",
+                  "service-request": "i1jm5rf4ooomt8tbys75o017", "lab-observation": "ojjr56tqlxk808lqq8ig8vg0",
+                  "reference-range": "yg61wcme1sjlnezxh0ho6nh0", "specimen-collection": "idprzkpm6sdqgib5w5wzc3ys"}
+REPORT_REVISED = ROOT / "samples" / "sdchealth-lab-report-2026-11-21"
+OUT_REVISED = ROOT / "samples" / "sdchealth-lab-chains-2026-11-21"
 SETS = 5
+#: Looked up on tx.fhir.org, 21 November 2026 (SNOMED CT International 20260701, UCUM): every one active / valid.
+VENIPUNCTURE = ("28520004", "Venipuncture for blood test")
+MEDIAN_CUBITAL_VEIN = ("49852007", "Structure of median cubital vein")
+#: referencerange-meaning `normal` (Normal Range), one of the values the Reference Range model enumerates
+NORMAL_RANGE = "normal"
 
 LOINC_PANEL = ("24323-8", "Comprehensive metabolic 2000 panel - Serum or Plasma")
 SERUM = ("119364003", "Serum specimen")
@@ -51,8 +69,8 @@ VALUES = [["92", "0.9", "140"], ["131", "1.1", "138"], ["88", "0.8", "EV:NAV"], 
           ["79", "0.7", "137"]]
 
 
-def iid(n: int, kind: str, j: int = 0) -> str:
-    base = f"lc{n:02d}{kind}{j}synth"
+def iid(n: int, kind: str, j: int = 0, revised: bool = False) -> str:
+    base = f"{'lv' if revised else 'lc'}{n:02d}{kind}{j}synth"
     return base + "x" * (24 - len(base))
 
 
@@ -150,7 +168,7 @@ def build(template, instance_id, created, values, report, times=None):
     return etree.tostring(root, xml_declaration=True, encoding="UTF-8") + b"\n"
 
 
-def chain(n: int, templates, report_file: Path):
+def chain(n: int, templates, report_file: Path, revised: bool = False):
     report = etree.parse(str(report_file)).getroot()
     record_id = f"LR-2026-{1000 + n}"
     assert report.findtext(".//{%s}ms-h17egwljmrym3r8ortrqqjwd/xdstring-value" % SDC4) == record_id, report_file
@@ -160,10 +178,11 @@ def chain(n: int, templates, report_file: Path):
     performed = f"{day}T08:15:00+01:00"
     labo = LABS[n % len(LABS)]
     collector = PROFESSIONALS[(n + 2) % len(PROFESSIONALS)]
-    spec_id, req_id = iid(n, "spc", 1), iid(n, "srq", 1)
+    spec_id, req_id = iid(n, "spc", 1, revised), iid(n, "srq", 1, revised)
+    accession = f"ACC-2026-{7000 + n}"
     out = []
 
-    out.append(("order-information", iid(n, "ord", 1), {
+    out.append(("order-information", iid(n, "ord", 1, revised), {
         ("Parent Record Identifier",): record_id,
         ("Order Identifier", "Identifier Value"): f"ORD-2026-{5000 + n}",
         ("Order Identifier", "Issuing Authority"): labo[0],
@@ -172,16 +191,35 @@ def chain(n: int, templates, report_file: Path):
         ("Order Reason (SNOMED CT)", "Code Display Text"): DIABETES[1],
         ("Clinical Question",): "Synthetic sample: glycaemic control and renal function?",
     }, None))
-    out.append(("specimen", spec_id, {
-        ("Accession Identifier",): f"ACC-2026-{7000 + n}",
+    specimen = {
+        ("Accession Identifier",): accession,
         ("Specimen Type (SNOMED CT)", "Specimen Type Code (SNOMED CT)"): SERUM[0],
         ("Specimen Type (SNOMED CT)", "Code Display Text"): SERUM[1],
         ("Specimen Status",): "available",
         ("Received Date Time",): f"{day}T07:50:00+01:00",
         ("Specimen Request Reference",): [iri(req_id)],
+    }
+    collector_values = {
         **professional(collector, ("Specimen Collector Participation", "Specimen Collector", "Health Professional")),
         ("Specimen Collector Participation", "Participation Function (Specimen Collector)"): "specimen collector",
-    }, {"Specimen Collector Participation": (collected, collected)}))
+    }
+    if not revised:
+        out.append(("specimen", spec_id, {**specimen, **collector_values},
+                    {"Specimen Collector Participation": (collected, collected)}))
+    else:
+        out.append(("specimen", spec_id, specimen, None))
+        collection = {
+            ("Parent Record Identifier",): accession,
+            ("Collected Date Time",): collected,
+            ("Specimen Collection Method (SNOMED CT)", "Specimen Collection Method Code (SNOMED CT)"): VENIPUNCTURE[0],
+            ("Specimen Collection Method (SNOMED CT)", "Code Display Text"): VENIPUNCTURE[1],
+            ("Body Structure", "Body Site (SNOMED CT)", "Body Site Code (SNOMED CT)"): MEDIAN_CUBITAL_VEIN[0],
+            ("Body Structure", "Body Site (SNOMED CT)", "Code Display Text"): MEDIAN_CUBITAL_VEIN[1],
+            ("Specimen Collection Quantity",): {"xdquantity-value": "5", "xdquantity-units/xdstring-value": "mL"},
+            **collector_values,
+        }
+        out.append(("specimen-collection", iid(n, "col", 1, revised), collection,
+                    {"Specimen Collector Participation": (collected, collected)}))
     out.append(("service-request", req_id, {
         ("Parent Record Identifier",): record_id,
         ("Record Identifier", "Identifier Value"): f"SR-2026-{6000 + n}",
@@ -226,14 +264,34 @@ def chain(n: int, templates, report_file: Path):
         # required by the model, so never an Exceptional Value: a pending result is IND (indeterminate)
         v[("Interpretation Code",)] = "IND" if pending else \
             ("H" if float(value) > high else ("L" if float(value) < low else "N"))
-        out.append(("lab-observation", iid(n, "obs", j), v, {"Performer Participation": (performed, performed)}))
+        if revised:
+            # the revision: the result's UCUM units, a value or a Data Absent Reason (not both), no test kit or
+            # calibrator, and no interpretation for a pending result
+            for key in [("Lab Observation Test Kit Reference",), ("Lab Observation Calibrator", "Identifier Value"),
+                        ("Lab Observation Calibrator", "Issuing Authority")]:
+                del v[key]
+            if pending:
+                del v[("Observation Result", "Result Quantity")], v[("Interpretation Code",)]
+            else:
+                del v[("Observation Result", "Data Absent Reason")]
+                v[("Observation Result", "Result Quantity")] = {"xdquantity-value": value,
+                                                                 "xdquantity-units/xdstring-value": units}
+        out.append(("lab-observation", iid(n, "obs", j, revised), v, {"Performer Participation": (performed, performed)}))
+        if revised:     # the result's reference range, a record chained to it
+            out.append(("reference-range", iid(n, "rrg", j, revised), {
+                ("Parent Record Identifier",): f"OBS-2026-{n}-{j}",
+                ("Reference Range Low",): {"xdquantity-value": str(low), "xdquantity-units/xdstring-value": units},
+                ("Reference Range High",): {"xdquantity-value": str(high), "xdquantity-units/xdstring-value": units},
+                ("Observation Reference Range Type",): NORMAL_RANGE,
+                ("Observation Reference Range Text",): f"{low}-{high} {units} (synthetic sample)",
+            }, None))
     files = []
     for kind, instance_id, values, times in out:
         files.append((kind, instance_id, build(templates[kind], instance_id, performed, values, report, times)))
     return files
 
 
-def main() -> int:
+def main(revised: bool = False) -> int:
     from sdc_mapper.gate import SDC4_XSD
     from sdcvalidator import build_xsd11_schema
 
@@ -242,31 +300,34 @@ def main() -> int:
 
     parser = etree.XMLParser(resolve_entities=False, no_network=True)
     schemas, templates = {}, {}
-    for kind, ct in MODELS.items():
-        d = ROOT / "samples" / f"sdchealth-{kind}"
+    models = MODELS_REVISED if revised else MODELS
+    out_dir, report_dir = (OUT_REVISED, REPORT_REVISED) if revised else (OUT, REPORT)
+    for kind, ct in models.items():
+        d = ROOT / "samples" / (f"sdchealth-{kind}-2026-11-21" if revised else f"sdchealth-{kind}")
         schemas[kind] = build_xsd11_schema(str(d / f"dm-{ct}.xsd"), uri_mapper=local)
         templates[kind] = etree.parse(str(d / "template" / f"dm-{ct}.xml"), parser)
-    reports = sorted((REPORT / "records").glob("*.xml"))
+    reports = sorted((report_dir / "records").glob("*.xml"))
     bad = 0
     for n in range(SETS):
-        d = OUT / f"chain-{n:02d}"
+        d = out_dir / f"chain-{n:02d}"
         d.mkdir(parents=True, exist_ok=True)
         for old in d.glob("*.xml"):
             old.unlink()
-        manifest = {"parent": str(reports[n].relative_to(ROOT)), "parent_ct_id": "zptekdommw56yiz9lqjy5dga",
+        manifest = {"parent": str(reports[n].relative_to(ROOT)),
+                    "parent_ct_id": "rguwjl3y1d2cxmcv7vooocji" if revised else "zptekdommw56yiz9lqjy5dga",
                     "children": []}
-        for kind, instance_id, xml in chain(n, templates, reports[n]):
+        for kind, instance_id, xml in chain(n, templates, reports[n], revised):
             errors = list(schemas[kind].iter_errors(xml.decode("utf-8")))
             if errors:
                 bad += 1
                 print(f"chain {n} {kind} {instance_id}: {errors[0].reason} at {errors[0].path}", file=sys.stderr)
                 continue
             (d / f"{instance_id}.xml").write_bytes(xml)
-            manifest["children"].append({"file": f"{instance_id}.xml", "model": kind, "ct_id": MODELS[kind]})
+            manifest["children"].append({"file": f"{instance_id}.xml", "model": kind, "ct_id": models[kind]})
         (d / "chain.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    print(f"{SETS} chains written to {OUT.relative_to(ROOT)}; {bad} record(s) failed their model's XSD 1.1 schema")
+    print(f"{SETS} chains written to {out_dir.relative_to(ROOT)}; {bad} record(s) failed their model's XSD 1.1 schema")
     return 1 if bad else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(revised="--revised" in sys.argv[1:]))

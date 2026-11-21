@@ -1,6 +1,7 @@
 """Write the synthetic sample records of the SDCHealth Laboratory Report model, and check each against the model's schema.
 
-    python tools/make_lab_report_samples.py
+    python tools/make_lab_report_samples.py            # the first revision (zptekdommw56yiz9lqjy5dga)
+    python tools/make_lab_report_samples.py --revised  # the 2026-11-21 revision (rguwjl3y1d2cxmcv7vooocji)
 
 The records are made up: no person, professional, organisation or report in them is real. Each is the instance
 template SDCStudio publishes with the model (samples/sdchealth-lab-report/template/, the catalog's `xml` artifact),
@@ -27,6 +28,10 @@ from lxml import etree
 ROOT = Path(__file__).resolve().parents[1]
 CT = "zptekdommw56yiz9lqjy5dga"
 DIR = ROOT / "samples" / "sdchealth-lab-report"
+#: The 2026-11-21 revision (PRD decision 22): fewer members required, Patient's Date of Birth required. Its records
+#: (instance ids `labrevNN...`) leave out some of what the revision made optional.
+CT_REVISED = "rguwjl3y1d2cxmcv7vooocji"
+DIR_REVISED = ROOT / "samples" / "sdchealth-lab-report-2026-11-21"
 SDC4 = "https://semanticdatacharter.com/ns/sdc4/"
 NS = {"sdc4": SDC4}
 EV_NAMES = {"UNK": "Unknown", "ASKU": "Asked but Unknown", "ASKR": "Asked and Refused", "NASK": "Not Asked",
@@ -217,7 +222,7 @@ def lab_details(o, prefix):
     }
 
 
-def record(n: int):
+def record(n: int, revised: bool = False):
     """The values of sample n: a dict of label paths to values, the workflow state, and the participation times."""
     patient = PERSONS[n % len(PERSONS)]
     author = PROFESSIONALS[n % len(PROFESSIONALS)]
@@ -274,6 +279,13 @@ def record(n: int):
         v[("Document Event Type (SNOMED CT)", "Document Event Type Code (SNOMED CT)")] = "EV:UNK"
         del v[("Document Event Type (SNOMED CT)", "Code Display Text")]
 
+    if revised:             # optional since the revision: some reports leave them out
+        if n % 5 == 3:
+            for key in [key for key in v if key[0] == "Attachment"]:
+                del v[key]
+        if n % 7 == 6:
+            for key in [key for key in v if key[0] in ("Practice Setting (SNOMED CT)", "Document Period")]:
+                del v[key]
     v.update(person_details(patient, ("Patient", "Patient")))
     if n == 5:
         v[("Patient", "Patient", "Date of Birth")] = "EV:ASKR"
@@ -302,14 +314,20 @@ def record(n: int):
 
 
 # ---------------------------------------------------------------- the record
-def instance_id(n: int) -> str:
-    return f"labrep{n:02d}synth" + "x" * (24 - len(f"labrep{n:02d}synth"))
+def instance_id(n: int, revised: bool = False) -> str:
+    base = f"{'labrev' if revised else 'labrep'}{n:02d}synth"
+    return base + "x" * (24 - len(base))
 
 
-def build(n: int, template: etree._ElementTree) -> bytes:
-    values, state, times, authored = record(n)
+def participation(root, name: str):
+    """The record's Participation of that label (its element is named by the model's own component)."""
+    return next(p for p in root.findall("sdc4:*", NS) if label(p) == name and p.find("performer") is not None)
+
+
+def build(n: int, template: etree._ElementTree, revised: bool = False) -> bytes:
+    values, state, times, authored = record(n, revised)
     root = copy.deepcopy(template.getroot())
-    root.find("instance_id").text = instance_id(n)
+    root.find("instance_id").text = instance_id(n, revised)
     root.find("creation_timestamp").text = authored
     root.find("instance_version").text = "1"
     for name in ("source_instance_id", "source_version_id"):
@@ -317,8 +335,8 @@ def build(n: int, template: etree._ElementTree) -> bytes:
     root.find("current-state").text = state[2]
 
     # subject and provider: the details the template leaves out, in the template's shape
-    recipient = root.find("sdc4:ms-q5g9nqjxzj0su0rpn8icgqjc/performer/party-details", NS)
-    attester = root.find("sdc4:ms-e7jes8an7n8t58qyabk1nnm2/performer/party-details", NS)
+    recipient = participation(root, "Intended Recipient Participation").find("performer/party-details")
+    attester = participation(root, "Attester Participation").find("performer/party-details")
     root.find("subject").append(copy.deepcopy(recipient))
     root.find("provider").append(copy.deepcopy(attester))
     # the attestation: reason, committer (the legal authenticator), when, and not pending
@@ -386,32 +404,33 @@ def build(n: int, template: etree._ElementTree) -> bytes:
     return etree.tostring(root, xml_declaration=True, encoding="UTF-8") + b"\n"
 
 
-def main(count: int = 15) -> int:
+def main(count: int = 15, revised: bool = False) -> int:
     from sdc_mapper.gate import SDC4_XSD
     from sdcvalidator import build_xsd11_schema
 
     def local(url: str) -> str:
         return str(SDC4_XSD) if url.rstrip("/").endswith("/ns/sdc4/sdc4.xsd") else url
 
-    schema = build_xsd11_schema(str(DIR / f"dm-{CT}.xsd"), uri_mapper=local)
-    template = etree.parse(str(DIR / "template" / f"dm-{CT}.xml"),
+    ct, d = (CT_REVISED, DIR_REVISED) if revised else (CT, DIR)
+    schema = build_xsd11_schema(str(d / f"dm-{ct}.xsd"), uri_mapper=local)
+    template = etree.parse(str(d / "template" / f"dm-{ct}.xml"),
                            etree.XMLParser(resolve_entities=False, no_network=True))
-    out = DIR / "records"
+    out = d / "records"
     out.mkdir(exist_ok=True)
     for old in out.glob("*.xml"):
         old.unlink()
     bad = 0
     for n in range(count):
-        xml = build(n, template)
+        xml = build(n, template, revised)
         errors = list(schema.iter_errors(xml.decode("utf-8")))
         if errors:
             bad += 1
             print(f"sample {n}: {errors[0].reason} at {errors[0].path}", file=sys.stderr)
             continue
-        (out / f"{instance_id(n)}.xml").write_bytes(xml)
+        (out / f"{instance_id(n, revised)}.xml").write_bytes(xml)
     print(f"{count - bad} of {count} records written to {out.relative_to(ROOT)}, each valid against the model's XSD 1.1")
     return 1 if bad else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(revised="--revised" in sys.argv[1:]))

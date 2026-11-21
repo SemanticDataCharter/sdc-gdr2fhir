@@ -89,6 +89,8 @@ def enumerations(xsd: Path) -> dict[str, list[tuple[str, str | None]]]:
 
 def main(name: str, sample: str, ct_id: str) -> int:
     spec = load_spec(name)
+    if hasattr(spec, "configure"):       # a spec written for several revisions of a model: the rules for this one
+        spec.configure(ct_id)
     pkg = load_package(ROOT / sample, ct_id)
     model = read_model(pkg)
     reach = walk(model, data_cluster(ROOT / sample / f"dm-{ct_id}.xsd", ct_id))

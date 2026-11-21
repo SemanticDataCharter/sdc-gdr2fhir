@@ -332,3 +332,17 @@ RULES = [
     *[V(f"Clinical Document: {path} states", f"{ACOMP}/status", derive=states(f"{B}/{DR}/status"))
       for path in ("Main path", "amended entered in error", "final entered in error", "preliminary entered in error")],
 ]
+
+
+# ================================================================ the 2026-11-21 revision
+#: The library's requiredness and units revision (PRD decision 22) published a new Laboratory Report,
+#: `rguwjl3y1d2cxmcv7vooocji`. Its members and parts are the first revision's, with fewer of them required (the
+#: Attachment, the body, the event type, the period and the practice setting are optional; Patient's Date of Birth is
+#: required), so the same rules map it.
+REVISED = "rguwjl3y1d2cxmcv7vooocji"
+
+
+def configure(ct_id):
+    global DATE
+    if ct_id == REVISED:
+        DATE = "2026-11-21"
