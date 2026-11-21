@@ -1,0 +1,418 @@
+{
+ "retired": false,
+ "retired_at": null,
+ "superseded_by": null,
+ "retired_reason": "",
+ "ct_id": "d5b3007cqbmejx7xgs7i484r",
+ "identifier": "dm-d5b3007cqbmejx7xgs7i484r",
+ "title": "Laboratory Observation",
+ "description": "Model for observation performed by laboratory Xt-EHR EHDS EHDSLaboratoryObservation. openEHR archetypes of the same concept, linked by CKM citeable identifier: openEHR-EHR-CLUSTER.laboratory_test_analyte.v1 (published). A record of the SDCHealth library (Xt-EHR EHDS logical models 1.0.0), chained to its report by Parent Record Identifier (PRD decision 12); copy it and edit the copy.",
+ "project_name": "SDCHealth",
+ "about": "Laboratory Observation (EHDS), an SDCHealth record model.",
+ "created": "2026-11-20T16:15:40.838719Z",
+ "updated": "2026-11-20T16:15:40.839404Z",
+ "artifacts": {
+  "xsd": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/xsd/",
+  "xml": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/xml/",
+  "json": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/json/",
+  "jsonld": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/jsonld/",
+  "html": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/html/",
+  "sha1": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/sha1/",
+  "zip": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/zip/",
+  "ttl": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/ttl/",
+  "shacl": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/shacl/",
+  "gql": "/api/v1/catalog/dm/d5b3007cqbmejx7xgs7i484r/gql/"
+ },
+ "components": [
+  {
+   "name": "Lab Observation Test Kit Reference",
+   "type": "XdString",
+   "ct_id": "kg7g4jv96dgyxczcvu5ot9o7",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Observation Order Reference",
+   "type": "XdString",
+   "ct_id": "imjsmm2gi8oe8n2b6s3mrr5t",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Observation Original Name",
+   "type": "XdString",
+   "ct_id": "azlx1thmm0byahrbkti8bq6d",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Observation Specimen Reference",
+   "type": "XdString",
+   "ct_id": "k9nx1qiab57p9uj39ggeasg6",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Parent Record Identifier",
+   "type": "XdString",
+   "ct_id": "b5v4p5ju74ugnzyt9bh98398",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Note",
+   "type": "XdString",
+   "ct_id": "zvkk8ztob9gmrvvkzyibyrzk",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Lab Observation Accreditation Status",
+   "type": "XdBoolean",
+   "ct_id": "xgya1xx27drtxkmrxw5mad3e",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Lab Observation Point Of Care Test",
+   "type": "XdBoolean",
+   "ct_id": "u2x7zrkurrl2shs3ykzoqxdz",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Authored Date",
+   "type": "XdTemporal",
+   "ct_id": "g3m0lzwvs18eckx4wsm6av5d",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Observation Date Time",
+   "type": "XdTemporal",
+   "ct_id": "dkyyj01tksb7h7akq2w7moum",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Interpretation Code",
+   "type": "XdToken",
+   "ct_id": "nej63g3npolq6yjl88wt21lr",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Observation Status",
+   "type": "XdToken",
+   "ct_id": "q9vmn1cvdclgr757aer5v1rg",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Lab Observation Previous Results Reference",
+   "type": "XdStringList",
+   "ct_id": "r7pkvikirvze1pn1e92kyo47",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Lab Observation Triggered By Reference",
+   "type": "XdStringList",
+   "ct_id": "oal6bz8nz98nukyp3vbnuk0b",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Observation Derived From Reference",
+   "type": "XdStringList",
+   "ct_id": "ud4gwv5xqzxrdckn5ro68ghn",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Observation Has Member Reference",
+   "type": "XdStringList",
+   "ct_id": "h59266beboyjw2c2bui1b3kl",
+   "parent_cluster": "e2v14b7k1ak531xnxtr1g13w"
+  },
+  {
+   "name": "Body Structure Description",
+   "type": "XdString",
+   "ct_id": "fh620kyjko05gsi3jn8m6t4z",
+   "parent_cluster": "xohtjzd1hhj8tpj3fkxsug70"
+  },
+  {
+   "name": "Body Site Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "vi7yvq0b8nler3g6alaamrzm",
+   "parent_cluster": "r5koa840csi3zcewts0uo0r5"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "r5koa840csi3zcewts0uo0r5"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "r5koa840csi3zcewts0uo0r5"
+  },
+  {
+   "name": "Body Structure Laterality Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "chou174q5q93jt7g0w9lfa5n",
+   "parent_cluster": "he690qnuvvaqlb8v1ptp4mna"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "he690qnuvvaqlb8v1ptp4mna"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "he690qnuvvaqlb8v1ptp4mna"
+  },
+  {
+   "name": "Body Structure Location Qualifier Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "l4do0educiynocpinpku2e5b",
+   "parent_cluster": "ujrepbxjzrahbfa29rsfgyxj"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "ujrepbxjzrahbfa29rsfgyxj"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "ujrepbxjzrahbfa29rsfgyxj"
+  },
+  {
+   "name": "Body Structure Morphology Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "k8wm7asrylxztr7npwyvoysg",
+   "parent_cluster": "hs99yypi9lf7kmfjo1cm2g2o"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "hs99yypi9lf7kmfjo1cm2g2o"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "hs99yypi9lf7kmfjo1cm2g2o"
+  },
+  {
+   "name": "Code System (Stated)",
+   "type": "XdString",
+   "ct_id": "n9huwfzf4ovm25gsjw91bfqx",
+   "parent_cluster": "wcnwxsfl2p2zdzj90499zy37"
+  },
+  {
+   "name": "Information Source Code",
+   "type": "XdString",
+   "ct_id": "euiy5n2qygj33m7hmue5qdbl",
+   "parent_cluster": "wcnwxsfl2p2zdzj90499zy37"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "wcnwxsfl2p2zdzj90499zy37"
+  },
+  {
+   "name": "Interpretation Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "p802jqxjrets6yg69sjtr6ek",
+   "parent_cluster": "oxk25aj6ts86osjpqw5otuox"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "oxk25aj6ts86osjpqw5otuox"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "oxk25aj6ts86osjpqw5otuox"
+  },
+  {
+   "name": "Identifier Value",
+   "type": "XdString",
+   "ct_id": "h17egwljmrym3r8ortrqqjwd",
+   "parent_cluster": "nu99z6ulymxim2bmv4gvysai"
+  },
+  {
+   "name": "Issuing Authority",
+   "type": "XdString",
+   "ct_id": "kphe1er8qxy2dxqdwhpcfk3z",
+   "parent_cluster": "nu99z6ulymxim2bmv4gvysai"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "j0805v0oz9nj1md7ancanxy2"
+  },
+  {
+   "name": "Observation Method Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "hokt5tpa6zhkifcly8vvz0x1",
+   "parent_cluster": "j0805v0oz9nj1md7ancanxy2"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "j0805v0oz9nj1md7ancanxy2"
+  },
+  {
+   "name": "Period End (DateTime)",
+   "type": "XdTemporal",
+   "ct_id": "kiphf52rt04fftqc74mgmgu5",
+   "parent_cluster": "s9vdotlflt9t1sk3lkragjp9"
+  },
+  {
+   "name": "Period Start (DateTime)",
+   "type": "XdTemporal",
+   "ct_id": "twhl4kqk0uwzihj0e9trtb2k",
+   "parent_cluster": "s9vdotlflt9t1sk3lkragjp9"
+  },
+  {
+   "name": "Result Value Text",
+   "type": "XdString",
+   "ct_id": "n23ng4ksi2lwanddiy7t59kw",
+   "parent_cluster": "i02pyouxnhma7d3ocz4k50f5"
+  },
+  {
+   "name": "Result Quantity",
+   "type": "XdQuantity",
+   "ct_id": "t4ro1haz9r5s3k4n3nyrf68r",
+   "parent_cluster": "i02pyouxnhma7d3ocz4k50f5"
+  },
+  {
+   "name": "Data Absent Reason",
+   "type": "XdToken",
+   "ct_id": "dzdnuls5hryj8dg7vmttlyb0",
+   "parent_cluster": "i02pyouxnhma7d3ocz4k50f5"
+  },
+  {
+   "name": "Observation Result Uncertainty Value",
+   "type": "XdQuantity",
+   "ct_id": "mxra7sabwfd8iqo8xlzrd82f",
+   "parent_cluster": "csjz5iqe33cznrfdf2wfgws7"
+  },
+  {
+   "name": "Observation Result Uncertainty Type",
+   "type": "XdToken",
+   "ct_id": "z72hlqh05a4ulkr0mjbvsl5n",
+   "parent_cluster": "csjz5iqe33cznrfdf2wfgws7"
+  },
+  {
+   "name": "Result Coded Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "zb74umdi3l5xovf1n1r6k12y",
+   "parent_cluster": "wlb0jyay8bshwu9d21bo899k"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "wlb0jyay8bshwu9d21bo899k"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "wlb0jyay8bshwu9d21bo899k"
+  },
+  {
+   "name": "Result Range High",
+   "type": "XdQuantity",
+   "ct_id": "eghnx12ugfms16cvbt3wbdch",
+   "parent_cluster": "vieg2gkymdld332k6cvtodyi"
+  },
+  {
+   "name": "Result Range Low",
+   "type": "XdQuantity",
+   "ct_id": "tfal7bfxvgvttrhqtkou4w7a",
+   "parent_cluster": "vieg2gkymdld332k6cvtodyi"
+  },
+  {
+   "name": "Result Ratio Denominator",
+   "type": "XdQuantity",
+   "ct_id": "ns12gwbt3jcfgydc2qtd80c1",
+   "parent_cluster": "xhhg24t1n63pl69hwaa5985u"
+  },
+  {
+   "name": "Result Ratio Numerator",
+   "type": "XdQuantity",
+   "ct_id": "umiqkhnmb551snjmyjkzdzj9",
+   "parent_cluster": "xhhg24t1n63pl69hwaa5985u"
+  },
+  {
+   "name": "Observation Type Code (NPU)",
+   "type": "XdString",
+   "ct_id": "uw8cgcxd8lch7adw2erwwwko",
+   "parent_cluster": "eilkkoxmqds8wd06ozp9b8p9"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "eilkkoxmqds8wd06ozp9b8p9"
+  },
+  {
+   "name": "Code System: NPU",
+   "type": "XdLink",
+   "ct_id": "tggcm9l408sl8uc5whjnkg1z",
+   "parent_cluster": "eilkkoxmqds8wd06ozp9b8p9"
+  },
+  {
+   "name": "Observation Type Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "u8as8p9g2v0lurptcrm58syb",
+   "parent_cluster": "l6yq0wp1mu8cvnihtcxpysdt"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "l6yq0wp1mu8cvnihtcxpysdt"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "l6yq0wp1mu8cvnihtcxpysdt"
+  },
+  {
+   "name": "Identifier Value",
+   "type": "XdString",
+   "ct_id": "h17egwljmrym3r8ortrqqjwd",
+   "parent_cluster": "nieu1e3llgra1v66p2x8jnwu"
+  },
+  {
+   "name": "Issuing Authority",
+   "type": "XdString",
+   "ct_id": "kphe1er8qxy2dxqdwhpcfk3z",
+   "parent_cluster": "nieu1e3llgra1v66p2x8jnwu"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "eos099uh4pibbymesy1nxh0v"
+  },
+  {
+   "name": "Result Code Code (LOINC)",
+   "type": "XdString",
+   "ct_id": "t81b02q7upd0yy71097jqfse",
+   "parent_cluster": "eos099uh4pibbymesy1nxh0v"
+  },
+  {
+   "name": "Code System: LOINC",
+   "type": "XdLink",
+   "ct_id": "kar8kkxilj1e2fys88mg0dpc",
+   "parent_cluster": "eos099uh4pibbymesy1nxh0v"
+  }
+ ]
+}

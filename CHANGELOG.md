@@ -6,7 +6,33 @@ The first SDCHealth mapping: the Laboratory Report, as a FHIR R4 document Bundle
 Report guide 2.1.0 (`hl7.fhir.eu.laboratory#2.1.0`). HL7's FHIR validator 7.0.6 with the guide fails every sample
 Bundle: 33 errors, all from what the model does not hold. 30 are the order identifier; 3 are a section in the one
 record whose comment is an Exceptional Value.
-Needs sdcreader 4.5.0 and sdc-mapper 4.4.0 (unreleased), so the `sdc-mapper` pin must become `>=4.4` at release.
+With its chained records (order, requests, results, specimens) it is one Bundle. HL7's validator on five chains: 28
+errors, all from the Laboratory Observation model (a data absent reason beside every value, which FHIR's obs-6
+forbids). The order identifier errors are gone.
+Needs sdcreader 4.5.0 and sdc-mapper 4.4.0 (released 20 November 2026): the pin is now `sdc-mapper>=4.4`.
+
+- **Chained records** (`sdc_gdr2fhir.chain`; `FHIRMapper.map_chain`, `chain.map_files`): one Bundle from a parent
+  record and the records chained to it (SDCHealth library decision 12), each mapped by its own model's mapping.
+  `map_files` returns one result: the Bundle and each record's coverage report. The sdc-mapper surfaces (CLI, MCP) are
+  designed in `docs/chained-records.md`, for sdc-mapper 4.5.0.
+  - A child belongs by its Parent Record Identifier (the parent's Record Identifier) or, without one, by another record
+    naming it. A child of another parent, one nobody names, or one about another patient refuses the chain.
+  - A chained mapping names its parent model and its entry in the Bundle rule's `@chained-to` directive. It writes into
+    the parent's entries by their tags, with its own entries and elements kept apart from its siblings'. Mapped alone it
+    is refused.
+  - A `#record`-tagged path holds a record's IRI (or several), written as references to the records' entries.
+  - A document section that lists entries and has no text gets a generated one.
+  - The report mapped alone is byte-identical through either path, and the NHANES output does not change.
+- **Mappings for four chained SDCHealth models**, each with synthetic samples (`samples/sdchealth-lab-chains/`, five
+  chains, 30 records, each valid against its model):
+  - Order Information `l6m7g3jk6y6tvnisd35l16pw` (14 rules): the report's ServiceRequest;
+  - Laboratory Observation `d5b3007cqbmejx7xgs7i484r` (123 rules): Observations in DiagnosticReport.result and a
+    results section;
+  - Specimen `qws8pcquvnqc55okidyqll83` (60 rules);
+  - Service Request `nz971o74u4kuk3ifcxc2llq2` (92 rules).
+- **Laboratory Report: the practice setting's reason corrected.** It said the guide's specialty category is bound to
+  LOINC. It is bound to SNOMED CT laboratory specialties, and belongs to the service specialty, which the model lacks.
+  The value is still omitted (the guide's map has no row for it).
 
 - **SDCHealth Laboratory Report** (`zptekdommw56yiz9lqjy5dga`): its mapping (100 rules, `reference_model: true`) and
   15 synthetic sample records, valid against the model's XSD 1.1 schema. Every code in them was looked up.
@@ -33,7 +59,8 @@ Needs sdcreader 4.5.0 and sdc-mapper 4.4.0 (unreleased), so the `sdc-mapper` pin
     model's element names, or with `element` rules. The coverage check then includes every part's values.
   - It reads an ordinal's state definitions, written without `rdfs:Class`.
   - The NHANES mapping files it regenerates are byte-identical.
-- `tools/make_lab_report_samples.py` writes the Laboratory Report samples from the catalog's instance template.
+- `tools/make_lab_report_samples.py` writes the Laboratory Report samples from the catalog's instance template, and
+  `tools/make_lab_chain_samples.py` the chains.
 
 ## 4.1.0 (2026-11-19)
 

@@ -148,12 +148,13 @@ RULES = [
     C("Document Period", "."),
     V("Document Period Start", f"{COMP}/=event/period/start", also=[{"to": f"{DR}/effectivePeriod/start", "transform": "copy"}]),
     V("Document Period End", f"{COMP}/=event/period/end", also=[{"to": f"{DR}/effectivePeriod/end", "transform": "copy"}]),
-    # MAP header.practiceSetting: no target. The guide's Composition has no practice setting, and its specialty
-    # category (category:specialty, MAP header.serviceSpecialty) is bound (required) to the guide's LOINC specialties.
+    # MAP header.practiceSetting: no row. The guide's specialty category (category:specialty, bound (required) to
+    # lab-specialty-eu-lab, SNOMED CT laboratory specialties) is header.serviceSpecialty's, which the model does not
+    # have; the practice setting is not the service's specialty.
     OMIT_C("Practice Setting (SNOMED CT)",
-           "the HL7 Europe Laboratory Report guide 2.1.0 has no element for the practice setting (its map gives "
-           "header.practiceSetting no target), and its specialty category is bound (required) to LOINC codes, not "
-           "SNOMED CT"),
+           "the HL7 Europe Laboratory Report guide 2.1.0's map has no row for header.practiceSetting; its specialty "
+           "category (lab-specialty-eu-lab, SNOMED CT laboratory specialties) is header.serviceSpecialty's, which "
+           "the model does not have"),
     # The record this one belongs to (PRD decision 12: an entry's document, a reaction's allergy). A report belongs to
     # no other record; Composition.relatesTo is a document's relation to another document (replaces, appends,
     # transforms, signs), not belonging, so it is not that.

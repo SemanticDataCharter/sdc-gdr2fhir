@@ -1,0 +1,100 @@
+{
+ "retired": false,
+ "retired_at": null,
+ "superseded_by": null,
+ "retired_reason": "",
+ "ct_id": "qws8pcquvnqc55okidyqll83",
+ "identifier": "dm-qws8pcquvnqc55okidyqll83",
+ "title": "Specimen",
+ "description": "Model for a specimen to be used for analysis Xt-EHR EHDS EHDSSpecimen. openEHR archetypes of the same concept, linked by CKM citeable identifier: openEHR-EHR-CLUSTER.specimen.v1 (published). A record of the SDCHealth library (Xt-EHR EHDS logical models 1.0.0), referenced from observations and requests by its accession identifier; copy it and edit the copy.",
+ "project_name": "SDCHealth",
+ "about": "Specimen (EHDS), an SDCHealth record model.",
+ "created": "2026-11-20T16:15:44.863454Z",
+ "updated": "2026-11-20T16:15:44.864075Z",
+ "artifacts": {
+  "xsd": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/xsd/",
+  "xml": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/xml/",
+  "json": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/json/",
+  "jsonld": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/jsonld/",
+  "html": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/html/",
+  "sha1": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/sha1/",
+  "zip": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/zip/",
+  "ttl": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/ttl/",
+  "shacl": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/shacl/",
+  "gql": "/api/v1/catalog/dm/qws8pcquvnqc55okidyqll83/gql/"
+ },
+ "components": [
+  {
+   "name": "Specimen Source Reference",
+   "type": "XdString",
+   "ct_id": "ole7ms3lkwgix1winozlwwkp",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Accession Identifier",
+   "type": "XdString",
+   "ct_id": "yfgaozed8j7bmza0kipkpa3c",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Note",
+   "type": "XdString",
+   "ct_id": "zvkk8ztob9gmrvvkzyibyrzk",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Received Date Time",
+   "type": "XdTemporal",
+   "ct_id": "alx0kidf4rsfkw629yhxls0n",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Specimen Combined",
+   "type": "XdToken",
+   "ct_id": "yo8rehj1kjwj69yftisnngwu",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Specimen Condition",
+   "type": "XdToken",
+   "ct_id": "p6zwenvjwmiph5fh6plbg4r3",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Specimen Status",
+   "type": "XdToken",
+   "ct_id": "r2q2imyqznla35wrd3hvwzz8",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Specimen Parent Specimen Reference",
+   "type": "XdStringList",
+   "ct_id": "qeom247emp459u3jaw4qjfly",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Specimen Request Reference",
+   "type": "XdStringList",
+   "ct_id": "ywgbfnicyi81lkimoy9n132o",
+   "parent_cluster": "tkeyrlexm503526pztmcl6ov"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "z745kp9alza1pw9cljepuati"
+  },
+  {
+   "name": "Specimen Type Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "g2th9ypxvjvctbym1cj61m3x",
+   "parent_cluster": "z745kp9alza1pw9cljepuati"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "z745kp9alza1pw9cljepuati"
+  }
+ ]
+}

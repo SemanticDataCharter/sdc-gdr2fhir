@@ -1,0 +1,202 @@
+# SDCHealth Service Request, chained to a Laboratory Report, in its FHIR R4 document Bundle
+# Written by tools/build_mapping.py from tools/specs/sdchealth_service_request.py; labels in the comments.
+mapping:
+  id: sdchealth-service-request-fhir-r4
+  version: 1
+  author: Axius SDC, Inc.
+  date: '2026-11-20'
+  description: 'An SDCHealth Service Request record chained to a Laboratory Report (library decision 12): a ServiceRequest
+    (ServiceRequestLabEu, HL7 Europe Laboratory Report 2.1.0) in the report''s Bundle, which its DiagnosticReport is based
+    on. It maps only with its report (sdc-gdr2fhir''s map_chain).'
+model:
+  ct_id: nz971o74u4kuk3ifcxc2llq2
+  schema_sha256: 7e99704a842fc583dcf20d7800c78a4abbaf2f973782f4aeb25126dbd7900d45
+target:
+  name: HL7 FHIR
+  version: R4
+reference_model: true
+rules:
+  # Service Request
+  - {cluster: sznl1929i4kg1j4r9vcepg7l, to: Bundle, attributes: {'@chained-to': zptekdommw56yiz9lqjy5dga req}}
+  # Request Status
+  - {component: p9om69o11atixo3cy8by8j85, to: /Bundle/=entry#req/=resource/status, transform: binding, prefix: 'http://hl7.org/fhir/request-status', attributes: {resourceType: ServiceRequest, meta/profile: 'http://hl7.eu/fhir/laboratory/StructureDefinition/ServiceRequest-eu-lab', intent: order, subject/reference: '{entry#patient}', requester/reference: '{entry#reqauthor}'}, also: [{to: /Bundle/=entry#dr/=resource/+basedOn/reference, transform: constant, value: '{entry#req}'}]}
+  # Record Identifier
+  - {cluster: nieu1e3llgra1v66p2x8jnwu, to: /Bundle/=entry#req/=resource/identifier}
+  # Identifier Value (within Record Identifier)
+  - {component: h17egwljmrym3r8ortrqqjwd, within: [nieu1e3llgra1v66p2x8jnwu], to: value, transform: copy}
+  # Issuing Authority (within Record Identifier)
+  - {component: kphe1er8qxy2dxqdwhpcfk3z, within: [nieu1e3llgra1v66p2x8jnwu], to: assigner/display, transform: copy}
+  # Authored Date
+  - {component: g3m0lzwvs18eckx4wsm6av5d, to: /Bundle/=entry#req/=resource/authoredOn, transform: copy}
+  # Request Priority
+  - {component: hzc265kkzw4s8y183wfawsbl, to: /Bundle/=entry#req/=resource/priority, transform: binding, prefix: 'http://hl7.org/fhir/request-priority'}
+  # Order (LOINC)
+  - {cluster: o7oe30yd1g4xrgcr01yzzerj, to: /Bundle/=entry#req/=resource/code/coding#loinc}
+  # Code System: LOINC (within Order (LOINC))
+  - {component: kar8kkxilj1e2fys88mg0dpc, within: [o7oe30yd1g4xrgcr01yzzerj], to: system, transform: copy}
+  # Order Code (LOINC)
+  - {component: b6b9bvrzs5f65vjf5m9sywei, to: code, transform: copy}
+  # Code Display Text (within Order (LOINC))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [o7oe30yd1g4xrgcr01yzzerj], to: display, transform: copy}
+  # Service Request (NPU)
+  - {cluster: y3ti8kourc4bv7gsvp8xhy6i, to: /Bundle/=entry#req/=resource/code/coding#npu}
+  # Code System: NPU (within Service Request (NPU))
+  - {component: tggcm9l408sl8uc5whjnkg1z, within: [y3ti8kourc4bv7gsvp8xhy6i], to: system, transform: copy}
+  # Service Request Code (NPU)
+  - {component: zk8djc5ha4bxb9ynf688jk71, to: code, transform: copy}
+  # Code Display Text (within Service Request (NPU))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [y3ti8kourc4bv7gsvp8xhy6i], to: display, transform: copy}
+  # Service Request (SNOMED CT)
+  - {cluster: hcds9y7yqsb2l5di1ixpceuo, to: /Bundle/=entry#req/=resource/code/coding#sct}
+  # Code System: SNOMED CT (within Service Request (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [hcds9y7yqsb2l5di1ixpceuo], to: system, transform: copy}
+  # Service Request Code (SNOMED CT)
+  - {component: pyo4pu2uxjh8ql1rxf5bj1bc, to: code, transform: copy}
+  # Code Display Text (within Service Request (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [hcds9y7yqsb2l5di1ixpceuo], to: display, transform: copy}
+  # Service Request Quantity
+  - {component: o38ttnsj02cuany654c71lkw, to: /Bundle/=entry#req/=resource/quantityQuantity/value, transform: copy, units: {to: '@unit', transform: copy}}
+  # Service Request Occurrence Period
+  - {cluster: y92xs8p1gfgr16ttg44y96uv, to: /Bundle/=entry#req/=resource/occurrencePeriod}
+  # Period Start (DateTime) (within Service Request Occurrence Period)
+  - {component: twhl4kqk0uwzihj0e9trtb2k, within: [y92xs8p1gfgr16ttg44y96uv], to: start, transform: copy}
+  # Period End (DateTime) (within Service Request Occurrence Period)
+  - {component: kiphf52rt04fftqc74mgmgu5, within: [y92xs8p1gfgr16ttg44y96uv], to: end, transform: copy}
+  # Order Requested Date
+  - {component: fi2all14ke4z5jvwnpdzdxee, to: '-', transform: omit, reason: 'ServiceRequest.occurrence[x] holds the occurrence period; the requested date has no second place'}
+  # Diagnosis (ICD-10)
+  - {cluster: kpi10i4hudakb8pmfj08s3im, to: /Bundle/=entry#req/=resource/+reasonCode}
+  # Code System: ICD-10 (within Diagnosis (ICD-10))
+  - {component: ll8ry7w3ez2gs7je7kbft8xh, within: [kpi10i4hudakb8pmfj08s3im], to: coding/system, transform: copy}
+  # Code Display Text (within Diagnosis (ICD-10))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [kpi10i4hudakb8pmfj08s3im], to: text, transform: copy}
+  # Diagnosis (ORPHAcode)
+  - {cluster: hrfexijjnh90d9kh3fsxer93, to: /Bundle/=entry#req/=resource/+reasonCode}
+  # Code System: ORPHAcode (within Diagnosis (ORPHAcode))
+  - {component: g3ldyyowqv7e6cj3pormgpzw, within: [hrfexijjnh90d9kh3fsxer93], to: coding/system, transform: copy}
+  # Code Display Text (within Diagnosis (ORPHAcode))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [hrfexijjnh90d9kh3fsxer93], to: text, transform: copy}
+  # Diagnosis (SNOMED CT)
+  - {cluster: fv8e2asumlgp9l4o9p3i2jsf, to: /Bundle/=entry#req/=resource/+reasonCode}
+  # Code System: SNOMED CT (within Diagnosis (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [fv8e2asumlgp9l4o9p3i2jsf], to: coding/system, transform: copy}
+  # Code Display Text (within Diagnosis (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [fv8e2asumlgp9l4o9p3i2jsf], to: text, transform: copy}
+  # Diagnosis Code (ICD-10)
+  - {component: s4zjbv9wfc0pjw41sfs1tiq2, to: coding/code, transform: copy}
+  # Diagnosis Code (ORPHAcode)
+  - {component: qw18iz6j4k2xohdka0u1fikv, to: coding/code, transform: copy}
+  # Diagnosis Code (SNOMED CT)
+  - {component: khpm67tzpl0myig6xgvwczpx, to: coding/code, transform: copy}
+  # Service Request Reason
+  - {component: f1dyno15te7gxw35kfk02azw, to: '-', transform: omit, reason: 'the IRIs of other records, as one list value; ServiceRequest.reasonReference takes references to resources, and the records are not in the chain'}
+  # Body Structure
+  - {cluster: xohtjzd1hhj8tpj3fkxsug70, to: .}
+  # Body Site (SNOMED CT)
+  - {cluster: r5koa840csi3zcewts0uo0r5, to: /Bundle/=entry#req/=resource/bodySite}
+  # Code System: SNOMED CT (within Body Site (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [r5koa840csi3zcewts0uo0r5], to: coding/system, transform: copy}
+  # Body Site Code (SNOMED CT)
+  - {component: vi7yvq0b8nler3g6alaamrzm, to: coding/code, transform: copy}
+  # Code Display Text (within Body Site (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [r5koa840csi3zcewts0uo0r5], to: text, transform: copy}
+  # Body Structure Laterality (SNOMED CT)
+  - {cluster: he690qnuvvaqlb8v1ptp4mna, to: '-', transform: omit, reason: 'R4''s ServiceRequest.bodySite is a CodeableConcept, the site; laterality, location qualifier and morphology are a BodyStructure''s'}
+  # Body Structure Location Qualifier (SNOMED CT)
+  - {cluster: ujrepbxjzrahbfa29rsfgyxj, to: '-', transform: omit, reason: 'R4''s ServiceRequest.bodySite is a CodeableConcept, the site; laterality, location qualifier and morphology are a BodyStructure''s'}
+  # Body Structure Morphology (SNOMED CT)
+  - {cluster: hs99yypi9lf7kmfjo1cm2g2o, to: '-', transform: omit, reason: 'R4''s ServiceRequest.bodySite is a CodeableConcept, the site; laterality, location qualifier and morphology are a BodyStructure''s'}
+  # Body Structure Description
+  - {component: fh620kyjko05gsi3jn8m6t4z, to: '-', transform: omit, reason: 'a BodyStructure''s description; R4''s ServiceRequest.bodySite is a CodeableConcept, the site''s code'}
+  # Service Request Specimen Reference
+  - {component: ee3fyuhpjhwaoi6clnce52ip, to: /Bundle/=entry#req/=resource/+specimen#record/reference, transform: copy}
+  # Service Request Supporting Information Reference
+  - {component: esazl0t17incfk47ldw7mnhb, to: '-', transform: omit, reason: 'the IRIs of other records, as one list value; ServiceRequest.supportingInfo takes references to resources, and the records are not in the chain'}
+  # Service Request Encounter Reference
+  - {component: fkl5uqwuufrdwxrj652ntr26, to: '-', transform: omit, reason: 'the IRI of an encounter record, which is not in the chain; ServiceRequest.encounter takes a reference to a resource'}
+  # Patient Instructions
+  - {component: ma6w64h9cpmci1qiazdmtaoz, to: /Bundle/=entry#req/=resource/patientInstruction, transform: copy}
+  # Request Note
+  - {component: t1xv3ihag24rjmkv2n7ny3ka, to: /Bundle/=entry#req/=resource/+note/text, transform: copy}
+  # Information Source (Coded, System Stated)
+  - {cluster: wcnwxsfl2p2zdzj90499zy37, to: '-', transform: omit, reason: 'the guide''s map gives header.source no target: ServiceRequest has no element for the source of the information'}
+  # Parent Record Identifier
+  - {component: b5v4p5ju74ugnzyt9bh98398, to: '-', transform: omit, reason: 'the chain''s join: the report this record belongs to, which is the Bundle it is written in'}
+  # subject
+  - {cluster: subject, to: '-', transform: omit, reason: 'the report''s subject: a chained record is about the report''s patient (sdc-gdr2fhir checks that their identifiers agree), whose Patient entry the report writes'}
+  # provider
+  - {cluster: provider, to: /Bundle/=entry#reqauthor/=resource, attributes: {resourceType: Practitioner, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/practitioner-eu-core'}}
+  # party-details
+  - {cluster: party-details, to: .}
+  # Human Name
+  - {cluster: g50zuf7amwobbgifx7o52i5l, to: name}
+  # Given Name (Person)
+  - {component: l9l169co9r23e6fftpvdz4e3, to: given, transform: copy}
+  # Surname (Person)
+  - {component: jc1lfk3ovt6l8frhxvx8b669, to: family, transform: copy}
+  # Name Prefix
+  - {component: yahxccv0l1z6ykjxayzkdlkq, to: prefix, transform: copy}
+  # Name Suffix
+  - {component: l509t0zajfl5atns64d5kl97, to: suffix, transform: copy}
+  # Name As Written
+  - {component: dp1zp58fx23u0yrs3j9ogqxt, to: text, transform: copy}
+  # Name Use
+  - {component: bfqinvm7qrgi9jjw1i637moh, to: use, transform: binding, prefix: 'http://hl7.org/fhir/name-use'}
+  # Address
+  - {cluster: omhsrouda4mt73j1t1fzakqz, to: address}
+  # Address (Line 1)
+  - {component: ncxxt7wgs7soxw7kbmapxvg3, to: +line, transform: copy}
+  # Thoroughfare
+  - {component: zzvw3p4x9xcxo6q1xqymvrct, to: +line, transform: copy}
+  # Premises Identifier
+  - {component: gzfu10juglu35llepko2huo9, to: +line, transform: copy}
+  # Delivery Service
+  - {component: u7rvm7j5oiuydsiwl0dglpl8, to: +line, transform: copy}
+  # City Name
+  - {component: a69l16mqaotn0py958oxahhz, to: city, transform: copy}
+  # Postal Code
+  - {component: w6nfslk6scfpenoewq3eqnev, to: postalCode, transform: copy}
+  # Address Use
+  - {component: b25dj42zxhm19pih328ga8pl, to: use, transform: binding, prefix: 'http://hl7.org/fhir/address-use'}
+  # Address Type
+  - {component: ml1y0608by1jakreu950oqb7, to: type, transform: binding, prefix: 'http://hl7.org/fhir/address-type'}
+  # Country
+  - {cluster: u0rvm9o99w3ked99wbsjyqcj, to: .}
+  # Country Code ISO 3166
+  - {component: f2jicaigehz7xmwcp1gm5gh0, to: country, transform: copy}
+  # Country Name
+  - {component: gll1lakps0m1mgas18flfjwq, to: '-', transform: omit, reason: 'FHIR''s Address.country is one string, which holds the record''s ISO 3166 code; the country''s name has no second place (HL7 Europe Base''s country-code extension is not written here)'}
+  # Telecom
+  - {cluster: lv6uk4agn7as0er1bely65oi, to: telecom}
+  # Phone Number
+  - {component: zpfwg52r88j6jdypj7rg71ke, to: value, transform: copy}
+  # Email Address
+  - {component: q922mqaon3yn5zlwf2bszf28, to: ../+telecom/value, transform: copy, also: [{to: ../+telecom/system, transform: constant, value: email}]}
+  # Contact Method
+  - {component: miqo30r5b554nyj7ubryw43x, to: system, transform: binding, prefix: 'http://hl7.org/fhir/contact-point-system'}
+  # Contact Use
+  - {component: vmruk4j9y1orvvz8cwafrax5, to: use, transform: binding, prefix: 'http://hl7.org/fhir/contact-point-use'}
+  # Person Identifier
+  - {cluster: xxvvs7fuoz5lrz44128su7kg, to: identifier}
+  # Identifier Value
+  - {component: h17egwljmrym3r8ortrqqjwd, to: value, transform: copy}
+  # Issuing Authority
+  - {component: kphe1er8qxy2dxqdwhpcfk3z, to: assigner/display, transform: copy}
+  # Person Identifier Type
+  - {component: h2pd0ns7lx2vzey41z6ggt8r, to: type/text, transform: copy, also: [{to: type/coding/system, transform: code, table: {SS: 'http://terminology.hl7.org/CodeSystem/v2-0203', PPN: 'http://terminology.hl7.org/CodeSystem/v2-0203', DL: 'http://terminology.hl7.org/CodeSystem/v2-0203', MR: 'http://terminology.hl7.org/CodeSystem/v2-0203', NI: 'http://terminology.hl7.org/CodeSystem/v2-0203', U: 'http://terminology.hl7.org/CodeSystem/v2-0203'}}, {to: type/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Driver License Number
+  - {component: eg635xgsjvipb1rxmaqzt7pv, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Passport Number
+  - {component: g6b7o2z5fdo71vv4t4vv3kfl, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Social Security Number
+  - {component: b77u36g6lormbn7jfls25h5f, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Country Code ISO 3166 (within Person Identifier)
+  - {component: f2jicaigehz7xmwcp1gm5gh0, within: [xxvvs7fuoz5lrz44128su7kg], to: '-', transform: omit, reason: FHIR's Identifier has no element for the country that issued it}
+  # Administrative Gender
+  - {component: gxzbm758mhdz51xd4bawlfhh, to: gender, transform: binding, prefix: 'http://hl7.org/fhir/administrative-gender'}
+  # Date of Birth
+  - {component: js564tazefb6udqlh12rj04l, to: birthDate, transform: copy}
+  # Deceased Indicator
+  - {component: fnr5q1tfq42ez9jia9dqueho, to: deceasedBoolean, transform: copy}
+  # Deceased Date
+  - {component: vnlhr9c3ykayyegumhb09snf, to: deceasedDateTime, transform: copy}

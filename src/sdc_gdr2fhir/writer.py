@@ -28,6 +28,7 @@ element name never starts with `@`):
 """
 from __future__ import annotations
 
+import html
 import json
 import uuid
 from dataclasses import dataclass, field
@@ -101,7 +102,7 @@ BUNDLE_TYPES = {"collection": ("Patient",), "document": ("Composition", "Patient
 #: - `blood-pressure-components`: a blood pressure panel (LOINC 85354-9) has a systolic and a diastolic component, in
 #:   that order (FHIR R4's vital signs profile); a reading with only one gets the other with dataAbsentReason unknown.
 OBSERVATION_RULES = ("date-time-over-period", "blood-pressure-components")
-DIRECTIVES = ("@first", "@observation")
+DIRECTIVES = ("@first", "@observation", "@chained-to")
 
 BP_PANEL = "85354-9"
 BP_COMPONENTS = ("8480-6", "8462-4")              # systolic, diastolic: the profile's slices, in its order
@@ -126,6 +127,26 @@ def _absent_component(code: str) -> Node:
         Node("dataAbsentReason", key, children=[Node("coding", key, children=[
             Node("system", key, text=DATA_ABSENT_REASON), Node("code", key, text="unknown")])]),
     ])
+
+
+def _summary(resource: Node | None) -> str:
+    """A resource as one line of a generated narrative: its code (text, else display, else code) and its value."""
+    if resource is None:
+        return ""
+    def t(node, *path):
+        for name in path:
+            node = node.child(name) if node is not None else None
+        return node.text if node is not None else None
+    code = resource.child("code")
+    what = t(code, "text") or t(code, "coding", "display") or t(code, "coding", "code") or \
+        (resource.child("resourceType") or Node("", ())).text or ""
+    q = resource.child("valueQuantity")
+    value = (" ".join(x for x in (t(q, "value"), t(q, "unit") or t(q, "code")) if x) if q is not None else None) \
+        or t(resource, "valueString") or t(resource, "valueCodeableConcept", "text") \
+        or t(resource, "valueCodeableConcept", "coding", "display") or t(resource, "valueCodeableConcept", "coding", "code")
+    if value is None and resource.child("dataAbsentReason") is not None:
+        value = "no value (" + (t(resource, "dataAbsentReason", "coding", "code") or "absent") + ")"
+    return f"{what}: {value}" if value else what
 
 
 def _where(steps) -> str:
@@ -236,9 +257,30 @@ class Builder:
         for e in entries:
             self._profiles(e.child("resource"), observation)
         self._references(self.root, urls)
+        if kind.text == "document":
+            self._section_narratives(entries)
         bundle = self._json(self.root, self.defs["Bundle"])
         self._validate(bundle)
         return _dumps(bundle).encode("utf-8")
+
+    @staticmethod
+    def _section_narratives(entries):
+        """A document section that lists entries and has no text gets one, generated from them (`generated`): each
+        entry's code and value, as an XHTML list. A section's text is required (Composition-eu-lab), and a section of
+        chained records' results has no text of its own."""
+        by_url = {(e.child("fullUrl") or Node("", ())).text: e.child("resource") for e in entries}
+        composition = entries[0].child("resource") if entries else None
+        if composition is None or (composition.child("resourceType") or Node("", ())).text != "Composition":
+            return
+        for section in (c for c in composition.children if c.element == "section"):
+            refs = [(c.child("reference") or Node("", ())).text for c in section.children if c.element == "entry"]
+            if not refs or section.child("text") is not None:
+                continue
+            items = "".join(f"<li>{html.escape(_summary(by_url.get(r)), quote=False)}</li>" for r in refs)
+            key = ("narrative",)
+            section.children.append(Node("text", key, children=[
+                Node("status", key, text="generated"),
+                Node("div", key, text=f'<div xmlns="http://www.w3.org/1999/xhtml"><ul>{items}</ul></div>')]))
 
     def _directives(self) -> dict[str, str]:
         """The writer's directives among the Bundle's members (`@first`, `@observation`), taken out of the Bundle."""

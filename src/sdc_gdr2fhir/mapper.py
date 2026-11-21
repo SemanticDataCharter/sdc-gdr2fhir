@@ -59,7 +59,7 @@ class FHIRMapper:
         """The mapper for the FHIR version a mapping's `target.version` names."""
         return cls(mapping.target_version)
 
-    def map(self, record, mapping) -> MapResult:
+    def _check(self, mapping):
         if mapping is None:
             raise MappingError("FHIR needs a mapping file: the model does not say which resource each value belongs to")
         if mapping.target_version != self.target_version:
@@ -70,10 +70,33 @@ class FHIRMapper:
         if mapping.exceptional_values:
             raise MappingError(f"FHIR {self.target_version} writes every ISO 21090 code exactly; a mapping cannot "
                                "change that")
+
+    def map(self, record, mapping) -> MapResult:
+        self._check(mapping)
         placements, clusters = place(record, mapping)
+        writes, notes = self._writes(placements, record)
+        if any(_directive(w) == CHAINED for w in writes) or any(CHAINED in c.attributes for c in clusters):
+            raise MappingError(f"mapping {mapping.id} is for a record chained to a parent record ({CHAINED}): it "
+                               "writes into the parent's Bundle, so it maps only with its parent (map_chain)")
         b = Builder(mapping.target_version)
+        _put_all(b, writes)
+        _cluster_attributes(b, clusters)
+        bundle = b.finish(record.instance_id)
+        outcomes = self._outcomes(placements, notes, mapping)
+        return MapResult(files={"Bundle.json": bundle}, outcomes=outcomes, cannot_hold=list(CANNOT_HOLD))
+
+    def map_chain(self, parent, children):
+        """One Bundle from a parent record and the records chained to it: `parent` and each of `children` is a
+        (resolved record, mapping) pair, each child mapped by its own model's mapping. Returns a `chain.ChainMapResult`:
+        the Bundle and each record's MapResult, the parent's first. A child that does not belong refuses the chain
+        (`chain.ChainError`)."""
+        from .chain import ChainWriter
+        return ChainWriter(self).write(parent, children)
+
+    def _writes(self, placements, record):
+        """Every write a record's placements make, in order, and the notes on values with nothing to write."""
         notes: dict[int, str] = {}
-        later = []
+        out = []
         for p in placements:
             v = p.value
             if p.omitted or p.rule is None or not p.steps:
@@ -107,22 +130,10 @@ class FHIRMapper:
                 writes.append((self._steps(e.steps, e.attribute), e.text, None))
             writes += [(self._resource(p.steps) + [(part, ("attr",)) for part in k.split("/")], val, None)
                        for k, val in p.attributes.items()]
-            writes = [w for w in (_record_value(w, record) for w in writes) if w is not None]
-            for w in writes:
-                if any(key == JOIN for _, key in w[0]):
-                    later.append(w)             # '=name' joins wait until every element they may join exists
-                else:
-                    b.put(*w)
-        for w in sorted(later, key=lambda w: join_depth(w[0])):   # shallowest join first (sdc-mapper 4.3.0)
-            b.put(*w)
-        for c in clusters:
-            node = b.find(c.steps)
-            if node is not None:
-                for k, val in c.attributes.items():
-                    b.put(c.steps + [(part, ("attr",)) for part in k.split("/")], val)
-        instance_id = record.instance_id
-        bundle = b.finish(instance_id)
+            out += [w for w in (_record_value(w, record) for w in writes) if w is not None]
+        return out, notes
 
+    def _outcomes(self, placements, notes, mapping) -> list[ValueOutcome]:
         outcomes, missing = [], []
         for p in placements:
             v = p.value
@@ -141,7 +152,7 @@ class FHIRMapper:
                 outcomes.append(ValueOutcome(v.position, LOOKUP if lookup else DECLARED, location=self._where(p)))
         if missing:
             raise IncompleteMapping(f"mapping {mapping.id} has no rule for {len(missing)} value(s): " + "; ".join(missing[:5]))
-        return MapResult(files={"Bundle.json": bundle}, outcomes=outcomes, cannot_hold=list(CANNOT_HOLD))
+        return outcomes
 
     # ------------------------------------------------------------ paths
     @staticmethod
@@ -183,6 +194,34 @@ class FHIRMapper:
     @staticmethod
     def _where(p) -> str:
         return _join(p.steps) + (f"/{p.attribute}" if p.attribute else "")
+
+
+#: The Bundle directive a chained record's mapping carries: `<parent model ct_id> <tag of the record's own entry>`.
+CHAINED = "@chained-to"
+
+
+def _directive(write) -> str | None:
+    steps = write[0]
+    return steps[1][0] if len(steps) == 2 and steps[0][0] == "Bundle" and steps[1][0].startswith("@") else None
+
+
+def _put_all(b, writes):
+    later = []
+    for w in writes:
+        if any(key == JOIN for _, key in w[0]):
+            later.append(w)                     # '=name' joins wait until every element they may join exists
+        else:
+            b.put(*w)
+    for w in sorted(later, key=lambda w: join_depth(w[0])):   # shallowest join first (sdc-mapper 4.3.0)
+        b.put(*w)
+
+
+def _cluster_attributes(b, clusters):
+    for c in clusters:
+        node = b.find(c.steps)
+        if node is not None:
+            for k, val in c.attributes.items():
+                b.put(c.steps + [(part, ("attr",)) for part in k.split("/")], val)
 
 
 def _tagged(steps) -> list:

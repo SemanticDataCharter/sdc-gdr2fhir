@@ -1,0 +1,88 @@
+{
+ "retired": false,
+ "retired_at": null,
+ "superseded_by": null,
+ "retired_reason": "",
+ "ct_id": "l6m7g3jk6y6tvnisd35l16pw",
+ "identifier": "dm-l6m7g3jk6y6tvnisd35l16pw",
+ "title": "Order Information",
+ "description": "Order Information (Imaging Result Report could respond to multiple orders). Xt-EHR EHDS EHDSImagingReport.body.orderInformation, EHDSLaboratoryReport.body.orderInformation. A record of the SDCHealth library (Xt-EHR EHDS logical models 1.0.0), chained to its report by Parent Record Identifier (PRD decision 12); copy it and edit the copy.",
+ "project_name": "SDCHealth",
+ "about": "Order Information (EHDS), an SDCHealth record model.",
+ "created": "2026-11-20T16:15:39.849628Z",
+ "updated": "2026-11-20T16:15:39.850600Z",
+ "artifacts": {
+  "xsd": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/xsd/",
+  "xml": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/xml/",
+  "json": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/json/",
+  "jsonld": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/jsonld/",
+  "html": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/html/",
+  "sha1": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/sha1/",
+  "zip": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/zip/",
+  "ttl": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/ttl/",
+  "shacl": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/shacl/",
+  "gql": "/api/v1/catalog/dm/l6m7g3jk6y6tvnisd35l16pw/gql/"
+ },
+ "components": [
+  {
+   "name": "Clinical Question",
+   "type": "XdString",
+   "ct_id": "e6xmyl8p065nvbqqel96tpig",
+   "parent_cluster": "oe4h5bs4xg5p9fap3s0vg48w"
+  },
+  {
+   "name": "Parent Record Identifier",
+   "type": "XdString",
+   "ct_id": "b5v4p5ju74ugnzyt9bh98398",
+   "parent_cluster": "oe4h5bs4xg5p9fap3s0vg48w"
+  },
+  {
+   "name": "Sequence In Parent",
+   "type": "XdCount",
+   "ct_id": "ygwcc97gtq45lqpbam8l44w6",
+   "parent_cluster": "oe4h5bs4xg5p9fap3s0vg48w"
+  },
+  {
+   "name": "Order Authored Date",
+   "type": "XdTemporal",
+   "ct_id": "vf60qsr7iuiksunlnr3zu09o",
+   "parent_cluster": "oe4h5bs4xg5p9fap3s0vg48w"
+  },
+  {
+   "name": "Order Reason Reference",
+   "type": "XdStringList",
+   "ct_id": "j2grrxn9v58jvjsnre3pe334",
+   "parent_cluster": "oe4h5bs4xg5p9fap3s0vg48w"
+  },
+  {
+   "name": "Identifier Value",
+   "type": "XdString",
+   "ct_id": "h17egwljmrym3r8ortrqqjwd",
+   "parent_cluster": "tjhrtoasec4t3i3q8pypqpwi"
+  },
+  {
+   "name": "Issuing Authority",
+   "type": "XdString",
+   "ct_id": "kphe1er8qxy2dxqdwhpcfk3z",
+   "parent_cluster": "tjhrtoasec4t3i3q8pypqpwi"
+  },
+  {
+   "name": "Order Reason Code (SNOMED CT)",
+   "type": "XdString",
+   "ct_id": "swcml6eecsfx6m834dwk3v4x",
+   "parent_cluster": "az0bhiipy3s5cxokgc26i7ve"
+  },
+  {
+   "name": "Code Display Text",
+   "type": "XdString",
+   "ct_id": "eo5tlfr0576ypknys5alvcn0",
+   "parent_cluster": "az0bhiipy3s5cxokgc26i7ve"
+  },
+  {
+   "name": "Code System: SNOMED CT",
+   "type": "XdLink",
+   "ct_id": "q75pzzv36or6dxgjrrbvmun5",
+   "parent_cluster": "az0bhiipy3s5cxokgc26i7ve"
+  }
+ ]
+}

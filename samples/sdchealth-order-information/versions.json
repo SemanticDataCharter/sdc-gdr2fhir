@@ -1,0 +1,13 @@
+{
+ "schema_url": "https://semanticdatacharter.com/dmlib/dm-l6m7g3jk6y6tvnisd35l16pw.xsd",
+ "current_sha256": "751b17493d4cd1c68bde2abef8322297c08e1cf3f228915de17ea6aab67b687f",
+ "versions": [
+  {
+   "sha256": "751b17493d4cd1c68bde2abef8322297c08e1cf3f228915de17ea6aab67b687f",
+   "size": 376370,
+   "archived_at": "2026-11-20T16:19:13.628324+00:00",
+   "current": true,
+   "url": "https://sdcstudio.axius-sdc.com/dmlib/dm-l6m7g3jk6y6tvnisd35l16pw.xsd?sha256=751b17493d4cd1c68bde2abef8322297c08e1cf3f228915de17ea6aab67b687f"
+  }
+ ]
+}

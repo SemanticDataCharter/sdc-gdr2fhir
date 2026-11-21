@@ -54,7 +54,7 @@ rules:
   # Document Period End
   - {component: mo4yehourgo1wm24rxld2k6d, to: =entry#comp/=resource/=event/period/end, transform: copy, also: [{to: =entry#dr/=resource/effectivePeriod/end, transform: copy}]}
   # Practice Setting (SNOMED CT)
-  - {cluster: qijd1k13ac3jr70w0q8rwnnd, to: '-', transform: omit, reason: 'the HL7 Europe Laboratory Report guide 2.1.0 has no element for the practice setting (its map gives header.practiceSetting no target), and its specialty category is bound (required) to LOINC codes, not SNOMED CT'}
+  - {cluster: qijd1k13ac3jr70w0q8rwnnd, to: '-', transform: omit, reason: 'the HL7 Europe Laboratory Report guide 2.1.0''s map has no row for header.practiceSetting; its specialty category (lab-specialty-eu-lab, SNOMED CT laboratory specialties) is header.serviceSpecialty''s, which the model does not have'}
   # Parent Record Identifier
   - {component: b5v4p5ju74ugnzyt9bh98398, to: '-', transform: omit, reason: 'FHIR''s Composition has no element for the record a document belongs to (relatesTo is a relation between documents: replaces, appends, transforms, signs)'}
   # Attachment

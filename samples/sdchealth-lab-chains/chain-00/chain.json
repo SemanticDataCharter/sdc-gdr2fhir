@@ -1,0 +1,36 @@
+{
+  "parent": "samples/sdchealth-lab-report/records/labrep00synthxxxxxxxxxxx.xml",
+  "parent_ct_id": "zptekdommw56yiz9lqjy5dga",
+  "children": [
+    {
+      "file": "lc00ord1synthxxxxxxxxxxx.xml",
+      "model": "order-information",
+      "ct_id": "l6m7g3jk6y6tvnisd35l16pw"
+    },
+    {
+      "file": "lc00spc1synthxxxxxxxxxxx.xml",
+      "model": "specimen",
+      "ct_id": "qws8pcquvnqc55okidyqll83"
+    },
+    {
+      "file": "lc00srq1synthxxxxxxxxxxx.xml",
+      "model": "service-request",
+      "ct_id": "nz971o74u4kuk3ifcxc2llq2"
+    },
+    {
+      "file": "lc00obs1synthxxxxxxxxxxx.xml",
+      "model": "lab-observation",
+      "ct_id": "d5b3007cqbmejx7xgs7i484r"
+    },
+    {
+      "file": "lc00obs2synthxxxxxxxxxxx.xml",
+      "model": "lab-observation",
+      "ct_id": "d5b3007cqbmejx7xgs7i484r"
+    },
+    {
+      "file": "lc00obs3synthxxxxxxxxxxx.xml",
+      "model": "lab-observation",
+      "ct_id": "d5b3007cqbmejx7xgs7i484r"
+    }
+  ]
+}
