@@ -1,0 +1,46 @@
+# SDCHealth Order Information, chained to a Laboratory Report, in its FHIR R4 document Bundle
+# Written by tools/build_mapping.py from tools/specs/sdchealth_order_information.py; labels in the comments.
+mapping:
+  id: sdchealth-order-information-fhir-r4
+  version: 1
+  author: Axius SDC, Inc.
+  date: '2026-11-20'
+  description: An SDCHealth Order Information record chained to a Laboratory Report (library decision 12), written into the
+    report's ServiceRequest (ServiceRequest-eu-lab, HL7 Europe Laboratory Report 2.1.0). It maps only with its report (sdc-gdr2fhir's
+    map_chain).
+model:
+  ct_id: l6m7g3jk6y6tvnisd35l16pw
+  schema_sha256: 751b17493d4cd1c68bde2abef8322297c08e1cf3f228915de17ea6aab67b687f
+target:
+  name: HL7 FHIR
+  version: R4
+reference_model: true
+rules:
+  # Order Information
+  - {cluster: oe4h5bs4xg5p9fap3s0vg48w, to: Bundle, attributes: {'@chained-to': zptekdommw56yiz9lqjy5dga sr}}
+  # Order Identifier
+  - {cluster: tjhrtoasec4t3i3q8pypqpwi, to: .}
+  # Identifier Value (within Order Identifier)
+  - {component: h17egwljmrym3r8ortrqqjwd, within: [tjhrtoasec4t3i3q8pypqpwi], to: /Bundle/=entry#sr/=resource/identifier/value, transform: copy, also: [{to: /Bundle/=entry#sr/=resource/=resourceType, transform: constant, value: ServiceRequest}, {to: /Bundle/=entry#sr/=resource/=meta/=profile, transform: constant, value: 'http://hl7.eu/fhir/laboratory/StructureDefinition/ServiceRequest-eu-lab'}, {to: /Bundle/=entry#sr/=resource/=status, transform: constant, value: unknown}, {to: /Bundle/=entry#sr/=resource/=intent, transform: constant, value: order}, {to: /Bundle/=entry#sr/=resource/=subject/=reference, transform: constant, value: '{entry#patient}'}]}
+  # Issuing Authority (within Order Identifier)
+  - {component: kphe1er8qxy2dxqdwhpcfk3z, within: [tjhrtoasec4t3i3q8pypqpwi], to: /Bundle/=entry#sr/=resource/identifier/assigner/display, transform: copy}
+  # Order Authored Date
+  - {component: vf60qsr7iuiksunlnr3zu09o, to: /Bundle/=entry#sr/=resource/=authoredOn, transform: copy}
+  # Order Reason (SNOMED CT)
+  - {cluster: az0bhiipy3s5cxokgc26i7ve, to: /Bundle/=entry#sr/=resource/reasonCode}
+  # Code System: SNOMED CT (within Order Reason (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [az0bhiipy3s5cxokgc26i7ve], to: coding/system, transform: copy}
+  # Order Reason Code (SNOMED CT)
+  - {component: swcml6eecsfx6m834dwk3v4x, to: coding/code, transform: copy}
+  # Code Display Text (within Order Reason (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [az0bhiipy3s5cxokgc26i7ve], to: text, transform: copy}
+  # Order Reason Reference
+  - {component: j2grrxn9v58jvjsnre3pe334, to: '-', transform: omit, reason: 'the IRIs of other records, as one list value; ServiceRequest.reasonReference takes references to resources, and the records are not in the chain'}
+  # Clinical Question
+  - {component: e6xmyl8p065nvbqqel96tpig, to: /Bundle/=entry#sr/=resource/+note/text, transform: copy}
+  # Parent Record Identifier
+  - {component: b5v4p5ju74ugnzyt9bh98398, to: '-', transform: omit, reason: 'the chain''s join: the report this record belongs to, which is the Bundle it is written in'}
+  # Sequence In Parent
+  - {component: ygwcc97gtq45lqpbam8l44w6, to: '-', transform: omit, reason: 'the record''s place among the report''s orders; a report takes one Order Information, and FHIR''s ServiceRequest has no element for it'}
+  # subject
+  - {cluster: subject, to: '-', transform: omit, reason: 'the report''s subject: a chained record is about the report''s patient (sdc-gdr2fhir checks that their identifiers agree), whose Patient entry the report writes'}

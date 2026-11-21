@@ -1,0 +1,264 @@
+# SDCHealth Laboratory Observation, chained to a Laboratory Report, in its FHIR R4 document Bundle
+# Written by tools/build_mapping.py from tools/specs/sdchealth_lab_observation.py; labels in the comments.
+mapping:
+  id: sdchealth-lab-observation-fhir-r4
+  version: 1
+  author: Axius SDC, Inc.
+  date: '2026-11-20'
+  description: 'An SDCHealth Laboratory Observation record chained to a Laboratory Report (library decision 12): an Observation
+    (ObservationResultsLaboratoryEu, HL7 Europe Laboratory Report 2.1.0) in the report''s Bundle, listed by its DiagnosticReport
+    and its results section. It maps only with its report (sdc-gdr2fhir''s map_chain).'
+model:
+  ct_id: d5b3007cqbmejx7xgs7i484r
+  schema_sha256: 02c52657a50c764a61df848e771259b2164e528677e3b73fa17cb1cc661ee4d6
+target:
+  name: HL7 FHIR
+  version: R4
+reference_model: true
+rules:
+  # Laboratory Observation
+  - {cluster: e2v14b7k1ak531xnxtr1g13w, to: Bundle, attributes: {'@chained-to': zptekdommw56yiz9lqjy5dga obs}}
+  # Observation Status
+  - {component: q9vmn1cvdclgr757aer5v1rg, to: /Bundle/=entry#obs/=resource/status, transform: binding, prefix: 'http://hl7.org/fhir/observation-status', attributes: {resourceType: Observation, meta/profile: 'http://hl7.eu/fhir/laboratory/StructureDefinition/Observation-resultslab-eu-lab', category/coding/system: 'http://terminology.hl7.org/CodeSystem/observation-category', category/coding/code: laboratory, subject/reference: '{entry#patient}', performer#author/reference: '{entry#obsauthor}'}, also: [{to: /Bundle/=entry#dr/=resource/+result/reference, transform: constant, value: '{entry#obs}'}, {to: /Bundle/=entry#comp/=resource/=section#results/+entry/reference, transform: constant, value: '{entry#obs}'}, {to: /Bundle/=entry#comp/=resource/=section#results/=title, transform: constant, value: Laboratory studies}, {to: /Bundle/=entry#comp/=resource/=section#results/=code/=coding/=system, transform: constant, value: 'http://loinc.org'}, {to: /Bundle/=entry#comp/=resource/=section#results/=code/=coding/=code, transform: constant, value: 26436-6}, {to: /Bundle/=entry#comp/=resource/=section#results/=code/=coding/=display, transform: constant, value: Laboratory studies (set)}]}
+  # Record Identifier
+  - {cluster: nieu1e3llgra1v66p2x8jnwu, to: /Bundle/=entry#obs/=resource/identifier}
+  # Identifier Value (within Record Identifier)
+  - {component: h17egwljmrym3r8ortrqqjwd, within: [nieu1e3llgra1v66p2x8jnwu], to: value, transform: copy}
+  # Issuing Authority (within Record Identifier)
+  - {component: kphe1er8qxy2dxqdwhpcfk3z, within: [nieu1e3llgra1v66p2x8jnwu], to: assigner/display, transform: copy}
+  # Result Code (LOINC)
+  - {cluster: eos099uh4pibbymesy1nxh0v, to: /Bundle/=entry#obs/=resource/code/coding#loinc}
+  # Code System: LOINC (within Result Code (LOINC))
+  - {component: kar8kkxilj1e2fys88mg0dpc, within: [eos099uh4pibbymesy1nxh0v], to: system, transform: copy}
+  # Result Code Code (LOINC)
+  - {component: t81b02q7upd0yy71097jqfse, to: code, transform: copy}
+  # Code Display Text (within Result Code (LOINC))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [eos099uh4pibbymesy1nxh0v], to: display, transform: copy}
+  # Observation Type (NPU)
+  - {cluster: eilkkoxmqds8wd06ozp9b8p9, to: /Bundle/=entry#obs/=resource/code/coding#npu}
+  # Code System: NPU (within Observation Type (NPU))
+  - {component: tggcm9l408sl8uc5whjnkg1z, within: [eilkkoxmqds8wd06ozp9b8p9], to: system, transform: copy}
+  # Observation Type Code (NPU)
+  - {component: uw8cgcxd8lch7adw2erwwwko, to: code, transform: copy}
+  # Code Display Text (within Observation Type (NPU))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [eilkkoxmqds8wd06ozp9b8p9], to: display, transform: copy}
+  # Observation Type (SNOMED CT)
+  - {cluster: l6yq0wp1mu8cvnihtcxpysdt, to: /Bundle/=entry#obs/=resource/code/coding#sct}
+  # Code System: SNOMED CT (within Observation Type (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [l6yq0wp1mu8cvnihtcxpysdt], to: system, transform: copy}
+  # Observation Type Code (SNOMED CT)
+  - {component: u8as8p9g2v0lurptcrm58syb, to: code, transform: copy}
+  # Code Display Text (within Observation Type (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [l6yq0wp1mu8cvnihtcxpysdt], to: display, transform: copy}
+  # Observation Original Name
+  - {component: azlx1thmm0byahrbkti8bq6d, to: /Bundle/=entry#obs/=resource/code/text, transform: copy}
+  # Observation Date Time
+  - {component: dkyyj01tksb7h7akq2w7moum, to: /Bundle/=entry#obs/=resource/effectiveDateTime, transform: copy}
+  # Observation Period
+  - {cluster: s9vdotlflt9t1sk3lkragjp9, to: /Bundle/=entry#obs/=resource/effectivePeriod}
+  # Period Start (DateTime) (within Observation Period)
+  - {component: twhl4kqk0uwzihj0e9trtb2k, within: [s9vdotlflt9t1sk3lkragjp9], to: start, transform: copy}
+  # Period End (DateTime) (within Observation Period)
+  - {component: kiphf52rt04fftqc74mgmgu5, within: [s9vdotlflt9t1sk3lkragjp9], to: end, transform: copy}
+  # Authored Date
+  - {component: g3m0lzwvs18eckx4wsm6av5d, to: '-', transform: omit, reason: 'Observation.issued is an instant (a time and a zone), and the model''s Authored Date is a date'}
+  # Observation Result
+  - {cluster: i02pyouxnhma7d3ocz4k50f5, to: .}
+  # Result Quantity
+  - {component: t4ro1haz9r5s3k4n3nyrf68r, to: /Bundle/=entry#obs/=resource/valueQuantity/value, transform: copy, units: {to: '@unit', transform: copy}}
+  # Result Coded (SNOMED CT)
+  - {cluster: wlb0jyay8bshwu9d21bo899k, to: /Bundle/=entry#obs/=resource/valueCodeableConcept}
+  # Code System: SNOMED CT (within Result Coded (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [wlb0jyay8bshwu9d21bo899k], to: coding/system, transform: copy}
+  # Result Coded Code (SNOMED CT)
+  - {component: zb74umdi3l5xovf1n1r6k12y, to: coding/code, transform: copy}
+  # Code Display Text (within Result Coded (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [wlb0jyay8bshwu9d21bo899k], to: text, transform: copy}
+  # Result Value Text
+  - {component: n23ng4ksi2lwanddiy7t59kw, to: /Bundle/=entry#obs/=resource/valueString, transform: copy}
+  # Result Ratio
+  - {cluster: xhhg24t1n63pl69hwaa5985u, to: /Bundle/=entry#obs/=resource/valueRatio}
+  # Result Ratio Numerator
+  - {component: umiqkhnmb551snjmyjkzdzj9, to: numerator/value, transform: copy, units: {to: '@unit', transform: copy}}
+  # Result Ratio Denominator
+  - {component: ns12gwbt3jcfgydc2qtd80c1, to: denominator/value, transform: copy, units: {to: '@unit', transform: copy}}
+  # Result Range
+  - {cluster: vieg2gkymdld332k6cvtodyi, to: /Bundle/=entry#obs/=resource/valueRange}
+  # Result Range Low
+  - {component: tfal7bfxvgvttrhqtkou4w7a, to: low/value, transform: copy, units: {to: '@unit', transform: copy}}
+  # Result Range High
+  - {component: eghnx12ugfms16cvbt3wbdch, to: high/value, transform: copy, units: {to: '@unit', transform: copy}}
+  # Data Absent Reason
+  - {component: dzdnuls5hryj8dg7vmttlyb0, to: /Bundle/=entry#obs/=resource/=dataAbsentReason/=coding/=code, transform: binding, prefix: 'http://terminology.hl7.org/CodeSystem/data-absent-reason', also: [{to: /Bundle/=entry#obs/=resource/=dataAbsentReason/=coding/=system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/data-absent-reason'}]}
+  # Observation Result Uncertainty
+  - {cluster: csjz5iqe33cznrfdf2wfgws7, to: .}
+  # Observation Result Uncertainty Value
+  - {component: mxra7sabwfd8iqo8xlzrd82f, to: /Bundle/=entry#obs/=resource/valueQuantity/extension#uncertainty/valueDecimal, transform: copy, also: [{to: /Bundle/=entry#obs/=resource/valueQuantity/extension#uncertainty/url, transform: constant, value: 'http://hl7.org/fhir/StructureDefinition/iso21090-uncertainty'}]}
+  # Observation Result Uncertainty Type
+  - {component: z72hlqh05a4ulkr0mjbvsl5n, to: /Bundle/=entry#obs/=resource/valueQuantity/extension#utype/valueCode, transform: binding, prefix: 'http://terminology.hl7.org/CodeSystem/v3-ProbabilityDistributionType', also: [{to: /Bundle/=entry#obs/=resource/valueQuantity/extension#utype/url, transform: constant, value: 'http://hl7.org/fhir/StructureDefinition/iso21090-uncertaintyType'}]}
+  # Interpretation Code
+  - {component: nej63g3npolq6yjl88wt21lr, to: /Bundle/=entry#obs/=resource/interpretation/coding#v3/code, transform: binding, prefix: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation', also: [{to: /Bundle/=entry#obs/=resource/interpretation/coding#v3/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation'}]}
+  # Interpretation (SNOMED CT)
+  - {cluster: oxk25aj6ts86osjpqw5otuox, to: /Bundle/=entry#obs/=resource/interpretation/coding#sct}
+  # Code System: SNOMED CT (within Interpretation (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [oxk25aj6ts86osjpqw5otuox], to: system, transform: copy}
+  # Interpretation Code (SNOMED CT)
+  - {component: p802jqxjrets6yg69sjtr6ek, to: code, transform: copy}
+  # Code Display Text (within Interpretation (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [oxk25aj6ts86osjpqw5otuox], to: display, transform: copy}
+  # Observation Method (SNOMED CT)
+  - {cluster: j0805v0oz9nj1md7ancanxy2, to: /Bundle/=entry#obs/=resource/method}
+  # Code System: SNOMED CT (within Observation Method (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [j0805v0oz9nj1md7ancanxy2], to: coding/system, transform: copy}
+  # Observation Method Code (SNOMED CT)
+  - {component: hokt5tpa6zhkifcly8vvz0x1, to: coding/code, transform: copy}
+  # Code Display Text (within Observation Method (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [j0805v0oz9nj1md7ancanxy2], to: text, transform: copy}
+  # Body Structure
+  - {cluster: xohtjzd1hhj8tpj3fkxsug70, to: .}
+  # Body Site (SNOMED CT)
+  - {cluster: r5koa840csi3zcewts0uo0r5, to: /Bundle/=entry#obs/=resource/bodySite}
+  # Code System: SNOMED CT (within Body Site (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [r5koa840csi3zcewts0uo0r5], to: coding/system, transform: copy}
+  # Body Site Code (SNOMED CT)
+  - {component: vi7yvq0b8nler3g6alaamrzm, to: coding/code, transform: copy}
+  # Code Display Text (within Body Site (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [r5koa840csi3zcewts0uo0r5], to: text, transform: copy}
+  # Body Structure Laterality (SNOMED CT)
+  - {cluster: he690qnuvvaqlb8v1ptp4mna, to: '-', transform: omit, reason: 'R4''s Observation.bodySite is one CodeableConcept, the site; laterality, location qualifier and morphology are a BodyStructure''s, which the guide references by an R5 extension not written here'}
+  # Body Structure Location Qualifier (SNOMED CT)
+  - {cluster: ujrepbxjzrahbfa29rsfgyxj, to: '-', transform: omit, reason: 'R4''s Observation.bodySite is one CodeableConcept, the site; laterality, location qualifier and morphology are a BodyStructure''s, which the guide references by an R5 extension not written here'}
+  # Body Structure Morphology (SNOMED CT)
+  - {cluster: hs99yypi9lf7kmfjo1cm2g2o, to: '-', transform: omit, reason: 'R4''s Observation.bodySite is one CodeableConcept, the site; laterality, location qualifier and morphology are a BodyStructure''s, which the guide references by an R5 extension not written here'}
+  # Body Structure Description
+  - {component: fh620kyjko05gsi3jn8m6t4z, to: '-', transform: omit, reason: 'a BodyStructure''s description; R4''s Observation.bodySite is a CodeableConcept, the site''s code'}
+  # Note
+  - {component: zvkk8ztob9gmrvvkzyibyrzk, to: /Bundle/=entry#obs/=resource/+note/text, transform: copy}
+  # Observation Specimen Reference
+  - {component: k9nx1qiab57p9uj39ggeasg6, to: /Bundle/=entry#obs/=resource/specimen#record/reference, transform: copy}
+  # Observation Order Reference
+  - {component: imjsmm2gi8oe8n2b6s3mrr5t, to: /Bundle/=entry#obs/=resource/+basedOn#record/reference, transform: copy}
+  # Information Source (Coded, System Stated)
+  - {cluster: wcnwxsfl2p2zdzj90499zy37, to: '-', transform: omit, reason: 'the guide''s map gives header.source no target: Observation has no element for the source of the information'}
+  # Lab Observation Previous Results Reference
+  - {component: r7pkvikirvze1pn1e92kyo47, to: '-', transform: omit, reason: 'the IRIs of other records, which are not in the chain; FHIR''s references name resources'}
+  # Lab Observation Triggered By Reference
+  - {component: oal6bz8nz98nukyp3vbnuk0b, to: '-', transform: omit, reason: 'the IRIs of other records, which are not in the chain; FHIR''s references name resources'}
+  # Observation Derived From Reference
+  - {component: ud4gwv5xqzxrdckn5ro68ghn, to: '-', transform: omit, reason: 'the IRIs of other records, which are not in the chain; FHIR''s references name resources'}
+  # Observation Has Member Reference
+  - {component: h59266beboyjw2c2bui1b3kl, to: '-', transform: omit, reason: 'the IRIs of other records, which are not in the chain; FHIR''s references name resources'}
+  # Lab Observation Test Kit Reference
+  - {component: kg7g4jv96dgyxczcvu5ot9o7, to: '-', transform: omit, reason: 'the IRIs of other records, which are not in the chain; FHIR''s references name resources'}
+  # Lab Observation Accreditation Status
+  - {component: xgya1xx27drtxkmrxw5mad3e, to: '-', transform: omit, reason: 'the guide''s accredited extension is not written here: its definition was not checked for this mapping'}
+  # Lab Observation Point Of Care Test
+  - {component: u2x7zrkurrl2shs3ykzoqxdz, to: '-', transform: omit, reason: FHIR R4's Observation and the guide's profile have no element for a point-of-care test}
+  # Lab Observation Calibrator
+  - {cluster: nu99z6ulymxim2bmv4gvysai, to: '-', transform: omit, reason: 'the guide''s certified reference material extension is not written here: its definition was not checked for this mapping'}
+  # Parent Record Identifier
+  - {component: b5v4p5ju74ugnzyt9bh98398, to: '-', transform: omit, reason: 'the chain''s join: the report this record belongs to, which is the Bundle it is written in'}
+  # subject
+  - {cluster: subject, to: '-', transform: omit, reason: 'the report''s subject: a chained record is about the report''s patient (sdc-gdr2fhir checks that their identifiers agree), whose Patient entry the report writes'}
+  # provider
+  - {cluster: provider, to: /Bundle/=entry#obsauthor/=resource, attributes: {resourceType: Practitioner, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/practitioner-eu-core'}}
+  # performer (within Performer Participation)
+  - {cluster: performer, within: [oa1p9c72xjow9ffg43gh7sgv], to: /Bundle/=entry#obsorg/=resource, attributes: {resourceType: Organization, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/organization-eu-core'}}
+  # Participation Function (Performer)
+  - {component: jo4ixxoa5nx03u7l14bolrrq, to: /Bundle/=entry#obs/=resource/performer#org/reference, transform: code, table: {performer: '{entry#obsorg}'}}
+  # start (within Performer Participation)
+  - {element: start, within: [oa1p9c72xjow9ffg43gh7sgv], to: '-', transform: omit, reason: 'Observation.performer is a reference alone, with no time'}
+  # end (within Performer Participation)
+  - {element: end, within: [oa1p9c72xjow9ffg43gh7sgv], to: '-', transform: omit, reason: 'Observation.performer is a reference alone, with no time'}
+  # performer (within Direct Subject Participation)
+  - {cluster: performer, within: [k35sg6lr67xkcwwbhzyw7h0v], to: /Bundle/=entry#obsfocus/=resource, attributes: {resourceType: Patient, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/patient-eu-core'}}
+  # Participation Function (Direct Subject)
+  - {component: h779hrgqq3xhu9qncg7sv9wp, to: /Bundle/=entry#obs/=resource/focus/reference, transform: code, table: {direct subject: '{entry#obsfocus}'}}
+  # start (within Direct Subject Participation)
+  - {element: start, within: [k35sg6lr67xkcwwbhzyw7h0v], to: '-', transform: omit, reason: 'Observation.focus is a reference alone, with no time'}
+  # end (within Direct Subject Participation)
+  - {element: end, within: [k35sg6lr67xkcwwbhzyw7h0v], to: '-', transform: omit, reason: 'Observation.focus is a reference alone, with no time'}
+  # party-details
+  - {cluster: party-details, to: .}
+  # Human Name
+  - {cluster: g50zuf7amwobbgifx7o52i5l, to: name}
+  # Given Name (Person)
+  - {component: l9l169co9r23e6fftpvdz4e3, to: given, transform: copy}
+  # Surname (Person)
+  - {component: jc1lfk3ovt6l8frhxvx8b669, to: family, transform: copy}
+  # Name Prefix
+  - {component: yahxccv0l1z6ykjxayzkdlkq, to: prefix, transform: copy}
+  # Name Suffix
+  - {component: l509t0zajfl5atns64d5kl97, to: suffix, transform: copy}
+  # Name As Written
+  - {component: dp1zp58fx23u0yrs3j9ogqxt, to: text, transform: copy}
+  # Name Use
+  - {component: bfqinvm7qrgi9jjw1i637moh, to: use, transform: binding, prefix: 'http://hl7.org/fhir/name-use'}
+  # Address
+  - {cluster: omhsrouda4mt73j1t1fzakqz, to: address}
+  # Address (Line 1)
+  - {component: ncxxt7wgs7soxw7kbmapxvg3, to: +line, transform: copy}
+  # Thoroughfare
+  - {component: zzvw3p4x9xcxo6q1xqymvrct, to: +line, transform: copy}
+  # Premises Identifier
+  - {component: gzfu10juglu35llepko2huo9, to: +line, transform: copy}
+  # Delivery Service
+  - {component: u7rvm7j5oiuydsiwl0dglpl8, to: +line, transform: copy}
+  # City Name
+  - {component: a69l16mqaotn0py958oxahhz, to: city, transform: copy}
+  # Postal Code
+  - {component: w6nfslk6scfpenoewq3eqnev, to: postalCode, transform: copy}
+  # Address Use
+  - {component: b25dj42zxhm19pih328ga8pl, to: use, transform: binding, prefix: 'http://hl7.org/fhir/address-use'}
+  # Address Type
+  - {component: ml1y0608by1jakreu950oqb7, to: type, transform: binding, prefix: 'http://hl7.org/fhir/address-type'}
+  # Country
+  - {cluster: u0rvm9o99w3ked99wbsjyqcj, to: .}
+  # Country Code ISO 3166
+  - {component: f2jicaigehz7xmwcp1gm5gh0, to: country, transform: copy}
+  # Country Name
+  - {component: gll1lakps0m1mgas18flfjwq, to: '-', transform: omit, reason: 'FHIR''s Address.country is one string, which holds the record''s ISO 3166 code; the country''s name has no second place (HL7 Europe Base''s country-code extension is not written here)'}
+  # Telecom
+  - {cluster: lv6uk4agn7as0er1bely65oi, to: telecom}
+  # Phone Number
+  - {component: zpfwg52r88j6jdypj7rg71ke, to: value, transform: copy}
+  # Email Address
+  - {component: q922mqaon3yn5zlwf2bszf28, to: ../+telecom/value, transform: copy, also: [{to: ../+telecom/system, transform: constant, value: email}]}
+  # Contact Method
+  - {component: miqo30r5b554nyj7ubryw43x, to: system, transform: binding, prefix: 'http://hl7.org/fhir/contact-point-system'}
+  # Contact Use
+  - {component: vmruk4j9y1orvvz8cwafrax5, to: use, transform: binding, prefix: 'http://hl7.org/fhir/contact-point-use'}
+  # Person Identifier
+  - {cluster: xxvvs7fuoz5lrz44128su7kg, to: identifier}
+  # Identifier Value
+  - {component: h17egwljmrym3r8ortrqqjwd, to: value, transform: copy}
+  # Issuing Authority
+  - {component: kphe1er8qxy2dxqdwhpcfk3z, to: assigner/display, transform: copy}
+  # Person Identifier Type
+  - {component: h2pd0ns7lx2vzey41z6ggt8r, to: type/text, transform: copy, also: [{to: type/coding/system, transform: code, table: {SS: 'http://terminology.hl7.org/CodeSystem/v2-0203', PPN: 'http://terminology.hl7.org/CodeSystem/v2-0203', DL: 'http://terminology.hl7.org/CodeSystem/v2-0203', MR: 'http://terminology.hl7.org/CodeSystem/v2-0203', NI: 'http://terminology.hl7.org/CodeSystem/v2-0203', U: 'http://terminology.hl7.org/CodeSystem/v2-0203'}}, {to: type/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Driver License Number
+  - {component: eg635xgsjvipb1rxmaqzt7pv, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Passport Number
+  - {component: g6b7o2z5fdo71vv4t4vv3kfl, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Social Security Number
+  - {component: b77u36g6lormbn7jfls25h5f, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Country Code ISO 3166 (within Person Identifier)
+  - {component: f2jicaigehz7xmwcp1gm5gh0, within: [xxvvs7fuoz5lrz44128su7kg], to: '-', transform: omit, reason: FHIR's Identifier has no element for the country that issued it}
+  # Organization Identifier
+  - {cluster: mdxhqrhcerkkdn66hrjex66w, to: identifier}
+  # Organization Identifier Type
+  - {component: y9mgb964lwsstvf3w06vkkep, to: type/text, transform: copy, also: [{to: type/coding/system, transform: code, table: {TAX: 'http://terminology.hl7.org/CodeSystem/v2-0203', NPI: 'http://terminology.hl7.org/CodeSystem/v2-0203', U: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, on_miss: omit}, {to: type/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/v2-0203', on_miss: omit}]}
+  # Administrative Gender
+  - {component: gxzbm758mhdz51xd4bawlfhh, to: gender, transform: binding, prefix: 'http://hl7.org/fhir/administrative-gender'}
+  # Date of Birth
+  - {component: js564tazefb6udqlh12rj04l, to: birthDate, transform: copy}
+  # Deceased Indicator
+  - {component: fnr5q1tfq42ez9jia9dqueho, to: deceasedBoolean, transform: copy}
+  # Deceased Date
+  - {component: vnlhr9c3ykayyegumhb09snf, to: deceasedDateTime, transform: copy}
+  # Organization Name
+  - {component: xcn8r67fg7soty17homzok44, to: name, transform: copy}
+  # Organization Type
+  - {component: wx5x3zn4hmo7qjtzvwz5nhrb, to: type/text, transform: copy, also: [{to: type/coding/system, transform: code, table: {prov: 'http://terminology.hl7.org/CodeSystem/organization-type', dept: 'http://terminology.hl7.org/CodeSystem/organization-type', team: 'http://terminology.hl7.org/CodeSystem/organization-type', govt: 'http://terminology.hl7.org/CodeSystem/organization-type', ins: 'http://terminology.hl7.org/CodeSystem/organization-type', pay: 'http://terminology.hl7.org/CodeSystem/organization-type', edu: 'http://terminology.hl7.org/CodeSystem/organization-type', reli: 'http://terminology.hl7.org/CodeSystem/organization-type', crs: 'http://terminology.hl7.org/CodeSystem/organization-type', cg: 'http://terminology.hl7.org/CodeSystem/organization-type', bus: 'http://terminology.hl7.org/CodeSystem/organization-type', other: 'http://terminology.hl7.org/CodeSystem/organization-type'}}, {to: type/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/organization-type'}]}
+  # Organisation Part Of
+  - {component: rtx15cec5b5tyta3jfwunoqm, to: partOf/display, transform: copy}

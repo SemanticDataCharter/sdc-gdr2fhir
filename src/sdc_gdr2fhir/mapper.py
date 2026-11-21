@@ -13,12 +13,14 @@ data-absent-reason has no code for, the iso21090-nullFlavor extension with the e
 """
 from __future__ import annotations
 
+import html
+
 from sdc_mapper import (DECLARED, JOIN, LOOKUP, LOOKUP_TRANSFORMS, NOT_REPRESENTABLE, PRESERVED, EVRule, IncompleteMapping, MapResult,
                         MappingError, ValueOutcome, join_depth, place)
 from sdcreader.record import EXCEPTIONAL_VALUES
 
 from . import __version__
-from .codes import absent, model_codes
+from .codes import DATA_ABSENT_REASON, absent, model_codes
 from .writer import DEFAULT_VERSION, FHIR_VERSION, VERSIONS, Builder, version
 
 #: FHIR R4 writes every ISO 21090 null flavor exactly (codes.absent).
@@ -30,6 +32,9 @@ CANNOT_HOLD = [
     "validity windows and the time a value was recorded (act, vtb, vte, tr)",
     "the definitions the model binds each component to, beyond the codes written",
 ]
+
+#: data-absent-reason's `unknown` and the concepts under it (data-absent-reason 4.0.1, looked up on tx.fhir.org).
+UNKNOWN = {"unknown", "asked-unknown", "temp-unknown", "not-asked", "asked-declined"}
 
 #: Elements whose value an Observation (or its component) qualifies with dataAbsentReason.
 _OBSERVATION_VALUES = {"valueQuantity", "valueCodeableConcept", "valueString", "valueBoolean", "valueInteger",
@@ -54,7 +59,7 @@ class FHIRMapper:
         """The mapper for the FHIR version a mapping's `target.version` names."""
         return cls(mapping.target_version)
 
-    def map(self, record, mapping) -> MapResult:
+    def _check(self, mapping):
         if mapping is None:
             raise MappingError("FHIR needs a mapping file: the model does not say which resource each value belongs to")
         if mapping.target_version != self.target_version:
@@ -65,10 +70,33 @@ class FHIRMapper:
         if mapping.exceptional_values:
             raise MappingError(f"FHIR {self.target_version} writes every ISO 21090 code exactly; a mapping cannot "
                                "change that")
+
+    def map(self, record, mapping) -> MapResult:
+        self._check(mapping)
         placements, clusters = place(record, mapping)
+        writes, notes = self._writes(placements, record)
+        if any(_directive(w) == CHAINED for w in writes) or any(CHAINED in c.attributes for c in clusters):
+            raise MappingError(f"mapping {mapping.id} is for a record chained to a parent record ({CHAINED}): it "
+                               "writes into the parent's Bundle, so it maps only with its parent (map_chain)")
         b = Builder(mapping.target_version)
+        _put_all(b, writes)
+        _cluster_attributes(b, clusters)
+        bundle = b.finish(record.instance_id)
+        outcomes = self._outcomes(placements, notes, mapping)
+        return MapResult(files={"Bundle.json": bundle}, outcomes=outcomes, cannot_hold=list(CANNOT_HOLD))
+
+    def map_chain(self, parent, children):
+        """One Bundle from a parent record and the records chained to it: `parent` and each of `children` is a
+        (resolved record, mapping) pair, each child mapped by its own model's mapping. Returns a `chain.ChainMapResult`:
+        the Bundle and each record's MapResult, the parent's first. A child that does not belong refuses the chain
+        (`chain.ChainError`)."""
+        from .chain import ChainWriter
+        return ChainWriter(self).write(parent, children)
+
+    def _writes(self, placements, record):
+        """Every write a record's placements make, in order, and the notes on values with nothing to write."""
         notes: dict[int, str] = {}
-        later = []
+        out = []
         for p in placements:
             v = p.value
             if p.omitted or p.rule is None or not p.steps:
@@ -88,29 +116,24 @@ class FHIRMapper:
                     if p.units_attribute == "code" and v.units:   # a Quantity: the unit as people read it
                         writes.append((self._steps(p.steps, "unit"), v.units.symbol, None))
             own = list(p.steps[:-1])           # the element the value is written in (a valueQuantity)
+            # an `also` copy with no value to copy (an Exceptional Value) leaves its tagged element out altogether: a
+            # section with a title and no text is not written for a comment the record does not have
+            empty = [_tagged(e.steps) for e, sub in zip(p.extras, p.rule.also)
+                     if e.text is None and sub.get("transform", "copy") == "copy" and _tagged(e.steps)]
             for e in p.extras:
                 if e.text is None:
                     continue
                 if v.exceptional and list(e.steps[: len(own)]) == own:
                     continue                      # with no value, nothing beside it (a quantity's system) either
+                if v.exceptional and any(list(e.steps[: len(t)]) == t for t in empty):
+                    continue
                 writes.append((self._steps(e.steps, e.attribute), e.text, None))
             writes += [(self._resource(p.steps) + [(part, ("attr",)) for part in k.split("/")], val, None)
                        for k, val in p.attributes.items()]
-            for w in writes:
-                if any(key == JOIN for _, key in w[0]):
-                    later.append(w)             # '=name' joins wait until every element they may join exists
-                else:
-                    b.put(*w)
-        for w in sorted(later, key=lambda w: join_depth(w[0])):   # shallowest join first (sdc-mapper 4.3.0)
-            b.put(*w)
-        for c in clusters:
-            node = b.find(c.steps)
-            if node is not None:
-                for k, val in c.attributes.items():
-                    b.put(c.steps + [(part, ("attr",)) for part in k.split("/")], val)
-        instance_id = record.instance_id
-        bundle = b.finish(instance_id)
+            out += [w for w in (_record_value(w, record) for w in writes) if w is not None]
+        return out, notes
 
+    def _outcomes(self, placements, notes, mapping) -> list[ValueOutcome]:
         outcomes, missing = [], []
         for p in placements:
             v = p.value
@@ -129,7 +152,7 @@ class FHIRMapper:
                 outcomes.append(ValueOutcome(v.position, LOOKUP if lookup else DECLARED, location=self._where(p)))
         if missing:
             raise IncompleteMapping(f"mapping {mapping.id} has no rule for {len(missing)} value(s): " + "; ".join(missing[:5]))
-        return MapResult(files={"Bundle.json": bundle}, outcomes=outcomes, cannot_hold=list(CANNOT_HOLD))
+        return outcomes
 
     # ------------------------------------------------------------ paths
     @staticmethod
@@ -156,11 +179,73 @@ class FHIRMapper:
                 return [(at + [("system", ("dar",))], system, None), (at + [("code", ("dar",))], value, None)]
         last, key = steps[-1]
         at = list(steps[:-1]) + [(f"_{last}", key), ("extension", ("dar",))]
-        return [(at + [("url", ("dar",))], extension, None), (at + [("valueCode", ("dar",))], value, None)]
+        writes = [(at + [("url", ("dar",))], extension, None), (at + [("valueCode", ("dar",))], value, None)]
+        if last == "text" and len(steps) > 2 and steps[-2][0].split("#", 1)[0] == "valueCodeableConcept" \
+                and steps[-3][0].split("#", 1)[0] == "extension" and system == DATA_ABSENT_REASON and value in UNKNOWN:
+            # An extension's CodeableConcept value with only an absent text has no code, and a required binding needs
+            # one. Its coding is the concept that subsumes this one, data-absent-reason `unknown`, which value sets
+            # for what a person may not know include (Sex Parameter for Clinical Use, which PatientEuCore's
+            # patient-sexParameterForClinicalUse binds). The extension on the text keeps the exact code.
+            coding = list(steps[:-1]) + [("coding", ("dar",))]
+            writes += [(coding + [("system", ("dar",))], DATA_ABSENT_REASON, None),
+                       (coding + [("code", ("dar",))], "unknown", None)]
+        return writes
 
     @staticmethod
     def _where(p) -> str:
         return _join(p.steps) + (f"/{p.attribute}" if p.attribute else "")
+
+
+#: The Bundle directive a chained record's mapping carries: `<parent model ct_id> <tag of the record's own entry>`.
+CHAINED = "@chained-to"
+
+
+def _directive(write) -> str | None:
+    steps = write[0]
+    return steps[1][0] if len(steps) == 2 and steps[0][0] == "Bundle" and steps[1][0].startswith("@") else None
+
+
+def _put_all(b, writes):
+    later = []
+    for w in writes:
+        if any(key == JOIN for _, key in w[0]):
+            later.append(w)                     # '=name' joins wait until every element they may join exists
+        else:
+            b.put(*w)
+    for w in sorted(later, key=lambda w: join_depth(w[0])):   # shallowest join first (sdc-mapper 4.3.0)
+        b.put(*w)
+
+
+def _cluster_attributes(b, clusters):
+    for c in clusters:
+        node = b.find(c.steps)
+        if node is not None:
+            for k, val in c.attributes.items():
+                b.put(c.steps + [(part, ("attr",)) for part in k.split("/")], val)
+
+
+def _tagged(steps) -> list:
+    """The steps to the deepest tagged element (`section#notes`) on a path, or [] if it has none."""
+    for i in range(len(steps) - 1, -1, -1):
+        if "#" in steps[i][0]:
+            return list(steps[: i + 1])
+    return []
+
+
+def _record_value(write, record):
+    """A write as the Bundle takes it.
+    - A constant `{record:<name>}` is the record's own attribute of that name (`dm-language`, `creation_timestamp`,
+      `current-state`, ...: the attributes under the record's root). A record without it writes nothing there.
+    - Plain text written to a Narrative's `div` is that text, escaped, in the XHTML `div` FHIR requires."""
+    steps, text, position = write
+    if isinstance(text, str) and text.startswith("{record:") and text.endswith("}"):
+        text = (getattr(record, "attributes", None) or {}).get(text[len("{record:"):-1]) or None
+        if text is None:
+            return None
+    if steps and steps[-1][0] == "div" and len(steps) > 1 and steps[-2][0].split("#", 1)[0] == "text" \
+            and isinstance(text, str) and not text.lstrip().startswith("<div"):
+        text = f'<div xmlns="http://www.w3.org/1999/xhtml">{html.escape(text, quote=False)}</div>'
+    return steps, text, position
 
 
 def _value_at(steps) -> int:

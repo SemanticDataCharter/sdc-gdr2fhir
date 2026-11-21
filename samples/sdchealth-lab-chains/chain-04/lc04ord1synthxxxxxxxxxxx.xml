@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sdc4:dm-l6m7g3jk6y6tvnisd35l16pw xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdc4="https://semanticdatacharter.com/ns/sdc4/" xsi:schemaLocation="https://semanticdatacharter.com/ns/sdc4/ https://semanticdatacharter.com/dmlib/dm-l6m7g3jk6y6tvnisd35l16pw.xsd">
+  <dm-label>Order Information</dm-label>
+  <dm-language>en-US</dm-language>
+  <dm-encoding>utf-8</dm-encoding>
+  <creation_timestamp>2026-10-05T08:15:00+01:00</creation_timestamp>
+  <instance_id>lc04ord1synthxxxxxxxxxxx</instance_id>
+  <instance_version>1</instance_version>
+  <sdc4:ms-oe4h5bs4xg5p9fap3s0vg48w>
+    <label>Order Information</label>
+    <sdc4:ms-tjhrtoasec4t3i3q8pypqpwi>
+      <label>Order Identifier</label>
+      <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+        <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+          <label>Identifier Value</label>
+          <xdstring-value>ORD-2026-5004</xdstring-value>
+        </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+      </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+      <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+        <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+          <label>Issuing Authority</label>
+          <xdstring-value>Synthetic Central Laboratory</xdstring-value>
+        </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+      </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+    </sdc4:ms-tjhrtoasec4t3i3q8pypqpwi>
+    <sdc4:ms-az0bhiipy3s5cxokgc26i7ve>
+      <label>Order Reason (SNOMED CT)</label>
+      <sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+        <sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+          <label>Code System: SNOMED CT</label>
+          <link>http://snomed.info/sct</link>
+          <relation>codeSystem</relation>
+          <relation-uri>http://hl7.org/fhir/R4/datatypes-definitions.html#Coding.system</relation-uri>
+        </sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+      </sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+      <sdc4:ms-fq49hd05aeck2law8s7ol6yr>
+        <sdc4:ms-swcml6eecsfx6m834dwk3v4x>
+          <label>Order Reason Code (SNOMED CT)</label>
+          <xdstring-value>73211009</xdstring-value>
+        </sdc4:ms-swcml6eecsfx6m834dwk3v4x>
+      </sdc4:ms-fq49hd05aeck2law8s7ol6yr>
+      <sdc4:ms-deau6rxprq0zivzdddupk7cj>
+        <sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+          <label>Code Display Text</label>
+          <xdstring-value>Diabetes mellitus</xdstring-value>
+        </sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+      </sdc4:ms-deau6rxprq0zivzdddupk7cj>
+    </sdc4:ms-az0bhiipy3s5cxokgc26i7ve>
+    <sdc4:ms-bz2deexkymtppnjqr8tdjtp2>
+      <sdc4:ms-e6xmyl8p065nvbqqel96tpig>
+        <label>Clinical Question</label>
+        <xdstring-value>Synthetic sample: glycaemic control and renal function?</xdstring-value>
+      </sdc4:ms-e6xmyl8p065nvbqqel96tpig>
+    </sdc4:ms-bz2deexkymtppnjqr8tdjtp2>
+    <sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+      <sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+        <label>Parent Record Identifier</label>
+        <xdstring-value>LR-2026-1004</xdstring-value>
+      </sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+    </sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+    <sdc4:ms-pri6nr9elkatfr7pve2zn4fv>
+      <sdc4:ms-vf60qsr7iuiksunlnr3zu09o>
+        <label>Order Authored Date</label>
+        <xdtemporal-datetime>2026-10-05T07:00:00+01:00</xdtemporal-datetime>
+      </sdc4:ms-vf60qsr7iuiksunlnr3zu09o>
+    </sdc4:ms-pri6nr9elkatfr7pve2zn4fv>
+  </sdc4:ms-oe4h5bs4xg5p9fap3s0vg48w>
+  <subject>
+    <label>Patient</label>
+    <party-details>
+      <label>Patient</label>
+      <sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+        <label>Address</label>
+        <sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+          <label>Country</label>
+          <sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+            <sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+              <label>Country Code ISO 3166</label>
+              <xdtoken-value>NL</xdtoken-value>
+            </sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+          </sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+        </sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+        <sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+          <sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+            <label>Address (Line 1)</label>
+            <xdstring-value>Oudegracht 210</xdstring-value>
+          </sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+        </sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+        <sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+          <sdc4:ms-a69l16mqaotn0py958oxahhz>
+            <label>City Name</label>
+            <xdstring-value>Utrecht</xdstring-value>
+          </sdc4:ms-a69l16mqaotn0py958oxahhz>
+        </sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+        <sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+          <sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+            <label>Postal Code</label>
+            <xdstring-value>3511 NR</xdstring-value>
+          </sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+        </sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+        <sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+          <sdc4:ms-b25dj42zxhm19pih328ga8pl>
+            <label>Address Use</label>
+            <xdtoken-value>home</xdtoken-value>
+          </sdc4:ms-b25dj42zxhm19pih328ga8pl>
+        </sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+      </sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+      <sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+        <label>Human Name</label>
+        <sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+          <sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+            <label>Given Name (Person)</label>
+            <xdstring-value>Sofie</xdstring-value>
+          </sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+        </sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+        <sdc4:ms-rf76ozkskw3wyc1on48jm375>
+          <sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+            <label>Surname (Person)</label>
+            <xdstring-value>Jansen</xdstring-value>
+          </sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+        </sdc4:ms-rf76ozkskw3wyc1on48jm375>
+        <sdc4:ms-t2lvqlgc6iz59pxm211yidob>
+          <sdc4:ms-bfqinvm7qrgi9jjw1i637moh>
+            <label>Name Use</label>
+            <xdtoken-value>official</xdtoken-value>
+          </sdc4:ms-bfqinvm7qrgi9jjw1i637moh>
+        </sdc4:ms-t2lvqlgc6iz59pxm211yidob>
+      </sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+      <sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+        <label>Person Identifier</label>
+        <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+          <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+            <label>Identifier Value</label>
+            <xdstring-value>NL-BSN-900000105</xdstring-value>
+          </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+        </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+        <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+          <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+            <label>Issuing Authority</label>
+            <xdstring-value>RvIG</xdstring-value>
+          </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+        </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+        <sdc4:ms-lsdfdpz5hrxqayv21s92fy7m>
+          <sdc4:ms-h2pd0ns7lx2vzey41z6ggt8r>
+            <label>Person Identifier Type</label>
+            <xdtoken-value>NI</xdtoken-value>
+          </sdc4:ms-h2pd0ns7lx2vzey41z6ggt8r>
+        </sdc4:ms-lsdfdpz5hrxqayv21s92fy7m>
+      </sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+      <sdc4:ms-cpcvbb0xq072zk086ukfl41m>
+        <sdc4:ms-gxzbm758mhdz51xd4bawlfhh>
+          <label>Administrative Gender</label>
+          <xdtoken-value>female</xdtoken-value>
+        </sdc4:ms-gxzbm758mhdz51xd4bawlfhh>
+      </sdc4:ms-cpcvbb0xq072zk086ukfl41m>
+      <sdc4:ms-c5ueyww5kg8b7h3h3ipno6sk>
+        <sdc4:ms-js564tazefb6udqlh12rj04l>
+          <label>Date of Birth</label>
+          <xdtemporal-date>2001-09-08</xdtemporal-date>
+        </sdc4:ms-js564tazefb6udqlh12rj04l>
+      </sdc4:ms-c5ueyww5kg8b7h3h3ipno6sk>
+    </party-details>
+  </subject>
+</sdc4:dm-l6m7g3jk6y6tvnisd35l16pw>

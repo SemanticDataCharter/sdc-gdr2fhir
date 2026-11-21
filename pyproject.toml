@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "sdc-mapper>=4.3,<5",     # placements, '=name' joins, cluster order (4.2.0); codes, link, join_depth (4.3.0)
+    "sdc-mapper>=4.4,<5",     # reference-model parts (4.4.0); joins, codes, link, join_depth (4.2.0-4.3.0)
     "jsonschema>=4.20",       # the FHIR R4 JSON schema (draft-06)
 ]
 

@@ -17,6 +17,18 @@ writes the Bundle. Outbound only. Apache 2.0.
 | NHANES Participant 4.2.0 (retired) | `xy8upneajsb8vdcmnve01g6g` | Patient, Observation, QuestionnaireResponse | 112 |
 | NHANES Medication (retired) | `epbdfmvxc3gbh5f66hhb3o2m` | Patient, MedicationStatement, QuestionnaireResponse | 18 |
 
+And the first SDCHealth models: the Laboratory Report, and the records chained to it, which map into the report's
+Bundle. Neither passes HL7's validator with the guide yet, on what the models lack (see "SDCHealth Laboratory Report"
+and "Chained records" below):
+
+| Model | ct_id | Resources | Rules |
+|---|---|---|---|
+| SDCHealth Laboratory Report | `zptekdommw56yiz9lqjy5dga` | Composition, DiagnosticReport, Patient, Practitioner, Organization, ServiceRequest (a document Bundle) | 100 |
+| SDCHealth Order Information (chained) | `l6m7g3jk6y6tvnisd35l16pw` | the report's ServiceRequest | 14 |
+| SDCHealth Laboratory Observation (chained) | `d5b3007cqbmejx7xgs7i484r` | Observation, Practitioner, Organization, Patient | 123 |
+| SDCHealth Specimen (chained) | `qws8pcquvnqc55okidyqll83` | Specimen, Practitioner | 60 |
+| SDCHealth Service Request (chained) | `nz971o74u4kuk3ifcxc2llq2` | ServiceRequest, Practitioner | 92 |
+
 ## Use
 
 ```python
@@ -149,6 +161,274 @@ data-absent-reason.
 The medication model binds its ICD-10-CM and drug code components to their code systems, not each value to a code,
 so its codes are written as the record holds them: declared.
 
+## SDCHealth Laboratory Report
+
+The mapping targets the HL7 Europe Laboratory Report guide, **version 2.1.0, package `hl7.fhir.eu.laboratory#2.1.0`**
+(FHIR 4.0.1, https://hl7.eu/fhir/laboratory/2.1.0/).
+- **What it writes:** a `document` Bundle. Its entries claim the guide's Bundle, Composition, DiagnosticReport and
+  ServiceRequest profiles, and HL7 Europe Base 2.0.1's Patient, Practitioner and Organization profiles.
+- **Where each target comes from:** the element's Xt-EHR 1.0.0 link and the guide's map of the Xt-EHR Laboratory
+  Report model (`map-ehdslaboratoryreport.html`). Where the lab map leaves an element to HL7 Europe Base, Base's maps
+  decide. The spec cites the map for each rule (`tools/specs/sdchealth_lab_report.py`).
+
+**HL7's FHIR validator 7.0.6, `-version 4.0.1 -ig hl7.fhir.eu.laboratory#2.1.0`, on the 15 sample Bundles
+(20 November 2026): every Bundle fails, with 33 errors in all.** All of them come from what the model does not hold.
+The Bundles pass the FHIR R4 JSON schema.
+
+| Errors | What the validator reports | Cause |
+|---|---|---|
+| 30 | `ServiceRequest.identifier`: minimum 1, found 0. `DiagnosticReport.basedOn` then matches no ServiceRequest-eu-lab (15 each). | The model holds no order identifier, and neither does the record's metadata. |
+| 3 | `Composition.section`: minimum 1, found 0, in one record. The DiagnosticReport's link to the Composition then matches no Composition profile (2). | Its comment is an Exceptional Value (NAV), and the comment is the only section the model can fill. The profile requires a section's text. |
+
+Warnings: no narrative in the resources other than the section (dom-6), v2-0203 `NI` is not in R4's extensible
+identifier-type value set, and the attachment's content could not be checked (its URL is a URN).
+
+The first run found 124 errors. The 91 on this side are fixed:
+- **The recipient's birth date** (30 errors): the samples gave none, and PatientEuCore requires one. They do now.
+- **The attachment URLs** (15 errors): the validator refuses `example.org`. The samples now use URNs (`urn:uuid:`).
+- **The ASKU on sex for clinical use** (4 errors): the extension's CodeableConcept had data-absent-reason only on its
+  text, and the value set's binding is required. An Exceptional Value on the text of an extension's CodeableConcept
+  now also writes the coding data-absent-reason `unknown`, which the value set includes and which subsumes
+  asked-unknown, not-asked, asked-declined and temp-unknown. The extension on the text keeps the exact code.
+- **The Composition section** (42 errors): the guide's map sends the result comments to a section's text, or to
+  `DiagnosticReport.conclusion`, and the mapping had used only the conclusion. They now go to both. The section is
+  Composition-eu-lab's `annotations` slice: LOINC 48767-8, text only, with no entries. Its narrative is the comment,
+  escaped, as XHTML.
+
+**Needs sdcreader 4.5.0 and sdc-mapper 4.4.0.** The mapping says `reference_model: true`: it reads the record's reference-model parts
+as well as its data cluster. Those are the subject, the provider, the four Participations, the Attestation and the
+workflow. That needs **sdcreader 4.5.0 and sdc-mapper 4.4.0** (released 20 November 2026; the pin is `sdc-mapper>=4.4`).
+
+**The samples** (`samples/sdchealth-lab-report/`) are 15 synthetic records: no person, professional, organisation or
+report in them is real.
+- Each validates against the model's XSD 1.1 schema.
+- They carry five Exceptional Values: ASKU, NAV, UNK and ASKR (twice: a patient's birth date, as subject and as
+  recipient).
+- Every LOINC and SNOMED CT code in them was looked up on HL7's terminology server, not written from memory, and is
+  used only where the model allows a code of that system. The sample README lists them.
+
+**Value counts** for the 15 samples (1,898 values):
+
+| lookup | declared | not representable | Exceptional Values |
+|---|---|---|---|
+| 359 | 1,380 | 154 | 5, all preserved (ASKU, NAV, UNK, ASKR twice) |
+
+The lookups are the codes the model binds: administrative gender; name, address and contact uses; the contact
+system; v2-0203 identifier types; organization type; sex for clinical use. Everything else written is declared.
+
+**Where the values go.**
+- **Composition:**
+  - title, date, status;
+  - identifier (the issuer as `assigner.display`);
+  - type: the record's LOINC code, also the DiagnosticReport's code (the guide's `dr-comp-type`);
+  - version (extension);
+  - event code (the document event type, SNOMED CT) and event period;
+  - subject (the Patient) and author (a Practitioner);
+  - attester twice: mode `professional` (the Attester Participation, at its start) and mode `legal` (the Attestation,
+    at its `committed` time);
+  - custodian (the Organization);
+  - the information recipient (extension);
+  - the link to the DiagnosticReport (extension);
+  - the language: the record's `dm-language`;
+  - a section (the guide's `annotations`): the result comments as narrative.
+- **DiagnosticReport:**
+  - identifier, code, subject and status, as the Composition's;
+  - `issued` and `effectivePeriod`;
+  - the presented form: title, URL, media type, size;
+  - `conclusion`: the result comments;
+  - the language, as the Composition's;
+  - `basedOn` the ServiceRequest;
+  - the link to the Composition (extension).
+- **Patient** (the subject): name, identifiers, gender, birth date, deceased, address, telecom, and the sex for
+  clinical use (PatientEuCore's extension).
+- **Practitioner**, one per party: author, attester, legal authenticator, order placer. Each holds name, identifiers,
+  address and telecom.
+- **Organization** (the custodian): name, type, identifier, address, telecom, part-of.
+- **Patient** (the intended recipient): the model's intended recipient is a person of the Patient cluster, so it is
+  a Patient entry of its own.
+- **ServiceRequest:** the order placer as `requester`, the Participation's start as `authoredOn`.
+- **Bundle:** `timestamp` from the authored date, and the record's instance id as identifier.
+
+Several entries share a resource type, so each is tagged in the mapping (`entry#author`) and referenced by its tag
+(`{entry#author}`, new in the writer).
+
+**Declared choices.**
+- **ServiceRequest status and intent:** FHIR requires both and the record gives neither. Status is `unknown` (the
+  source does not say) and intent is `order` (the Participation names the order's placer).
+- **Document event type:** it is coded in SNOMED CT, and the guide's study-type category is bound (required) to LOINC
+  codes. So it goes in `Composition.event.code`, as HL7 Europe Base's document map allows for R4.
+- **Result comments:** they go to both places the guide's map allows: a Composition section's text and
+  `DiagnosticReport.conclusion`.
+  - The section is the `annotations` slice. Its title is "Comments, interpretation and recommendations" and its code is
+    the slice's, LOINC 48767-8 (looked up: active, LOINC 2.83).
+  - Its narrative status is `additional`: the section has no entries for the text to be generated from.
+  - A plain-text value written to a Narrative's `div` is escaped and put in the XHTML `div` FHIR requires (new in the
+    writer).
+  - A comment that is an Exceptional Value writes no section, and its reason is on the conclusion.
+- **The record's metadata:** the attributes under a record's root are the record's own, and a constant
+  `{record:<name>}` reads one (new in the writer).
+  - `dm-language` is the Composition's and the DiagnosticReport's language.
+  - `instance_id` is the Bundle's identifier.
+  - `creation_timestamp` and `current-state` could be the Bundle's timestamp and the document's status. They are not
+    mapped: the authored date and the workflow are.
+  - The model's own metadata (creator, publisher, rights) describes the model, not the report, so it fills no report
+    element.
+- **Bundle identifier:** the record's identifier has no system (its issuer is a name), and bdl-9 needs one. The Bundle
+  carries the record's instance id instead.
+- **Document status:** the workflow's state is the Composition's status, and the same code is the DiagnosticReport's
+  status (FHIR R4's diagnostic-report-status has all four codes). sdcreader 4.5.0 reads no definition for an ordinal's
+  states: SDCStudio writes them without the `rdfs:Class` it reads. So the codes are copied from the model's schema
+  into a table in the mapping, and the value is declared, not a lookup.
+- **Legal authentication:** the legal attester's mode is written only when the Attestation is not pending. A pending
+  one leaves an attester without its mode, which HL7's validator reports.
+- **Addresses:** a thoroughfare, premises identifier or delivery service is a line of its own. HL7 Europe Base puts
+  street parts in line extensions, which are not written here. The country is the ISO 3166 code in `Address.country`.
+- **Email:** an email beside a phone number is a second ContactPoint.
+
+**What FHIR or the guide cannot hold** (omitted, each with its reason in the mapping; 154 values in the samples):
+- the practice setting: the guide's map has no row for it. Its specialty category (SNOMED CT laboratory specialties)
+  belongs to the service specialty, which the model does not have;
+- a Participation's second time: the custodian and the information recipient have no time, and an attester and a
+  ServiceRequest have one;
+- the Attestation's reason: `Composition.attester` has none;
+- other supporting information: the guide puts it in `ServiceRequest.supportingInfo`, which takes references to
+  resources, and the record holds IRIs of other records;
+- the attachment's data: the model gives the content by URI, and `Attachment.data` is the bytes;
+- the Parent Record Identifier (the record this one belongs to): a Composition has no such element;
+- a country's name beside its code: `Address.country` holds one string;
+- an identifier's issuing country: FHIR's Identifier has no such element.
+
+**What the guide asks for that the model does not give.**
+- **No results, specimens or body structures.** So the Bundle has no Observation, Specimen or BodyStructure, and no
+  specialty sections. The only section it can have is the comments' (the guide's `annotations`), which the validator
+  accepts but the guide's prose does not expect to stand alone.
+- **A Health Professional has no role, specialty or organisation**, so the Bundle has no PractitionerRole.
+- **The intended recipient can only be a patient.**
+- **No order identifier.** ServiceRequest-eu-lab requires one.
+- **A patient's birth date is optional.** PatientEuCore requires one, so a record without it fails the guide.
+- **A record dated by day alone** cannot make a document Bundle: the Bundle's timestamp is an instant, with a time
+  and a zone. The record's `creation_timestamp`, a dateTime, could be the timestamp instead (not mapped).
+
+## Chained records: a Laboratory Report and its results, order, requests and specimens
+
+A document's repeating entries are records of their own in the SDCHealth library, chained to the document's record
+(library decision 12). A Laboratory Report's order, its requests and its results each carry a Parent Record
+Identifier holding the report's Record Identifier. A specimen carries none: the others name it by reference. FHIR
+puts them all in one document Bundle, and `map_chain` writes it.
+
+```python
+from sdc_mapper import Engine, load_mapping
+from sdc_gdr2fhir import mapping_path
+from sdc_gdr2fhir.chain import map_files
+
+engine = Engine()
+parent = (report_xml, load_mapping(mapping_path("zptekdommw56yiz9lqjy5dga")), report_dir)
+children = [(xml, load_mapping(mapping_path(ct_id)), directory) for xml, ct_id, directory in chained]
+result = map_files(engine, parent, children)
+result.files["Bundle.json"]                  # the one Bundle
+[r.report for r in result.records]           # each record's coverage report, the parent's first
+```
+
+`FHIRMapper.map_chain(parent, children)` takes records that are already resolved: each a (record, mapping) pair.
+`map_files` gates and reads them first, each against its own model's schema, and builds each record's report as
+sdc-mapper does for one record.
+
+The call surfaces (a CLI command and an MCP tool) belong in sdc-mapper. They are designed in
+`docs/chained-records.md`, not yet implemented.
+
+**Which records belong.** A record that doesn't belong refuses the whole chain (`ChainError`):
+- a child whose Parent Record Identifier is not the parent's Record Identifier;
+- a child without one that no record of the chain names;
+- a child whose subject shares no identifier with the parent's (another patient).
+
+**Each child by its own mapping.**
+- A chained record's mapping writes into the parent's Bundle. Its Bundle rule's `@chained-to` directive names the
+  parent model and the entry the record makes (`zptekdommw56yiz9lqjy5dga obs`).
+- A tag the parent's mapping also writes names the parent's entry: `=entry#dr/=resource/+result` joins the report's
+  DiagnosticReport, and `{entry#patient}` is the report's Patient.
+- Its own entries are kept apart from its siblings': the second child's `entry#obs` is `entry#obs.2`, and
+  `{entry#obs}` names its own. So is every element it adds (`+result`: one per child).
+- Such a mapping maps only with its parent. Mapped alone it is refused.
+
+**References between records.**
+- An element on a path tagged `#record` (`specimen#record/reference`) holds a record's IRI. It is written as the
+  reference to that record's entry.
+- A list holds several IRIs, whitespace-delimited, and each gets its own element.
+- A record is named by its instance id (the IRI ends with it) or by a business identifier its entry carries
+  (`identifier`, `accessionIdentifier`).
+- A reference to a record outside the chain refuses the chain.
+
+**A section of results.** A document section that lists entries and has no text gets one generated from them: each
+entry's code and value, as an XHTML list, with status `generated`.
+
+**Where the chained values go** (the guide's maps of the Xt-EHR models, cited rule by rule in `tools/specs/`):
+
+| Record | FHIR | The report's reference to it |
+|---|---|---|
+| Order Information | the report's own ServiceRequest (ServiceRequest-eu-lab): identifier, authoredOn, reasonCode, note | `DiagnosticReport.basedOn` (the report's mapping) |
+| Service Request | a ServiceRequest (ServiceRequest-eu-lab): identifier, status, intent `order` (declared), priority, code, quantity, occurrence, reasonCode, bodySite, specimen, patient instruction, note, requester | `DiagnosticReport.basedOn` |
+| Laboratory Observation | an Observation (Observation-resultslab-eu-lab): identifier, status, category `laboratory`, code, effective time, value, data absent reason, interpretation, method, bodySite, note, specimen, basedOn, performer (author and laboratory) | `DiagnosticReport.result`, and an entry of a results section |
+| Specimen | a Specimen (Specimen-eu-lab): accession identifier, status, type, condition, received time, collection (collector and time), request, parent, note | `DiagnosticReport.specimen` |
+
+**Declared choices.**
+- **One Order Information per report.** It fills in the report's ServiceRequest, the one its Order Placer
+  Participation makes, so a report takes one. A second gives the same element a second value, and the chain is
+  refused. Its authored date and the Participation's start must agree.
+- **One results section.** The guide's top-level sections are laboratory specialties, and the model gives a result
+  no specialty or study type. So every result goes in one section, coded with the study type that covers them all:
+  LOINC 26436-6, Laboratory studies (set). That code is in the guide's lab-studyType-eu-lab; looked up: active,
+  LOINC 2.83.
+- **A chained record's subject is the report's.** The child's own copy of the patient's details is not written again
+  (not representable, with that reason). The chain is refused if the two share no identifier.
+- **Quantities** carry the unit as the record writes it (`unit`), with no UCUM system or code. The models' units hold
+  only the text "UCUM Units" (below).
+
+**Samples** (`samples/sdchealth-lab-chains/`): five chains. Each is a report sample with an Order Information, a
+Specimen, a Service Request and three Laboratory Observations: 30 records, each valid against its model's XSD 1.1
+schema. Every code in them was looked up, and the sample README lists them.
+
+**Value counts** across the five chains, 1,953 values in 35 records:
+
+| Records | lookup | declared | not representable | Exceptional Values |
+|---|---|---|---|---|
+| 5 reports | 119 | 462 | 51 | 1, preserved |
+| 5 Order Information | 0 | 35 | 70 | 0 |
+| 5 Service Requests | 25 | 85 | 70 | 0 |
+| 5 Specimens | 10 | 85 | 70 | 0 |
+| 15 Laboratory Observations | 120 | 464 | 285 | 1, preserved (NAV) |
+
+Most of the values that are not representable are the chained records' copies of the patient's details: 14 in each
+child, the report's subject already written once. The rest are omitted with their reasons in the mappings.
+
+**HL7's FHIR validator 7.0.6, `-version 4.0.1 -ig hl7.fhir.eu.laboratory#2.1.0`, on the five chained Bundles
+(20 November 2026): 28 errors.**
+- 14 are `obs-6`: an Observation has a dataAbsentReason beside its value. The model requires a data absent reason for
+  every result, value or not (below). Each one also makes the DiagnosticReport's reference to that result match no
+  profile, 14 more.
+- The same five reports alone give 10 errors, all from the missing order identifier (2 per Bundle). With their chains
+  they are gone: the identifier comes from the Order Information.
+- With results, a report whose comment is an Exceptional Value also has a section: the results section. Mapped alone,
+  such a report has none (3 errors, in the report samples' one NAV comment, which is not among these five).
+- Warnings: no narrative in the other resources; v2-0203 `NI`; and LOINC's result codes "require units", which the
+  results' "UCUM Units" are not.
+
+**What the chained models lack, or make records carry** (library findings; component changes are Tim's call):
+- **Units.** Every XdQuantity's units (Laboratory Observation, Service Request) enumerate one value, the text "UCUM
+  Units". A result can't say mg/dL, and FHIR gets no UCUM code.
+- **A data absent reason beside every value.** Laboratory Observation's Observation Result requires Data Absent
+  Reason as well as a value. A required component takes no Exceptional Value, so a result with a value carries a
+  reason for its absence, which FHIR forbids (obs-6).
+- **More that Laboratory Observation requires:** a method, a note, a test kit reference and a calibrator for every
+  result. Most results have none of them.
+- **No reference range.** The model's Result Range is a value (valueRange), not a reference range, and the model has
+  none. The guide maps referenceRange.
+- **Authored dates are dates.** Observation.issued is an instant, so a result's Authored Date is omitted.
+- **Specimen has no collection.** It has no collection method, body site, quantity or device, so only the collector
+  Participation (who and when) reaches Specimen.collection.
+- **A record's IRI has no defined form.** The library carries references as "the IRI of the referenced record" and
+  doesn't say what that IRI is. sdc-gdr2fhir matches an IRI that ends with the record's instance id, or a business
+  identifier.
+
 ## Exceptional Values: every one preserved
 
 FHIR is the target that can say what an Exceptional Value says. Where the data-absent-reason code system
@@ -195,4 +475,21 @@ Every sample record is mapped and each resource validated against the FHIR R4 JS
 lookups, Exceptional Values and refused mappings are exercised. The tests also cover document Bundles (built from a
 synthetic set of values, and from an NHANES mapping edited to write a document), profiles, the writer's directives and
 the FHIR version. The HL7 validator tests are marked `validator` and are skipped without Java and
+`FHIR_VALIDATOR_JAR`. The SDCHealth Laboratory Report tests (`tests/test_lab_report.py`) cover the following:
+- the samples against the model's XSD 1.1 schema;
+- every sample to a document Bundle that passes the FHIR R4 schema, byte-stable;
+- every reference resolving to an entry, and each party in its place;
+- the guide's identifier and type agreements;
+- the Exceptional Values and the value counts.
+
+The chained-records tests (`tests/test_lab_chain.py`) cover the following:
+- every chained sample against its model's schema;
+- each chain to one document Bundle, byte-stable, with every resource passing the FHIR R4 schema;
+- the children wired where the guide puts them;
+- every value's class;
+- the refusals: another report's child, a specimen nobody names, a reference outside the chain, another patient, and
+  a chained mapping used alone;
+- the report alone, byte-identical through the chain path.
+
+HL7's validator with the guide's package is a `validator` test in both files, skipped without Java and
 `FHIR_VALIDATOR_JAR`.

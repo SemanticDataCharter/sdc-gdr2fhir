@@ -1,0 +1,219 @@
+# SDCHealth Laboratory Report to HL7 FHIR R4 document Bundle (HL7 Europe Laboratory Report 2.1.0)
+# Written by tools/build_mapping.py from tools/specs/sdchealth_lab_report.py; labels in the comments.
+mapping:
+  id: sdchealth-lab-report-fhir-r4
+  version: 1
+  author: Axius SDC, Inc.
+  date: '2026-11-20'
+  description: The SDCHealth Laboratory Report model in a FHIR R4 document Bundle that claims the HL7 Europe Laboratory Report
+    2.1.0 profiles (Bundle, Composition, DiagnosticReport, ServiceRequest; Patient, Practitioner and Organization from HL7
+    Europe Base 2.0.1), with the record's parties, attestation and workflow (reference_model). Resources and places are declared;
+    codes the model binds are the model's own.
+model:
+  ct_id: zptekdommw56yiz9lqjy5dga
+  schema_sha256: 150c6c74c3760496ff172141d596a78b75e69753ec8850f3872d1ba00a2a3ec6
+target:
+  name: HL7 FHIR
+  version: R4
+reference_model: true
+rules:
+  # Laboratory Report
+  - {cluster: qnocwj0gevwczd88of20iucv, to: Bundle, attributes: {resourceType: Bundle, type: document, meta/profile: 'http://hl7.eu/fhir/laboratory/StructureDefinition/Bundle-eu-lab', '@first': Composition DiagnosticReport Patient}}
+  # Document Header Title
+  - {component: wpdxubv2w0me9ld80qdorjl2, to: =entry#comp/=resource/title, transform: copy, attributes: {resourceType: Composition, meta/profile: 'http://hl7.eu/fhir/laboratory/StructureDefinition/Composition-eu-lab', extension#dr/url: 'http://hl7.eu/fhir/extensions/StructureDefinition/composition-diagnosticReportReference', extension#dr/valueReference/reference: '{DiagnosticReport}', subject/reference: '{entry#patient}', author/reference: '{entry#author}', language: '{record:dm-language}'}, also: [{to: =entry#dr/=resource/resourceType, transform: constant, value: DiagnosticReport}, {to: =entry#dr/=resource/meta/profile, transform: constant, value: 'http://hl7.eu/fhir/laboratory/StructureDefinition/DiagnosticReport-eu-lab'}, {to: =entry#dr/=resource/extension#comp/url, transform: constant, value: 'http://hl7.org/fhir/5.0/StructureDefinition/extension-DiagnosticReport.composition'}, {to: =entry#dr/=resource/extension#comp/valueReference/reference, transform: constant, value: '{Composition}'}, {to: =entry#dr/=resource/subject/reference, transform: constant, value: '{entry#patient}'}, {to: =entry#dr/=resource/language, transform: constant, value: '{record:dm-language}'}]}
+  # Authored Date
+  - {component: g3m0lzwvs18eckx4wsm6av5d, to: timestamp, transform: copy, also: [{to: =entry#comp/=resource/date, transform: copy}, {to: =entry#dr/=resource/issued, transform: copy}]}
+  # Record Identifier
+  - {cluster: nieu1e3llgra1v66p2x8jnwu, to: .}
+  # Identifier Value (within Record Identifier)
+  - {component: h17egwljmrym3r8ortrqqjwd, within: [nieu1e3llgra1v66p2x8jnwu], to: =entry#comp/=resource/identifier/value, transform: copy, also: [{to: =entry#dr/=resource/identifier/value, transform: copy}]}
+  # Issuing Authority (within Record Identifier)
+  - {component: kphe1er8qxy2dxqdwhpcfk3z, within: [nieu1e3llgra1v66p2x8jnwu], to: =entry#comp/=resource/identifier/assigner/display, transform: copy, also: [{to: =entry#dr/=resource/identifier/assigner/display, transform: copy}]}
+  # Version
+  - {component: hba1rwqj6zyxj4l3xlpb4dea, to: =entry#comp/=resource/extension#version/valueString, transform: copy, also: [{to: =entry#comp/=resource/extension#version/url, transform: constant, value: 'http://hl7.org/fhir/5.0/StructureDefinition/extension-Composition.version'}]}
+  # Document Type (LOINC)
+  - {cluster: kclb4dxly9p82dbocdd4xswk, to: .}
+  # Code System: LOINC
+  - {component: kar8kkxilj1e2fys88mg0dpc, to: =entry#comp/=resource/type/coding/system, transform: copy, also: [{to: =entry#dr/=resource/code/coding/system, transform: copy}]}
+  # Document Type Code (LOINC)
+  - {component: itbe4hv32ckqckm0kocecomn, to: =entry#comp/=resource/type/coding/code, transform: copy, also: [{to: =entry#dr/=resource/code/coding/code, transform: copy}]}
+  # Code Display Text (within Document Type (LOINC))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [kclb4dxly9p82dbocdd4xswk], to: =entry#comp/=resource/type/text, transform: copy, also: [{to: =entry#dr/=resource/code/text, transform: copy}]}
+  # Document Event Type (SNOMED CT)
+  - {cluster: gyiphdcqi092b36zhajh616y, to: .}
+  # Code System: SNOMED CT (within Document Event Type (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [gyiphdcqi092b36zhajh616y], to: =entry#comp/=resource/=event/code/coding/system, transform: copy}
+  # Document Event Type Code (SNOMED CT)
+  - {component: sx40i2ylihyo3thkm9cag2s5, to: =entry#comp/=resource/=event/code/coding/code, transform: copy}
+  # Code Display Text (within Document Event Type (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [gyiphdcqi092b36zhajh616y], to: =entry#comp/=resource/=event/code/text, transform: copy}
+  # Document Period
+  - {cluster: hdkno158ziu22fj3w1adfssj, to: .}
+  # Document Period Start
+  - {component: c8y3wwlmoc3qnkc2lbvjefrv, to: =entry#comp/=resource/=event/period/start, transform: copy, also: [{to: =entry#dr/=resource/effectivePeriod/start, transform: copy}]}
+  # Document Period End
+  - {component: mo4yehourgo1wm24rxld2k6d, to: =entry#comp/=resource/=event/period/end, transform: copy, also: [{to: =entry#dr/=resource/effectivePeriod/end, transform: copy}]}
+  # Practice Setting (SNOMED CT)
+  - {cluster: qijd1k13ac3jr70w0q8rwnnd, to: '-', transform: omit, reason: 'the HL7 Europe Laboratory Report guide 2.1.0''s map has no row for header.practiceSetting; its specialty category (lab-specialty-eu-lab, SNOMED CT laboratory specialties) is header.serviceSpecialty''s, which the model does not have'}
+  # Parent Record Identifier
+  - {component: b5v4p5ju74ugnzyt9bh98398, to: '-', transform: omit, reason: 'FHIR''s Composition has no element for the record a document belongs to (relatesTo is a relation between documents: replaces, appends, transforms, signs)'}
+  # Attachment
+  - {cluster: ha7fcqnntpjsk6f7ypx1arb9, to: .}
+  # Document Title
+  - {component: fo6qinkjksovtif39psfofav, to: =entry#dr/=resource/presentedForm/title, transform: copy}
+  # Document URL
+  - {component: x5u6952free06snjx23jkx0x, to: =entry#dr/=resource/presentedForm/url, transform: copy}
+  # Media Type
+  - {component: nsapfk3gom5sc51bvfo1nkns, to: =entry#dr/=resource/presentedForm/contentType, transform: copy}
+  # Document Size
+  - {component: rjlrij6lpaqerzjj86vhcv69, to: =entry#dr/=resource/presentedForm/size, transform: copy}
+  # Attachment Data
+  - {component: ya8scgc5rb2s9dycq8td60qp, to: '-', transform: omit, reason: 'EHDSAttachment.data and FHIR''s Attachment.data are the bytes, base64-encoded; the record''s XdFile gives its content by URI, which is not the bytes (the report''s address is Document URL, Attachment.url)'}
+  # Lab Report Body
+  - {cluster: v74c8xmwjn98husagef42znx, to: .}
+  # Lab Report Result Data Section
+  - {cluster: czbltubl2gjbsciem7ng51u0, to: .}
+  # Lab Report Result Data Comments Interpretation And Recommendations
+  - {component: lwcmz3awd5t5l3jkvka76bu2, to: =entry#dr/=resource/conclusion, transform: copy, also: [{to: =entry#comp/=resource/section#notes/text/div, transform: copy}, {to: =entry#comp/=resource/section#notes/text/status, transform: constant, value: additional}, {to: =entry#comp/=resource/section#notes/title, transform: constant, value: 'Comments, interpretation and recommendations'}, {to: =entry#comp/=resource/section#notes/code/coding/system, transform: constant, value: 'http://loinc.org'}, {to: =entry#comp/=resource/section#notes/code/coding/code, transform: constant, value: 48767-8}, {to: =entry#comp/=resource/section#notes/code/coding/display, transform: constant, value: 'Annotation comment [Interpretation] Narrative'}]}
+  # Lab Report Supporting Information Section
+  - {cluster: h7i5qnnw17xib45b3zzxdcz8, to: .}
+  # Sex For Clinical Use
+  - {component: h9mhxwnlowegqhvks6b5uhp3, to: =entry#patient/=resource/extension#sex/extension#value/valueCodeableConcept/text, transform: copy, attributes: {resourceType: Patient, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/patient-eu-core'}, also: [{to: =entry#patient/=resource/extension#sex/url, transform: constant, value: 'http://hl7.org/fhir/StructureDefinition/patient-sexParameterForClinicalUse'}, {to: =entry#patient/=resource/extension#sex/extension#value/url, transform: constant, value: value}, {to: =entry#patient/=resource/extension#sex/extension#value/valueCodeableConcept/coding/system, transform: code, table: {female-typical: 'http://terminology.hl7.org/CodeSystem/sex-parameter-for-clinical-use', male-typical: 'http://terminology.hl7.org/CodeSystem/sex-parameter-for-clinical-use', specified: 'http://terminology.hl7.org/CodeSystem/sex-parameter-for-clinical-use'}}, {to: =entry#patient/=resource/extension#sex/extension#value/valueCodeableConcept/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/sex-parameter-for-clinical-use'}]}
+  # Lab Report Supporting Information Other Supporting Information Reference
+  - {component: p8ivdj3b6yxk8rokp9ivv5tr, to: '-', transform: omit, reason: 'the guide puts other supporting information in ServiceRequest.supportingInfo, references to resources; the record holds the IRIs of other records as one list value, none of them a resource in the Bundle'}
+  # subject
+  - {cluster: subject, to: /Bundle/=entry#patient/=resource, attributes: {resourceType: Patient, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/patient-eu-core'}}
+  # provider
+  - {cluster: provider, to: /Bundle/=entry#author/=resource, attributes: {resourceType: Practitioner, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/practitioner-eu-core'}}
+  # performer (within Attester Participation)
+  - {cluster: performer, within: [e7jes8an7n8t58qyabk1nnm2], to: /Bundle/=entry#attester/=resource, attributes: {resourceType: Practitioner, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/practitioner-eu-core'}}
+  # performer (within Custodian Participation)
+  - {cluster: performer, within: [k6j6ln7pcgy0n11in45xtd69], to: /Bundle/=entry#custodian/=resource, attributes: {resourceType: Organization, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/organization-eu-core'}}
+  # performer (within Intended Recipient Participation)
+  - {cluster: performer, within: [q5g9nqjxzj0su0rpn8icgqjc], to: /Bundle/=entry#recipient/=resource, attributes: {resourceType: Patient, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/patient-eu-core'}}
+  # performer (within Order Placer Participation)
+  - {cluster: performer, within: [op04cbyj14qocu2u38nljhk8], to: /Bundle/=entry#placer/=resource, attributes: {resourceType: Practitioner, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/practitioner-eu-core'}}
+  # committer
+  - {cluster: committer, to: /Bundle/=entry#legal/=resource, attributes: {resourceType: Practitioner, meta/profile: 'http://hl7.eu/fhir/base/StructureDefinition/practitioner-eu-core'}}
+  # party-details
+  - {cluster: party-details, to: .}
+  # Human Name
+  - {cluster: g50zuf7amwobbgifx7o52i5l, to: name}
+  # Given Name (Person)
+  - {component: l9l169co9r23e6fftpvdz4e3, to: given, transform: copy}
+  # Surname (Person)
+  - {component: jc1lfk3ovt6l8frhxvx8b669, to: family, transform: copy}
+  # Name Prefix
+  - {component: yahxccv0l1z6ykjxayzkdlkq, to: prefix, transform: copy}
+  # Name Suffix
+  - {component: l509t0zajfl5atns64d5kl97, to: suffix, transform: copy}
+  # Name As Written
+  - {component: dp1zp58fx23u0yrs3j9ogqxt, to: text, transform: copy}
+  # Name Use
+  - {component: bfqinvm7qrgi9jjw1i637moh, to: use, transform: binding, prefix: 'http://hl7.org/fhir/name-use'}
+  # Address
+  - {cluster: omhsrouda4mt73j1t1fzakqz, to: address}
+  # Address (Line 1)
+  - {component: ncxxt7wgs7soxw7kbmapxvg3, to: +line, transform: copy}
+  # Thoroughfare
+  - {component: zzvw3p4x9xcxo6q1xqymvrct, to: +line, transform: copy}
+  # Premises Identifier
+  - {component: gzfu10juglu35llepko2huo9, to: +line, transform: copy}
+  # Delivery Service
+  - {component: u7rvm7j5oiuydsiwl0dglpl8, to: +line, transform: copy}
+  # City Name
+  - {component: a69l16mqaotn0py958oxahhz, to: city, transform: copy}
+  # Postal Code
+  - {component: w6nfslk6scfpenoewq3eqnev, to: postalCode, transform: copy}
+  # Address Use
+  - {component: b25dj42zxhm19pih328ga8pl, to: use, transform: binding, prefix: 'http://hl7.org/fhir/address-use'}
+  # Address Type
+  - {component: ml1y0608by1jakreu950oqb7, to: type, transform: binding, prefix: 'http://hl7.org/fhir/address-type'}
+  # Country
+  - {cluster: u0rvm9o99w3ked99wbsjyqcj, to: .}
+  # Country Code ISO 3166
+  - {component: f2jicaigehz7xmwcp1gm5gh0, to: country, transform: copy}
+  # Country Name
+  - {component: gll1lakps0m1mgas18flfjwq, to: '-', transform: omit, reason: 'FHIR''s Address.country is one string, which holds the record''s ISO 3166 code; the country''s name has no second place (HL7 Europe Base''s country-code extension is not written here)'}
+  # Telecom
+  - {cluster: lv6uk4agn7as0er1bely65oi, to: telecom}
+  # Phone Number
+  - {component: zpfwg52r88j6jdypj7rg71ke, to: value, transform: copy}
+  # Email Address
+  - {component: q922mqaon3yn5zlwf2bszf28, to: ../+telecom/value, transform: copy, also: [{to: ../+telecom/system, transform: constant, value: email}]}
+  # Contact Method
+  - {component: miqo30r5b554nyj7ubryw43x, to: system, transform: binding, prefix: 'http://hl7.org/fhir/contact-point-system'}
+  # Contact Use
+  - {component: vmruk4j9y1orvvz8cwafrax5, to: use, transform: binding, prefix: 'http://hl7.org/fhir/contact-point-use'}
+  # Person Identifier
+  - {cluster: xxvvs7fuoz5lrz44128su7kg, to: identifier}
+  # Identifier Value
+  - {component: h17egwljmrym3r8ortrqqjwd, to: value, transform: copy}
+  # Issuing Authority
+  - {component: kphe1er8qxy2dxqdwhpcfk3z, to: assigner/display, transform: copy}
+  # Person Identifier Type
+  - {component: h2pd0ns7lx2vzey41z6ggt8r, to: type/text, transform: copy, also: [{to: type/coding/system, transform: code, table: {SS: 'http://terminology.hl7.org/CodeSystem/v2-0203', PPN: 'http://terminology.hl7.org/CodeSystem/v2-0203', DL: 'http://terminology.hl7.org/CodeSystem/v2-0203', MR: 'http://terminology.hl7.org/CodeSystem/v2-0203', NI: 'http://terminology.hl7.org/CodeSystem/v2-0203', U: 'http://terminology.hl7.org/CodeSystem/v2-0203'}}, {to: type/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Driver License Number
+  - {component: eg635xgsjvipb1rxmaqzt7pv, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Passport Number
+  - {component: g6b7o2z5fdo71vv4t4vv3kfl, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Social Security Number
+  - {component: b77u36g6lormbn7jfls25h5f, to: ../+identifier/value, transform: copy, also: [{to: ../+identifier/type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, {to: ../+identifier/type/coding/code, transform: link, system: 'http://terminology.hl7.org/CodeSystem/v2-0203'}]}
+  # Country Code ISO 3166 (within Person Identifier)
+  - {component: f2jicaigehz7xmwcp1gm5gh0, within: [xxvvs7fuoz5lrz44128su7kg], to: '-', transform: omit, reason: FHIR's Identifier has no element for the country that issued it}
+  # Organization Identifier
+  - {cluster: mdxhqrhcerkkdn66hrjex66w, to: identifier}
+  # Organization Identifier Type
+  - {component: y9mgb964lwsstvf3w06vkkep, to: type/text, transform: copy, also: [{to: type/coding/system, transform: code, table: {TAX: 'http://terminology.hl7.org/CodeSystem/v2-0203', NPI: 'http://terminology.hl7.org/CodeSystem/v2-0203', U: 'http://terminology.hl7.org/CodeSystem/v2-0203'}, on_miss: omit}, {to: type/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/v2-0203', on_miss: omit}]}
+  # Administrative Gender
+  - {component: gxzbm758mhdz51xd4bawlfhh, to: gender, transform: binding, prefix: 'http://hl7.org/fhir/administrative-gender'}
+  # Date of Birth
+  - {component: js564tazefb6udqlh12rj04l, to: birthDate, transform: copy}
+  # Deceased Indicator
+  - {component: fnr5q1tfq42ez9jia9dqueho, to: deceasedBoolean, transform: copy}
+  # Deceased Date
+  - {component: vnlhr9c3ykayyegumhb09snf, to: deceasedDateTime, transform: copy}
+  # Organization Name
+  - {component: xcn8r67fg7soty17homzok44, to: name, transform: copy}
+  # Organization Type
+  - {component: wx5x3zn4hmo7qjtzvwz5nhrb, to: type/text, transform: copy, also: [{to: type/coding/system, transform: code, table: {prov: 'http://terminology.hl7.org/CodeSystem/organization-type', dept: 'http://terminology.hl7.org/CodeSystem/organization-type', team: 'http://terminology.hl7.org/CodeSystem/organization-type', govt: 'http://terminology.hl7.org/CodeSystem/organization-type', ins: 'http://terminology.hl7.org/CodeSystem/organization-type', pay: 'http://terminology.hl7.org/CodeSystem/organization-type', edu: 'http://terminology.hl7.org/CodeSystem/organization-type', reli: 'http://terminology.hl7.org/CodeSystem/organization-type', crs: 'http://terminology.hl7.org/CodeSystem/organization-type', cg: 'http://terminology.hl7.org/CodeSystem/organization-type', bus: 'http://terminology.hl7.org/CodeSystem/organization-type', other: 'http://terminology.hl7.org/CodeSystem/organization-type'}}, {to: type/coding/code, transform: binding, system: 'http://terminology.hl7.org/CodeSystem/organization-type'}]}
+  # Organisation Part Of
+  - {component: rtx15cec5b5tyta3jfwunoqm, to: partOf/display, transform: copy}
+  # Participation Function (Attester)
+  - {component: z0gm7qs3bvdt2s1tie2gcrue, to: /Bundle/=entry#comp/=resource/attester#professional/mode, transform: code, table: {attester: professional}, also: [{to: /Bundle/=entry#comp/=resource/attester#professional/party/reference, transform: constant, value: '{entry#attester}'}]}
+  # start (within Attester Participation)
+  - {element: start, within: [e7jes8an7n8t58qyabk1nnm2], to: /Bundle/=entry#comp/=resource/attester#professional/time, transform: copy}
+  # end (within Attester Participation)
+  - {element: end, within: [e7jes8an7n8t58qyabk1nnm2], to: '-', transform: omit, reason: 'a Composition attester has one time, the Participation''s start'}
+  # Participation Function (Custodian)
+  - {component: mabd8hws4owmtyafxr9mbw6q, to: /Bundle/=entry#comp/=resource/custodian/reference, transform: code, table: {custodian: '{entry#custodian}'}}
+  # start (within Custodian Participation)
+  - {element: start, within: [k6j6ln7pcgy0n11in45xtd69], to: '-', transform: omit, reason: FHIR's Composition.custodian has no time}
+  # end (within Custodian Participation)
+  - {element: end, within: [k6j6ln7pcgy0n11in45xtd69], to: '-', transform: omit, reason: FHIR's Composition.custodian has no time}
+  # Participation Function (Intended Recipient)
+  - {component: w61v22etfzs4ny4khfzksoqd, to: /Bundle/=entry#comp/=resource/extension#recipient/valueReference/reference, transform: code, table: {intended recipient: '{entry#recipient}'}, also: [{to: /Bundle/=entry#comp/=resource/extension#recipient/url, transform: constant, value: 'http://hl7.eu/fhir/StructureDefinition/information-recipient'}]}
+  # start (within Intended Recipient Participation)
+  - {element: start, within: [q5g9nqjxzj0su0rpn8icgqjc], to: '-', transform: omit, reason: 'the information-recipient extension is a reference alone, with no time'}
+  # end (within Intended Recipient Participation)
+  - {element: end, within: [q5g9nqjxzj0su0rpn8icgqjc], to: '-', transform: omit, reason: 'the information-recipient extension is a reference alone, with no time'}
+  # Participation Function (Order Placer)
+  - {component: k1ass4fprtm6o3i1nmjhfd78, to: /Bundle/=entry#sr/=resource/requester/reference, transform: code, table: {order placer: '{entry#placer}'}, attributes: {resourceType: ServiceRequest, meta/profile: 'http://hl7.eu/fhir/laboratory/StructureDefinition/ServiceRequest-eu-lab', status: unknown, intent: order, subject/reference: '{entry#patient}'}, also: [{to: /Bundle/=entry#dr/=resource/basedOn/reference, transform: constant, value: '{entry#sr}'}]}
+  # start (within Order Placer Participation)
+  - {element: start, within: [op04cbyj14qocu2u38nljhk8], to: /Bundle/=entry#sr/=resource/authoredOn, transform: copy}
+  # end (within Order Placer Participation)
+  - {element: end, within: [op04cbyj14qocu2u38nljhk8], to: '-', transform: omit, reason: 'a ServiceRequest has one authored time, the Participation''s start'}
+  # committed
+  - {element: committed, to: /Bundle/=entry#comp/=resource/attester#legal/time, transform: copy, also: [{to: /Bundle/=entry#comp/=resource/attester#legal/party/reference, transform: constant, value: '{entry#legal}'}]}
+  # pending
+  - {element: pending, to: /Bundle/=entry#comp/=resource/attester#legal/mode, transform: code, table: {'false': legal}, on_miss: omit}
+  # Attestation Reason
+  - {component: scp5mi7ynr4x0g1zo1p6h9jc, to: '-', transform: omit, reason: FHIR's Composition.attester has no reason}
+  # Clinical Document: Main path states
+  - {component: j9bszbpsly8h6ky9kr8hbw03, to: /Bundle/=entry#comp/=resource/status, transform: code, table: {'0': preliminary, '1': final, '2': amended}, also: [{to: /Bundle/=entry#dr/=resource/status, transform: code, table: {'0': preliminary, '1': final, '2': amended}}]}
+  # Clinical Document: amended entered in error states
+  - {component: a7ej4pnaqmtlz91t9kjxtfuz, to: /Bundle/=entry#comp/=resource/status, transform: code, table: {'0': amended, '1': entered-in-error}, also: [{to: /Bundle/=entry#dr/=resource/status, transform: code, table: {'0': amended, '1': entered-in-error}}]}
+  # Clinical Document: final entered in error states
+  - {component: xlgg9ghk6v83c31udln04y6b, to: /Bundle/=entry#comp/=resource/status, transform: code, table: {'0': final, '1': entered-in-error}, also: [{to: /Bundle/=entry#dr/=resource/status, transform: code, table: {'0': final, '1': entered-in-error}}]}
+  # Clinical Document: preliminary entered in error states
+  - {component: fn6chf5km99sxb5xq446kj03, to: /Bundle/=entry#comp/=resource/status, transform: code, table: {'0': preliminary, '1': entered-in-error}, also: [{to: /Bundle/=entry#dr/=resource/status, transform: code, table: {'0': preliminary, '1': entered-in-error}}]}
