@@ -5,7 +5,7 @@ Governed Data Records as HL7 FHIR R4 Bundles. A target mapper for
 against its model and reports each one; this package says which FHIR resource and element each value goes in and
 writes the Bundle. Outbound only. Apache 2.0.
 
-**Status:** 4.1.0. Models so far, from the FAIR Data Demo:
+**Status:** 4.2.0. Models so far, from the FAIR Data Demo:
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
@@ -18,16 +18,25 @@ writes the Bundle. Outbound only. Apache 2.0.
 | NHANES Medication (retired) | `epbdfmvxc3gbh5f66hhb3o2m` | Patient, MedicationStatement, QuestionnaireResponse | 18 |
 
 And the first SDCHealth models: the Laboratory Report, and the records chained to it, which map into the report's
-Bundle. Neither passes HL7's validator with the guide yet, on what the models lack (see "SDCHealth Laboratory Report"
-and "Chained records" below):
+Bundle. The 2026-11-21 revision's chains are FHIR R4 Bundles that validate against the HL7 Europe Laboratory Report
+guide 2.1.0 (HL7's FHIR validator 7.0.6, 21 November 2026: 0 errors). A report mapped alone, and the superseded models,
+still give the errors their sections below list ("SDCHealth Laboratory Report", "Chained records", "The 2026-11-21
+revision").
 
 | Model | ct_id | Resources | Rules |
 |---|---|---|---|
-| SDCHealth Laboratory Report | `zptekdommw56yiz9lqjy5dga` | Composition, DiagnosticReport, Patient, Practitioner, Organization, ServiceRequest (a document Bundle) | 100 |
-| SDCHealth Order Information (chained) | `l6m7g3jk6y6tvnisd35l16pw` | the report's ServiceRequest | 14 |
-| SDCHealth Laboratory Observation (chained) | `d5b3007cqbmejx7xgs7i484r` | Observation, Practitioner, Organization, Patient | 123 |
-| SDCHealth Specimen (chained) | `qws8pcquvnqc55okidyqll83` | Specimen, Practitioner | 60 |
-| SDCHealth Service Request (chained) | `nz971o74u4kuk3ifcxc2llq2` | ServiceRequest, Practitioner | 92 |
+| SDCHealth Laboratory Report | `rguwjl3y1d2cxmcv7vooocji` | Composition, DiagnosticReport, Patient, Practitioner, Organization, ServiceRequest (a document Bundle) | 100 |
+| SDCHealth Order Information (chained) | `zfh7quqpqxk176c2j4gdestb` | the report's ServiceRequest | 14 |
+| SDCHealth Laboratory Observation (chained) | `ojjr56tqlxk808lqq8ig8vg0` | Observation, Practitioner, Organization, Patient | 123 |
+| SDCHealth Reference Range (chained to an observation) | `yg61wcme1sjlnezxh0ho6nh0` | the observation's referenceRange | 16 |
+| SDCHealth Specimen (chained) | `dkzoy1j9aw2u7i7x5lseo7ro` | Specimen | 56 |
+| SDCHealth Specimen Collection (chained to a specimen) | `idprzkpm6sdqgib5w5wzc3ys` | the specimen's collection, Practitioner | 64 |
+| SDCHealth Service Request (chained) | `i1jm5rf4ooomt8tbys75o017` | ServiceRequest, Practitioner | 92 |
+| SDCHealth Laboratory Report (superseded) | `zptekdommw56yiz9lqjy5dga` | Composition, DiagnosticReport, Patient, Practitioner, Organization, ServiceRequest (a document Bundle) | 100 |
+| SDCHealth Order Information (superseded) | `l6m7g3jk6y6tvnisd35l16pw` | the report's ServiceRequest | 14 |
+| SDCHealth Laboratory Observation (superseded) | `d5b3007cqbmejx7xgs7i484r` | Observation, Practitioner, Organization, Patient | 123 |
+| SDCHealth Specimen (superseded) | `qws8pcquvnqc55okidyqll83` | Specimen, Practitioner | 60 |
+| SDCHealth Service Request (superseded) | `nz971o74u4kuk3ifcxc2llq2` | ServiceRequest, Practitioner | 92 |
 
 ## Use
 
