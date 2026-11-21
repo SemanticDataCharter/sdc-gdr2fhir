@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (planned 4.2.0)
+## 4.2.0 (2026-11-21)
 
 The first SDCHealth mapping: the Laboratory Report, as a FHIR R4 document Bundle following the HL7 Europe Laboratory
 Report guide 2.1.0 (`hl7.fhir.eu.laboratory#2.1.0`). HL7's FHIR validator 7.0.6 with the guide fails every sample
