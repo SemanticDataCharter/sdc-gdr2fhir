@@ -1,0 +1,50 @@
+# SDCHealth Reference Range, chained to a Laboratory Observation, in its FHIR R4 document Bundle
+# Written by tools/build_mapping.py from tools/specs/sdchealth_reference_range.py; labels in the comments.
+mapping:
+  id: sdchealth-reference-range-fhir-r4
+  version: 1
+  author: Axius SDC, Inc.
+  date: '2026-11-21'
+  description: 'An SDCHealth Reference Range record chained to a Laboratory Observation (library decisions 12 and 22): one
+    referenceRange of that Observation (ObservationResultsLaboratoryEu, HL7 Europe Laboratory Report 2.1.0) in the report''s
+    Bundle. It maps only with its observation and report (sdc-gdr2fhir''s map_chain).'
+model:
+  ct_id: yg61wcme1sjlnezxh0ho6nh0
+  schema_sha256: 7401063cb90ed710a6e0abb7d5ea09c1c4c77a1598579bd8da9d850d99e98bf1
+target:
+  name: HL7 FHIR
+  version: R4
+reference_model: true
+rules:
+  # Reference Range
+  - {cluster: f0ljnogrkb5d9tvugengivjg, to: /Bundle/=entry#obs/=resource/referenceRange, attributes: {'@chained-to': ojjr56tqlxk808lqq8ig8vg0 obs}}
+  # Reference Range Low
+  - {component: az6dz4yt7vlheioyyjqiegjj, to: low/value, transform: copy, units: {to: '@code', transform: copy}, also: [{to: low/system, transform: constant, value: 'http://unitsofmeasure.org'}]}
+  # Reference Range High
+  - {component: z40w030s0g9jzqfs8bu0letl, to: high/value, transform: copy, units: {to: '@code', transform: copy}, also: [{to: high/system, transform: constant, value: 'http://unitsofmeasure.org'}]}
+  # Observation Reference Range Type
+  - {component: noos3o7cypyuj8ky49y9cbwz, to: type/coding/code, transform: binding, prefix: 'http://terminology.hl7.org/CodeSystem/referencerange-meaning', also: [{to: type/coding/system, transform: constant, value: 'http://terminology.hl7.org/CodeSystem/referencerange-meaning'}]}
+  # Reference Range Applies To (SNOMED CT)
+  - {cluster: xx92nwuuj4ypilrk2z6oe7td, to: +appliesTo}
+  # Code System: SNOMED CT (within Reference Range Applies To (SNOMED CT))
+  - {component: q75pzzv36or6dxgjrrbvmun5, within: [xx92nwuuj4ypilrk2z6oe7td], to: coding/system, transform: copy}
+  # Reference Range Applies To Code (SNOMED CT)
+  - {component: u16hu22jug4l5s1505kvt96t, to: coding/code, transform: copy}
+  # Code Display Text (within Reference Range Applies To (SNOMED CT))
+  - {component: eo5tlfr0576ypknys5alvcn0, within: [xx92nwuuj4ypilrk2z6oe7td], to: text, transform: copy}
+  # Observation Reference Range Age
+  - {cluster: ai8dkdcweuj8zanvtpzakzpe, to: age}
+  # Observation Reference Range Age Low
+  - {component: ilwc07ys4zo7bh39xmo7sowk, to: low/value, transform: copy, units: {to: '@code', transform: copy}, also: [{to: low/system, transform: constant, value: 'http://unitsofmeasure.org'}]}
+  # Observation Reference Range Age High
+  - {component: vv3q7ykjjvemhpr7g2p7920c, to: high/value, transform: copy, units: {to: '@code', transform: copy}, also: [{to: high/system, transform: constant, value: 'http://unitsofmeasure.org'}]}
+  # Observation Reference Range Text
+  - {component: mu08ti6nsy8qcpqjjwx7811v, to: text, transform: copy}
+  # Observation Reference Range Normal Value (SNOMED CT)
+  - {cluster: b96tjd0uoa0htdzffpwdkkky, to: '-', transform: omit, reason: 'the guide''s map: R4 Observation has no such element (Observation.referenceRange.normalValue exists only in R5)'}
+  # Parent Record Identifier
+  - {component: b5v4p5ju74ugnzyt9bh98398, to: '-', transform: omit, reason: 'the chain''s join: the observation this range belongs to, whose referenceRange it is written in'}
+  # Sequence In Parent
+  - {component: ygwcc97gtq45lqpbam8l44w6, to: '-', transform: omit, reason: 'the range''s place among its observation''s ranges: the order of Observation.referenceRange, which the chain gives in the order the records are given'}
+  # subject
+  - {cluster: subject, to: '-', transform: omit, reason: 'the report''s subject: a chained record is about the report''s patient (sdc-gdr2fhir checks that their identifiers agree), whose Patient entry the report writes'}

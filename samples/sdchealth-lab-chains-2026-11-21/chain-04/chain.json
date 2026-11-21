@@ -1,0 +1,56 @@
+{
+  "parent": "samples/sdchealth-lab-report-2026-11-21/records/labrev04synthxxxxxxxxxxx.xml",
+  "parent_ct_id": "rguwjl3y1d2cxmcv7vooocji",
+  "children": [
+    {
+      "file": "lv04ord1synthxxxxxxxxxxx.xml",
+      "model": "order-information",
+      "ct_id": "zfh7quqpqxk176c2j4gdestb"
+    },
+    {
+      "file": "lv04spc1synthxxxxxxxxxxx.xml",
+      "model": "specimen",
+      "ct_id": "dkzoy1j9aw2u7i7x5lseo7ro"
+    },
+    {
+      "file": "lv04col1synthxxxxxxxxxxx.xml",
+      "model": "specimen-collection",
+      "ct_id": "idprzkpm6sdqgib5w5wzc3ys"
+    },
+    {
+      "file": "lv04srq1synthxxxxxxxxxxx.xml",
+      "model": "service-request",
+      "ct_id": "i1jm5rf4ooomt8tbys75o017"
+    },
+    {
+      "file": "lv04obs1synthxxxxxxxxxxx.xml",
+      "model": "lab-observation",
+      "ct_id": "ojjr56tqlxk808lqq8ig8vg0"
+    },
+    {
+      "file": "lv04rrg1synthxxxxxxxxxxx.xml",
+      "model": "reference-range",
+      "ct_id": "yg61wcme1sjlnezxh0ho6nh0"
+    },
+    {
+      "file": "lv04obs2synthxxxxxxxxxxx.xml",
+      "model": "lab-observation",
+      "ct_id": "ojjr56tqlxk808lqq8ig8vg0"
+    },
+    {
+      "file": "lv04rrg2synthxxxxxxxxxxx.xml",
+      "model": "reference-range",
+      "ct_id": "yg61wcme1sjlnezxh0ho6nh0"
+    },
+    {
+      "file": "lv04obs3synthxxxxxxxxxxx.xml",
+      "model": "lab-observation",
+      "ct_id": "ojjr56tqlxk808lqq8ig8vg0"
+    },
+    {
+      "file": "lv04rrg3synthxxxxxxxxxxx.xml",
+      "model": "reference-range",
+      "ct_id": "yg61wcme1sjlnezxh0ho6nh0"
+    }
+  ]
+}

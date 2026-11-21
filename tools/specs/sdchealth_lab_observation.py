@@ -194,3 +194,22 @@ RULES = [
     C("party-details", "."),
     *PARTY_DETAILS,
 ]
+
+
+# ================================================================ the 2026-11-21 revision
+#: Laboratory Observation `ojjr56tqlxk808lqq8ig8vg0` (PRD decision 22) chains to the revised Laboratory Report, and:
+#: - every quantity's units are a UCUM code (any, by the pattern `[!-~]{1,60}`): the Quantity's code, with the system
+#:   UCUM, so a result in mg/dL says so;
+#: - Observation Result holds a value or a Data Absent Reason (one assertion), so a result with a value no longer
+#:   carries a reason beside it (obs-6): the rules are the same, the records differ;
+#: - the method, note, test kit, calibrator and interpretation are optional;
+#: - its reference ranges are records of their own, Reference Range (`yg61wcme1sjlnezxh0ho6nh0`), chained to it by
+#:   Parent Record Identifier and written into its referenceRange (tools/specs/sdchealth_reference_range.py).
+REVISED = "ojjr56tqlxk808lqq8ig8vg0"
+
+
+def configure(ct_id):
+    global DATE, RULES
+    from sdchealth_parties import LAB_REPORT_2, REVISION_DATE, chained_to, ucum
+    if ct_id == REVISED:
+        DATE, RULES = REVISION_DATE, ucum(chained_to(RULES, LAB_REPORT_2))

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdc4:dm-yg61wcme1sjlnezxh0ho6nh0
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:sdc4="https://semanticdatacharter.com/ns/sdc4/"
+  xsi:schemaLocation="https://semanticdatacharter.com/ns/sdc4/ https://semanticdatacharter.com/dmlib/dm-yg61wcme1sjlnezxh0ho6nh0.xsd">
+
+  <dm-label>Reference Range</dm-label>
+  <dm-language>en-US</dm-language>
+  <dm-encoding>utf-8</dm-encoding>
+  <creation_timestamp>_PH_</creation_timestamp>
+  <instance_id>ffw20jlikc9r1yjpcikp66bv</instance_id>
+  <instance_version>_PH_</instance_version>
+  <source_instance_id>_OPT_PH_</source_instance_id>
+  <source_version_id>_OPT_PH_</source_version_id>
+  <current-state>_OPT_PH_</current-state>
+  <sdc4:ms-f0ljnogrkb5d9tvugengivjg>
+    <label>Reference Range</label>
+  <sdc4:ms-ai8dkdcweuj8zanvtpzakzpe>
+    <label>Observation Reference Range Age</label>
+  <sdc4:ms-ht8dh32c29kyynh0afozs08a>
+    <sdc4:ms-vv3q7ykjjvemhpr7g2p7920c>
+      <label>Observation Reference Range Age High</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <normal-status>_OPT_PH_</normal-status>
+      <magnitude-status>_OPT_PH_</magnitude-status>
+      <accuracy_margin>_OPT_PH_</accuracy_margin>
+      <precision_digits>_OPT_PH_</precision_digits>
+      <xdquantity-value>_PH_</xdquantity-value>
+      <xdquantity-units>
+        <label>Time Units</label>
+        <xdstring-value>_PH_</xdstring-value>
+      </xdquantity-units>
+    </sdc4:ms-vv3q7ykjjvemhpr7g2p7920c>
+  </sdc4:ms-ht8dh32c29kyynh0afozs08a>
+  <sdc4:ms-p09izl8gf3gnfm96gphlldna>
+    <sdc4:ms-ilwc07ys4zo7bh39xmo7sowk>
+      <label>Observation Reference Range Age Low</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <normal-status>_OPT_PH_</normal-status>
+      <magnitude-status>_OPT_PH_</magnitude-status>
+      <accuracy_margin>_OPT_PH_</accuracy_margin>
+      <precision_digits>_OPT_PH_</precision_digits>
+      <xdquantity-value>_PH_</xdquantity-value>
+      <xdquantity-units>
+        <label>Time Units</label>
+        <xdstring-value>_PH_</xdstring-value>
+      </xdquantity-units>
+    </sdc4:ms-ilwc07ys4zo7bh39xmo7sowk>
+  </sdc4:ms-p09izl8gf3gnfm96gphlldna>
+  </sdc4:ms-ai8dkdcweuj8zanvtpzakzpe>
+  <sdc4:ms-b96tjd0uoa0htdzffpwdkkky>
+    <label>Observation Reference Range Normal Value (SNOMED CT)</label>
+  <sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+    <sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+      <label>Code System: SNOMED CT</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <link>http://snomed.info/sct</link>
+      <relation>codeSystem</relation>
+      <relation-uri>http://hl7.org/fhir/R4/datatypes-definitions.html#Coding.system</relation-uri>
+    </sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+  </sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+  <sdc4:ms-q5n1zbuk4dkz04j3epdr6rlf>
+    <sdc4:ms-yh3wef6tgjppa5c519du8a2p>
+      <label>Observation Reference Range Normal Value Code (SNOMED CT)</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-yh3wef6tgjppa5c519du8a2p>
+  </sdc4:ms-q5n1zbuk4dkz04j3epdr6rlf>
+  <sdc4:ms-deau6rxprq0zivzdddupk7cj>
+    <sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+      <label>Code Display Text</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+  </sdc4:ms-deau6rxprq0zivzdddupk7cj>
+  </sdc4:ms-b96tjd0uoa0htdzffpwdkkky>
+  <sdc4:ms-xx92nwuuj4ypilrk2z6oe7td>
+    <label>Reference Range Applies To (SNOMED CT)</label>
+  <sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+    <sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+      <label>Code System: SNOMED CT</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <link>http://snomed.info/sct</link>
+      <relation>codeSystem</relation>
+      <relation-uri>http://hl7.org/fhir/R4/datatypes-definitions.html#Coding.system</relation-uri>
+    </sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+  </sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+  <sdc4:ms-xm3ddg2bpb8brlqplpdjwz1e>
+    <sdc4:ms-u16hu22jug4l5s1505kvt96t>
+      <label>Reference Range Applies To Code (SNOMED CT)</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-u16hu22jug4l5s1505kvt96t>
+  </sdc4:ms-xm3ddg2bpb8brlqplpdjwz1e>
+  <sdc4:ms-deau6rxprq0zivzdddupk7cj>
+    <sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+      <label>Code Display Text</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+  </sdc4:ms-deau6rxprq0zivzdddupk7cj>
+  </sdc4:ms-xx92nwuuj4ypilrk2z6oe7td>
+  <sdc4:ms-nk4kfujoa7imgh8wllua8ygr>
+    <sdc4:ms-mu08ti6nsy8qcpqjjwx7811v>
+      <label>Observation Reference Range Text</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-mu08ti6nsy8qcpqjjwx7811v>
+  </sdc4:ms-nk4kfujoa7imgh8wllua8ygr>
+  <sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+    <sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+      <label>Parent Record Identifier</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+  </sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+  <sdc4:ms-aake4pqisl9sli56tas90ht2>
+    <sdc4:ms-noos3o7cypyuj8ky49y9cbwz>
+      <label>Observation Reference Range Type</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdtoken-value>_PH_</xdtoken-value>
+      <xdtoken-language>_OPT_PH_</xdtoken-language>
+    </sdc4:ms-noos3o7cypyuj8ky49y9cbwz>
+  </sdc4:ms-aake4pqisl9sli56tas90ht2>
+  <sdc4:ms-tlemmzlx1lzt7eapu55hdf5a>
+    <sdc4:ms-ygwcc97gtq45lqpbam8l44w6>
+      <label>Sequence In Parent</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <normal-status>_OPT_PH_</normal-status>
+      <magnitude-status>_OPT_PH_</magnitude-status>
+      <accuracy_margin>_OPT_PH_</accuracy_margin>
+      <precision_digits>_OPT_PH_</precision_digits>
+      <xdcount-value>_PH_</xdcount-value>
+      <xdcount-units>
+        <label>Items</label>
+        <xdstring-value>_PH_</xdstring-value>
+      </xdcount-units>
+    </sdc4:ms-ygwcc97gtq45lqpbam8l44w6>
+  </sdc4:ms-tlemmzlx1lzt7eapu55hdf5a>
+  <sdc4:ms-pg2qrrmvtpa23nyz3kmpiy1z>
+    <sdc4:ms-z40w030s0g9jzqfs8bu0letl>
+      <label>Reference Range High</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <normal-status>_OPT_PH_</normal-status>
+      <magnitude-status>_OPT_PH_</magnitude-status>
+      <accuracy_margin>_OPT_PH_</accuracy_margin>
+      <precision_digits>_OPT_PH_</precision_digits>
+      <xdquantity-value>_PH_</xdquantity-value>
+      <xdquantity-units>
+        <label>UCUM Units</label>
+        <xdstring-value>_PH_</xdstring-value>
+      </xdquantity-units>
+    </sdc4:ms-z40w030s0g9jzqfs8bu0letl>
+  </sdc4:ms-pg2qrrmvtpa23nyz3kmpiy1z>
+  <sdc4:ms-x79gasr7h6zxy953p5adl80u>
+    <sdc4:ms-az6dz4yt7vlheioyyjqiegjj>
+      <label>Reference Range Low</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <normal-status>_OPT_PH_</normal-status>
+      <magnitude-status>_OPT_PH_</magnitude-status>
+      <accuracy_margin>_OPT_PH_</accuracy_margin>
+      <precision_digits>_OPT_PH_</precision_digits>
+      <xdquantity-value>_PH_</xdquantity-value>
+      <xdquantity-units>
+        <label>UCUM Units</label>
+        <xdstring-value>_PH_</xdstring-value>
+      </xdquantity-units>
+    </sdc4:ms-az6dz4yt7vlheioyyjqiegjj>
+  </sdc4:ms-x79gasr7h6zxy953p5adl80u>
+  </sdc4:ms-f0ljnogrkb5d9tvugengivjg>
+  <subject>
+    <label>Patient</label>
+  </subject>
+</sdc4:dm-yg61wcme1sjlnezxh0ho6nh0>

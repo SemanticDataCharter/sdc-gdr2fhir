@@ -6,15 +6,21 @@ whose Parent Record Identifier holds the report's Record Identifier; a specimen 
 reference. FHIR puts them together, in one document Bundle.
 
 - **Which records belong (`check`).** A child that carries a Parent Record Identifier belongs when it holds the
-  parent's Record Identifier, and is refused otherwise. A child without one (a specimen) belongs when another record of
-  the chain names it by reference; one nobody names is refused. A child about another patient (its subject's
-  identifiers and the parent's share none) is refused.
+  parent's Record Identifier, or the identifier of another child of the chain (its Record Identifier, or a specimen's
+  Accession Identifier): a Reference Range is chained to its Laboratory Observation, a Specimen Collection to its
+  Specimen. It is refused otherwise. A child without one (a specimen) belongs when another record of the chain names
+  it by reference; one nobody names is refused. A child about another patient (its subject's identifiers and the
+  parent's share none) is refused.
 - **Each child by its own mapping.** A chained record's mapping says, in its Bundle rule's `@chained-to` directive, the
   parent model it chains to and the tag of the entry the record makes (`zptekdommw56yiz9lqjy5dga obs`). Its paths are
   the parent Bundle's: `{entry#patient}` is the parent's Patient, `=entry#dr/=resource/+result` joins the parent's
   DiagnosticReport: a tag the parent's mapping writes names the parent's entry. Its own entries (tags the parent's
   mapping does not write) are kept apart from its siblings' (the n-th child's `entry#obs` is `entry#obs.n`, and
   `{entry#obs}` in its mapping names its own), and so is every element it adds (`+result`, one per child).
+- **A record chained to a child.** Its `@chained-to` names the child's model and the tag of the entry that child makes
+  (`ojjr56tqlxk808lqq8ig8vg0 obs`): `=entry#obs` in its mapping is that child's entry (`entry#obs.n`), so a Reference
+  Range writes into its own Observation. The directive may sit on the record's data-cluster rule wherever it writes
+  (`=entry#obs/=resource/referenceRange`), and is never written itself.
 - **References between records.** An element on a path tagged `#record` (`+specimen#record/reference`) holds the IRI
   of a record of the chain (or several, whitespace-delimited, one element each): it is written as the reference to
   that record's entry. A record is named by its instance id (the IRI ends with it) or by a business identifier its
@@ -32,6 +38,7 @@ from .writer import Builder
 PARENT_RECORD_IDENTIFIER = "b5v4p5ju74ugnzyt9bh98398"     # XdString: the parent's Record Identifier value
 RECORD_IDENTIFIER = "nieu1e3llgra1v66p2x8jnwu"            # Cluster: Record Identifier
 IDENTIFIER_VALUE = "h17egwljmrym3r8ortrqqjwd"             # XdString: Identifier Value (in Record and Person Identifier)
+ACCESSION_IDENTIFIER = "yfgaozed8j7bmza0kipkpa3c"         # XdString: a Specimen's Accession Identifier (its own identifier)
 #: The tag on a path step whose element holds a record's IRI, written as a reference to that record's entry.
 RECORD_TAG = "record"
 
@@ -79,6 +86,14 @@ def record_identifier(record) -> str | None:
     return None
 
 
+def own_identifiers(record) -> set[str]:
+    """The identifiers a record's children may name it by: its Record Identifier, or a specimen's Accession
+    Identifier (a Specimen has no Record Identifier)."""
+    out = {record_identifier(record)}
+    out |= {_text(v) for v in record.values if v.ct_id == ACCESSION_IDENTIFIER and not any(r for r in v.roles)}
+    return out - {None}
+
+
 def parent_identifier(record) -> str | None:
     for v in record.values:
         if v.ct_id == PARENT_RECORD_IDENTIFIER:
@@ -92,27 +107,49 @@ def subject_identifiers(record) -> set[str]:
             if v.ct_id == IDENTIFIER_VALUE and v.roles and v.roles[0] == "subject" and _text(v)}
 
 
-def check(parent, children) -> list[str]:
-    """How each child joins the parent: "parent" (its Parent Record Identifier is the parent's Record Identifier) or
-    "reference" (it has none, and must be named by another record of the chain). Raises ChainError for a child that
-    names another parent or is about another patient."""
+def check(parent, children) -> list:
+    """How each child joins the parent: "parent" (its Parent Record Identifier is the parent's Record Identifier), the
+    number of the child it is chained to (1 for the first child: its Parent Record Identifier is that child's Record or
+    Accession Identifier), or "reference" (it has none, and must be named by another record of the chain). Raises
+    ChainError for a child that names a record outside the chain (or two records of it), one chained to itself or in a
+    loop, or one about another patient."""
     own = record_identifier(parent)
     patient = subject_identifiers(parent)
+    theirs_ids = [own_identifiers(c) for c in children]
     joins = []
     for i, child in enumerate(children, 1):
         named = parent_identifier(child)
         if named is not None:
-            if own is None or named != own:
-                raise ChainError(f"chained record {i} ({child.instance_id}): its Parent Record Identifier is "
-                                 f"{named!r}, and the parent's Record Identifier is {own!r}")
-            joins.append("parent")
+            if own is not None and named == own:
+                joins.append("parent")
+            else:
+                found = [j for j, ids in enumerate(theirs_ids, 1) if named in ids and j != i]
+                if len(found) != 1:
+                    raise ChainError(f"chained record {i} ({child.instance_id}): its Parent Record Identifier is "
+                                     f"{named!r}, and the parent's Record Identifier is {own!r}"
+                                     + (f"; {len(found)} records of the chain carry it" if found else ""))
+                joins.append(found[0])
         else:
             joins.append("reference")
         theirs = subject_identifiers(child)
         if patient and theirs and not (patient & theirs):
             raise ChainError(f"chained record {i} ({child.instance_id}) is about another patient: its subject's "
                              "identifiers and the parent's share none")
+    for i in range(1, len(children) + 1):           # no loops: each child reaches the parent
+        seen, at = set(), i
+        while isinstance(joins[at - 1], int):
+            if at in seen:
+                raise ChainError(f"chained record {i} ({children[i - 1].instance_id}) is chained in a loop")
+            seen.add(at)
+            at = joins[at - 1]
     return joins
+
+
+def _depth(joins, i: int) -> int:
+    d = 0
+    while isinstance(joins[i - 1], int):
+        d, i = d + 1, joins[i - 1]
+    return d
 
 
 @dataclass
@@ -140,6 +177,7 @@ class ChainWriter:
         pplacements, pclusters = place(precord, pmapping)
         pwrites, pnotes = m._writes(pplacements, precord)
         kids: list[_Child] = []
+        placed = []
         for i, (record, mapping) in enumerate(children, 1):
             m._check(mapping)
             if mapping.target_version != pmapping.target_version:
@@ -152,28 +190,38 @@ class ChainWriter:
                 raise ChainError(f"chained record {i}: mapping {mapping.id} has no `{CHAINED}: <parent ct_id> <tag>` "
                                  "directive, so it is not a mapping for a chained record")
             parent_ct, tag = directive.split()
-            if parent_ct != pmapping.model_ct_id:
-                raise ChainError(f"chained record {i}: mapping {mapping.id} chains to model {parent_ct}, and the parent "
-                                 f"is {pmapping.model_ct_id}")
-            kid = _Child(i, record, mapping, placements, clusters, [], notes)
-            parents = _entry_tags(pwrites)
-            kid.writes, kid.primary = _own(writes, i, tag, mapping.id, parents)
-            own = _entry_tags(writes) - parents
-            kid.clusters = [c for c in (_own_cluster(c, i, own) for c in clusters) if c is not None]
-            kids.append(kid)
+            up = joins[i - 1]
+            expected = children[up - 1][1].model_ct_id if isinstance(up, int) else pmapping.model_ct_id
+            if parent_ct != expected:
+                whose = f"record {up}" if isinstance(up, int) else "the parent"
+                raise ChainError(f"chained record {i}: mapping {mapping.id} chains to model {parent_ct}, and {whose} it "
+                                 f"is chained to is {expected}")
+            kids.append(_Child(i, record, mapping, placements, clusters, [], notes))
+            placed.append((writes, tag))
+        parents = _entry_tags(pwrites)
+        # a record chained to a child after that child, so the child's entry has its name
+        for kid in sorted(kids, key=lambda k: _depth(joins, k.index)):
+            writes, tag = placed[kid.index - 1]
+            up = joins[kid.index - 1]
+            mapped = {}
+            if isinstance(up, int):           # `entry#<tag>` is the entry of the child this record is chained to
+                mapped[tag] = kids[up - 1].primary.split("#", 1)[1]
+            kid.writes, kid.primary = _own(writes, kid.index, tag, kid.mapping.id, parents, mapped)
+            own = _entry_tags(writes) - parents - set(mapped)
+            kid.clusters = [c for c in (_own_cluster(c, kid.index, own, mapped) for c in kid.clusters) if c is not None]
 
         b = Builder(pmapping.target_version)
         refs = []
         plain = list(pwrites)
-        for k in kids:
+        for k in sorted(kids, key=lambda k: _depth(joins, k.index)):
             for w in k.writes:
                 (refs if _record_step(w[0]) is not None else plain).append((k, w) if _record_step(w[0]) is not None
                                                                           else w)
         _put_all(b, plain)
         _cluster_attributes(b, pclusters)
-        for k in kids:
+        for k in sorted(kids, key=lambda k: _depth(joins, k.index)):
             _cluster_attributes(b, k.clusters)
-        named = self._resolve(b, precord, kids, refs)
+        named = self._resolve(b, precord, kids, refs, {k.index for k in kids if isinstance(joins[k.index - 1], int)})
         for k, join in zip(kids, joins):
             if join == "reference" and k.primary not in named:
                 raise ChainError(f"chained record {k.index} ({k.record.instance_id}) has no Parent Record Identifier, "
@@ -187,10 +235,12 @@ class ChainWriter:
         return ChainMapResult(files=files, results=results)
 
     @staticmethod
-    def _resolve(b, precord, kids, refs) -> set[str]:
+    def _resolve(b, precord, kids, refs, nested=frozenset()) -> set[str]:
         """Write each `#record` element as the reference to the record it names; the tags of the entries named."""
         names: dict[str, str] = {}
         for k in kids:
+            if k.index in nested:
+                continue                      # written into the entry of the child it is chained to: no entry of its own
             entry = next((c for c in b.root.children if c.name == k.primary), None) if b.root else None
             if entry is None:
                 raise ChainError(f"chained record {k.index} ({k.record.instance_id}) wrote no {k.primary} entry")
@@ -237,37 +287,50 @@ def _entry_tags(writes) -> set[str]:
             if name.split("#", 1)[0] == "entry" and "#" in name}
 
 
-def _own(writes, i: int, tag: str, mapping_id: str, parents: set[str]):
+def _own(writes, i: int, tag: str, mapping_id: str, parents: set[str], mapped: dict | None = None):
     """A child's writes in the parent's Bundle: its own entries (tags the parent's mapping does not write) tagged apart
     from its siblings', every element it adds keyed apart, `{entry#tag}` naming its own entry, and nothing written to
-    the Bundle's own members. A tag the parent writes too (`=entry#dr`) is the parent's entry."""
-    tags = _entry_tags(writes) - parents
-    if tag not in tags and tag not in parents:
+    the Bundle's own members. A tag the parent writes too (`=entry#dr`) is the parent's entry; a tag in `mapped` is the
+    entry of the child this record is chained to (`obs` -> `obs.3`)."""
+    mapped = mapped or {}
+    tags = _entry_tags(writes) - parents - set(mapped)
+    if tag not in tags and tag not in parents and tag not in mapped:
         raise ChainError(f"mapping {mapping_id}: its `@chained-to` names entry#{tag}, which neither it nor the parent "
                          "writes")
     out = []
     for steps, text, position in writes:
         if steps and steps[0][0] == "Bundle" and len(steps) > 1 and steps[1][0].split("#", 1)[0] != "entry":
             continue                                  # the parent's Bundle members are the parent's
-        s = [(_renamed(name, i, tags), key if key == JOIN else (("chain", i),) + key) for name, key in steps]
-        if isinstance(text, str) and text.startswith("{entry#") and text.endswith("}") and text[7:-1] in tags:
-            text = "{entry#" + text[7:-1] + f".{i}" + "}"
+        s = [(_renamed(name, i, tags, mapped), key if key == JOIN else (("chain", i),) + key) for name, key in steps]
+        if isinstance(text, str) and text.startswith("{entry#") and text.endswith("}"):
+            if text[7:-1] in tags:
+                text = "{entry#" + text[7:-1] + f".{i}" + "}"
+            elif text[7:-1] in mapped:
+                text = "{entry#" + mapped[text[7:-1]] + "}"
         out.append((s, text, position))
+    if tag in mapped:                                 # a record written into the entry of the child it is chained to
+        return out, f"entry#{mapped[tag]}"
     return out, (f"entry#{tag}.{i}" if tag in tags else f"entry#{tag}")    # a record written into a parent's entry
 
 
-def _own_cluster(c, i: int, tags: set[str]):
+def _own_cluster(c, i: int, tags: set[str], mapped: dict | None = None):
+    from .mapper import CHAINED
     if c.steps and c.steps[0][0] == "Bundle" and len(c.steps) == 1:
         return None                                   # the Bundle rule's attributes: the parent's
     from copy import copy
     c = copy(c)
-    c.steps = [(_renamed(n, i, tags), k if k == JOIN else (("chain", i),) + k) for n, k in c.steps]
+    c.steps = [(_renamed(n, i, tags, mapped), k if k == JOIN else (("chain", i),) + k) for n, k in c.steps]
+    c.attributes = {a: v for a, v in c.attributes.items() if a != CHAINED}    # the directive is read, not written
     return c
 
 
-def _renamed(name: str, i: int, tags: set[str]) -> str:
-    return f"{name}.{i}" if name.split("#", 1)[0] == "entry" and "#" in name and name.split("#", 1)[1] in tags \
-        else name
+def _renamed(name: str, i: int, tags: set[str], mapped: dict | None = None) -> str:
+    if name.split("#", 1)[0] != "entry" or "#" not in name:
+        return name
+    tag = name.split("#", 1)[1]
+    if mapped and tag in mapped:
+        return f"entry#{mapped[tag]}"
+    return f"{name}.{i}" if tag in tags else name
 
 
 def read(engine, xml: bytes, mapping, directory: str | None = None, ct_id: str | None = None):

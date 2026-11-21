@@ -59,3 +59,16 @@ RULES = [
     # the subject: the report's
     C("subject", "-", transform="omit", reason=SUBJECT_REASON),
 ]
+
+
+# ================================================================ the 2026-11-21 revision
+#: Order Information `zfh7quqpqxk176c2j4gdestb` (PRD decision 22: the clinical question is optional) chains to the
+#: revised Laboratory Report; the rules are otherwise the first revision's.
+REVISED = "zfh7quqpqxk176c2j4gdestb"
+
+
+def configure(ct_id):
+    global DATE, RULES
+    from sdchealth_parties import LAB_REPORT_2, REVISION_DATE, chained_to
+    if ct_id == REVISED:
+        DATE, RULES = REVISION_DATE, chained_to(RULES, LAB_REPORT_2)

@@ -78,3 +78,19 @@ RULES = [
     C("party-details", "."),
     *PARTY_DETAILS,
 ]
+
+
+# ================================================================ the 2026-11-21 revision
+#: Specimen `dkzoy1j9aw2u7i7x5lseo7ro` (PRD decision 22) chains to the revised Laboratory Report, and has no Specimen
+#: Collector Participation: the collection is a record of its own, Specimen Collection (`idprzkpm6sdqgib5w5wzc3ys`,
+#: as in Xt-EHR's EHDSSpecimen.collection), chained to the specimen by Parent Record Identifier (the specimen's
+#: Accession Identifier) and written into its Specimen.collection (tools/specs/sdchealth_specimen_collection.py).
+REVISED = "dkzoy1j9aw2u7i7x5lseo7ro"
+
+
+def configure(ct_id):
+    global DATE, RULES
+    from sdchealth_parties import LAB_REPORT_2, REVISION_DATE, chained_to, without
+    if ct_id == REVISED:
+        DATE, RULES = REVISION_DATE, without(chained_to(RULES, LAB_REPORT_2), "Specimen Collector Participation",
+                                             "Participation Function (Specimen Collector)")

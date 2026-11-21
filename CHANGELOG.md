@@ -9,7 +9,37 @@ record whose comment is an Exceptional Value.
 With its chained records (order, requests, results, specimens) it is one Bundle. HL7's validator on five chains: 28
 errors, all from the Laboratory Observation model (a data absent reason beside every value, which FHIR's obs-6
 forbids). The order identifier errors are gone.
-Needs sdcreader 4.5.0 and sdc-mapper 4.4.0 (released 20 November 2026): the pin is now `sdc-mapper>=4.4`.
+Needs sdcreader 4.5.0 and sdc-mapper 4.5.0: the pin is now `sdc-mapper>=4.5,<5`.
+
+**The 2026-11-21 revision of the SDCHealth Laboratory models** (library PRD decision 22). Its five chained sample
+Bundles validate against the HL7 Europe Laboratory Report guide 2.1.0: HL7's FHIR validator 7.0.6 (`-version 4.0.1
+-ig hl7.fhir.eu.laboratory#2.1.0`, 21 November 2026) finds 0 errors. Its 15 reports mapped alone give 33 errors, both
+causes the report model's: no order identifier without the Order Information (30), and no section for the one comment
+that is an Exceptional Value (3).
+
+- **Mappings for the seven revised and new models**, beside the superseded ones (unchanged, byte-identical output):
+  - Laboratory Report `rguwjl3y1d2cxmcv7vooocji` (100 rules), Order Information `zfh7quqpqxk176c2j4gdestb` (14),
+    Laboratory Observation `ojjr56tqlxk808lqq8ig8vg0` (123), Specimen `dkzoy1j9aw2u7i7x5lseo7ro` (56), Service Request
+    `i1jm5rf4ooomt8tbys75o017` (92);
+  - new: Reference Range `yg61wcme1sjlnezxh0ho6nh0` (16 rules) in `Observation.referenceRange`, and Specimen
+    Collection `idprzkpm6sdqgib5w5wzc3ys` (64) in `Specimen.collection`, with its collector.
+  - Quantities carry their UCUM code (`code`, `unit`, system UCUM). A result with a value no longer carries a data
+    absent reason, so the 28 obs-6 errors are gone.
+- **Records chained to a child.** A chained record may be chained to another child of the chain: its Parent Record
+  Identifier holds that child's Record Identifier, or a specimen's Accession Identifier. Its `@chained-to` names that
+  child's model and entry, and `=entry#<tag>` is that child's entry. The directive may sit on the data-cluster rule
+  that places the record, and is never written. A chain loop, an identifier two records carry, and a mapping that
+  chains to another model than the record's parent refuse the chain.
+- **`FHIRMapper.mapping_for(ct_id)`**, sdc-mapper 4.5.0's hook: `sdc-map map-chain fhir --chain chain.json` and the MCP
+  `map_chain` tool find each record's mapping by its model.
+- **Samples:** `samples/sdchealth-*-2026-11-21/` (the seven packages), 15 revised reports, and
+  `samples/sdchealth-lab-chains-2026-11-21/` (five chains, 50 records). Each is valid against its model; the new codes
+  were looked up on tx.fhir.org. `tools/make_lab_report_samples.py` and `tools/make_lab_chain_samples.py` take
+  `--revised`; without it they write the first revision's samples, byte-identical.
+- **Validator tests** expect the errors the README lists, so they pass where Java and the validator are installed:
+  none in the revised chains; only the model's known causes in a report alone and in the superseded models' chains.
+- **`tools/build_mapping.py`:** a spec may define `configure(ct_id)`, so one spec writes the mappings for several
+  revisions of a model. The first revision's mapping files regenerate byte-identical.
 
 - **Chained records** (`sdc_gdr2fhir.chain`; `FHIRMapper.map_chain`, `chain.map_files`): one Bundle from a parent
   record and the records chained to it (SDCHealth library decision 12), each mapped by its own model's mapping.

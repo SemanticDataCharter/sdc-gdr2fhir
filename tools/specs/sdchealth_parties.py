@@ -99,3 +99,43 @@ PARTY_DETAILS = [
     V("Organisation Part Of", "partOf/display"),
 
 ]
+
+# ---------------------------------------------------------------- the 2026-11-21 revision (PRD decision 22)
+#: The Laboratory Report each revision's chained records join. The first revision (2026-11-20) is LAB_REPORT; the
+#: library's requiredness and units revision of 2026-11-21 published new versions of every Laboratory model.
+LAB_REPORT_2 = "rguwjl3y1d2cxmcv7vooocji"
+REVISION_DATE = "2026-11-21"
+UCUM = "http://unitsofmeasure.org"
+
+
+def chained_to(rules, parent: str, tag: str | None = None):
+    """The rules with their `@chained-to` directive naming another parent model (and, if given, another entry)."""
+    out = []
+    for r in rules:
+        a = r.get("attributes", {})
+        if "@chained-to" in a:
+            old_parent, old_tag = a["@chained-to"].split()
+            r = {**r, "attributes": {**a, "@chained-to": f"{parent} {tag or old_tag}"}}
+        out.append(r)
+    return out
+
+
+def ucum(rules):
+    """The rules with every quantity's units written as a UCUM code (2026-11-21: a quantity's units take any UCUM code,
+    the pattern `[!-~]{1,60}`, where the first revision allowed only the text "UCUM Units"): the units as the Quantity's
+    `code` (the writer adds `unit`, the same symbol) and the system UCUM beside the value."""
+    out = []
+    for r in rules:
+        u = r.get("units")
+        if u and u.get("to") == "@unit":
+            at = r["to"].rsplit("/", 1)[0] if "/" in r["to"] else ""
+            system = f"{at}/system" if at else "system"
+            r = {**r, "units": {**u, "to": "@code"}, "also": [*r.get("also", []), k(system, UCUM)]}
+        out.append(r)
+    return out
+
+
+def without(rules, *contexts):
+    """The rules less those within any of `contexts` (a Participation the revised model no longer has)."""
+    return [r for r in rules if not set(r.get("within", [])) & set(contexts)
+            and r.get("cluster") not in contexts and r.get("component") not in contexts]

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdc4:dm-zfh7quqpqxk176c2j4gdestb
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:sdc4="https://semanticdatacharter.com/ns/sdc4/"
+  xsi:schemaLocation="https://semanticdatacharter.com/ns/sdc4/ https://semanticdatacharter.com/dmlib/dm-zfh7quqpqxk176c2j4gdestb.xsd">
+
+  <dm-label>Order Information</dm-label>
+  <dm-language>en-US</dm-language>
+  <dm-encoding>utf-8</dm-encoding>
+  <creation_timestamp>_PH_</creation_timestamp>
+  <instance_id>ko8qf6yy1al8ji9ktkuxdqk8</instance_id>
+  <instance_version>_PH_</instance_version>
+  <source_instance_id>_OPT_PH_</source_instance_id>
+  <source_version_id>_OPT_PH_</source_version_id>
+  <current-state>_OPT_PH_</current-state>
+  <sdc4:ms-vfoviww8t346w01u5ayxu2fb>
+    <label>Order Information</label>
+  <sdc4:ms-tjhrtoasec4t3i3q8pypqpwi>
+    <label>Order Identifier</label>
+  <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+    <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+      <label>Identifier Value</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+  </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+  <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+    <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+      <label>Issuing Authority</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+  </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+  </sdc4:ms-tjhrtoasec4t3i3q8pypqpwi>
+  <sdc4:ms-az0bhiipy3s5cxokgc26i7ve>
+    <label>Order Reason (SNOMED CT)</label>
+  <sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+    <sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+      <label>Code System: SNOMED CT</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <link>http://snomed.info/sct</link>
+      <relation>codeSystem</relation>
+      <relation-uri>http://hl7.org/fhir/R4/datatypes-definitions.html#Coding.system</relation-uri>
+    </sdc4:ms-q75pzzv36or6dxgjrrbvmun5>
+  </sdc4:ms-n3n7ow0d22saquarrg9ajpod>
+  <sdc4:ms-fq49hd05aeck2law8s7ol6yr>
+    <sdc4:ms-swcml6eecsfx6m834dwk3v4x>
+      <label>Order Reason Code (SNOMED CT)</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-swcml6eecsfx6m834dwk3v4x>
+  </sdc4:ms-fq49hd05aeck2law8s7ol6yr>
+  <sdc4:ms-deau6rxprq0zivzdddupk7cj>
+    <sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+      <label>Code Display Text</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-eo5tlfr0576ypknys5alvcn0>
+  </sdc4:ms-deau6rxprq0zivzdddupk7cj>
+  </sdc4:ms-az0bhiipy3s5cxokgc26i7ve>
+  <sdc4:ms-bz2deexkymtppnjqr8tdjtp2>
+    <sdc4:ms-e6xmyl8p065nvbqqel96tpig>
+      <label>Clinical Question</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-e6xmyl8p065nvbqqel96tpig>
+  </sdc4:ms-bz2deexkymtppnjqr8tdjtp2>
+  <sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+    <sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+      <label>Parent Record Identifier</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstring-value>_PH_</xdstring-value>
+      <xdstring-language>_OPT_PH_</xdstring-language>
+    </sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+  </sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+  <sdc4:ms-tlemmzlx1lzt7eapu55hdf5a>
+    <sdc4:ms-ygwcc97gtq45lqpbam8l44w6>
+      <label>Sequence In Parent</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <normal-status>_OPT_PH_</normal-status>
+      <magnitude-status>_OPT_PH_</magnitude-status>
+      <accuracy_margin>_OPT_PH_</accuracy_margin>
+      <precision_digits>_OPT_PH_</precision_digits>
+      <xdcount-value>_PH_</xdcount-value>
+      <xdcount-units>
+        <label>Items</label>
+        <xdstring-value>_PH_</xdstring-value>
+      </xdcount-units>
+    </sdc4:ms-ygwcc97gtq45lqpbam8l44w6>
+  </sdc4:ms-tlemmzlx1lzt7eapu55hdf5a>
+  <sdc4:ms-pri6nr9elkatfr7pve2zn4fv>
+    <sdc4:ms-vf60qsr7iuiksunlnr3zu09o>
+      <label>Order Authored Date</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <normal-status>_OPT_PH_</normal-status>
+      <xdtemporal-datetime>_PH_</xdtemporal-datetime>
+    </sdc4:ms-vf60qsr7iuiksunlnr3zu09o>
+  </sdc4:ms-pri6nr9elkatfr7pve2zn4fv>
+  <sdc4:ms-p0lueoppaqe98k41ta6000f5>
+    <sdc4:ms-j2grrxn9v58jvjsnre3pe334>
+      <label>Order Reason Reference</label>
+      <act>_OPT_PH_</act>
+      <vtb>_OPT_PH_</vtb>
+      <vte>_OPT_PH_</vte>
+      <tr>_OPT_PH_</tr>
+      <modified>_OPT_PH_</modified>
+      <latitude>_OPT_PH_</latitude>
+      <longitude>_OPT_PH_</longitude>
+      <xdstringlist-value>item1</xdstringlist-value>
+    </sdc4:ms-j2grrxn9v58jvjsnre3pe334>
+  </sdc4:ms-p0lueoppaqe98k41ta6000f5>
+  </sdc4:ms-vfoviww8t346w01u5ayxu2fb>
+  <subject>
+    <label>Patient</label>
+  </subject>
+</sdc4:dm-zfh7quqpqxk176c2j4gdestb>

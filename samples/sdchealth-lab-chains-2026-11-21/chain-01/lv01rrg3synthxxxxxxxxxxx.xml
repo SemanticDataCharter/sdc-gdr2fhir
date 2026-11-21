@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sdc4:dm-yg61wcme1sjlnezxh0ho6nh0 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdc4="https://semanticdatacharter.com/ns/sdc4/" xsi:schemaLocation="https://semanticdatacharter.com/ns/sdc4/ https://semanticdatacharter.com/dmlib/dm-yg61wcme1sjlnezxh0ho6nh0.xsd">
+  <dm-label>Reference Range</dm-label>
+  <dm-language>en-US</dm-language>
+  <dm-encoding>utf-8</dm-encoding>
+  <creation_timestamp>2026-10-02T08:15:00+01:00</creation_timestamp>
+  <instance_id>lv01rrg3synthxxxxxxxxxxx</instance_id>
+  <instance_version>1</instance_version>
+  <sdc4:ms-f0ljnogrkb5d9tvugengivjg>
+    <label>Reference Range</label>
+    <sdc4:ms-nk4kfujoa7imgh8wllua8ygr>
+      <sdc4:ms-mu08ti6nsy8qcpqjjwx7811v>
+        <label>Observation Reference Range Text</label>
+        <xdstring-value>136-145 mmol/L (synthetic sample)</xdstring-value>
+      </sdc4:ms-mu08ti6nsy8qcpqjjwx7811v>
+    </sdc4:ms-nk4kfujoa7imgh8wllua8ygr>
+    <sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+      <sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+        <label>Parent Record Identifier</label>
+        <xdstring-value>OBS-2026-1-3</xdstring-value>
+      </sdc4:ms-b5v4p5ju74ugnzyt9bh98398>
+    </sdc4:ms-j0yhqxns1i6opeahldbzcggv>
+    <sdc4:ms-aake4pqisl9sli56tas90ht2>
+      <sdc4:ms-noos3o7cypyuj8ky49y9cbwz>
+        <label>Observation Reference Range Type</label>
+        <xdtoken-value>normal</xdtoken-value>
+      </sdc4:ms-noos3o7cypyuj8ky49y9cbwz>
+    </sdc4:ms-aake4pqisl9sli56tas90ht2>
+    <sdc4:ms-pg2qrrmvtpa23nyz3kmpiy1z>
+      <sdc4:ms-z40w030s0g9jzqfs8bu0letl>
+        <label>Reference Range High</label>
+        <xdquantity-value>145</xdquantity-value>
+        <xdquantity-units>
+          <label>UCUM Units</label>
+          <xdstring-value>mmol/L</xdstring-value>
+        </xdquantity-units>
+      </sdc4:ms-z40w030s0g9jzqfs8bu0letl>
+    </sdc4:ms-pg2qrrmvtpa23nyz3kmpiy1z>
+    <sdc4:ms-x79gasr7h6zxy953p5adl80u>
+      <sdc4:ms-az6dz4yt7vlheioyyjqiegjj>
+        <label>Reference Range Low</label>
+        <xdquantity-value>136</xdquantity-value>
+        <xdquantity-units>
+          <label>UCUM Units</label>
+          <xdstring-value>mmol/L</xdstring-value>
+        </xdquantity-units>
+      </sdc4:ms-az6dz4yt7vlheioyyjqiegjj>
+    </sdc4:ms-x79gasr7h6zxy953p5adl80u>
+  </sdc4:ms-f0ljnogrkb5d9tvugengivjg>
+  <subject>
+    <label>Patient</label>
+    <party-details>
+      <label>Patient</label>
+      <sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+        <label>Address</label>
+        <sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+          <label>Country</label>
+          <sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+            <sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+              <label>Country Code ISO 3166</label>
+              <xdtoken-value>DE</xdtoken-value>
+            </sdc4:ms-f2jicaigehz7xmwcp1gm5gh0>
+          </sdc4:ms-zyd1bdzhksql5z05sfip0m78>
+        </sdc4:ms-u0rvm9o99w3ked99wbsjyqcj>
+        <sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+          <sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+            <label>Address (Line 1)</label>
+            <xdstring-value>Lindenstraße 4</xdstring-value>
+          </sdc4:ms-ncxxt7wgs7soxw7kbmapxvg3>
+        </sdc4:ms-x4vy9z1ejuarhvnhcyc8cy8c>
+        <sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+          <sdc4:ms-a69l16mqaotn0py958oxahhz>
+            <label>City Name</label>
+            <xdstring-value>Leipzig</xdstring-value>
+          </sdc4:ms-a69l16mqaotn0py958oxahhz>
+        </sdc4:ms-rwcwq3mugwmk2iuvh740fbot>
+        <sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+          <sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+            <label>Postal Code</label>
+            <xdstring-value>04109</xdstring-value>
+          </sdc4:ms-w6nfslk6scfpenoewq3eqnev>
+        </sdc4:ms-m5idk1jzr3jmsuc4zlcfouie>
+        <sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+          <sdc4:ms-b25dj42zxhm19pih328ga8pl>
+            <label>Address Use</label>
+            <xdtoken-value>home</xdtoken-value>
+          </sdc4:ms-b25dj42zxhm19pih328ga8pl>
+        </sdc4:ms-x8d5ltgmjarqw07qli8ocwcu>
+      </sdc4:ms-omhsrouda4mt73j1t1fzakqz>
+      <sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+        <label>Human Name</label>
+        <sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+          <sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+            <label>Given Name (Person)</label>
+            <xdstring-value>Jonas</xdstring-value>
+          </sdc4:ms-l9l169co9r23e6fftpvdz4e3>
+        </sdc4:ms-m2fhbkvdawpl2xvrh6uw6p77>
+        <sdc4:ms-rf76ozkskw3wyc1on48jm375>
+          <sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+            <label>Surname (Person)</label>
+            <xdstring-value>Becker</xdstring-value>
+          </sdc4:ms-jc1lfk3ovt6l8frhxvx8b669>
+        </sdc4:ms-rf76ozkskw3wyc1on48jm375>
+        <sdc4:ms-t2lvqlgc6iz59pxm211yidob>
+          <sdc4:ms-bfqinvm7qrgi9jjw1i637moh>
+            <label>Name Use</label>
+            <xdtoken-value>official</xdtoken-value>
+          </sdc4:ms-bfqinvm7qrgi9jjw1i637moh>
+        </sdc4:ms-t2lvqlgc6iz59pxm211yidob>
+      </sdc4:ms-g50zuf7amwobbgifx7o52i5l>
+      <sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+        <label>Person Identifier</label>
+        <sdc4:ms-vy9nlbx536h72kk23ywrloec>
+          <sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+            <label>Identifier Value</label>
+            <xdstring-value>DE-KV-A900000102</xdstring-value>
+          </sdc4:ms-h17egwljmrym3r8ortrqqjwd>
+        </sdc4:ms-vy9nlbx536h72kk23ywrloec>
+        <sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+          <sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+            <label>Issuing Authority</label>
+            <xdstring-value>GKV</xdstring-value>
+          </sdc4:ms-kphe1er8qxy2dxqdwhpcfk3z>
+        </sdc4:ms-gsfs7k6aeld26t6sx1n7a63e>
+        <sdc4:ms-lsdfdpz5hrxqayv21s92fy7m>
+          <sdc4:ms-h2pd0ns7lx2vzey41z6ggt8r>
+            <label>Person Identifier Type</label>
+            <xdtoken-value>NI</xdtoken-value>
+          </sdc4:ms-h2pd0ns7lx2vzey41z6ggt8r>
+        </sdc4:ms-lsdfdpz5hrxqayv21s92fy7m>
+      </sdc4:ms-xxvvs7fuoz5lrz44128su7kg>
+      <sdc4:ms-cpcvbb0xq072zk086ukfl41m>
+        <sdc4:ms-gxzbm758mhdz51xd4bawlfhh>
+          <label>Administrative Gender</label>
+          <xdtoken-value>male</xdtoken-value>
+        </sdc4:ms-gxzbm758mhdz51xd4bawlfhh>
+      </sdc4:ms-cpcvbb0xq072zk086ukfl41m>
+      <sdc4:ms-c5ueyww5kg8b7h3h3ipno6sk>
+        <sdc4:ms-js564tazefb6udqlh12rj04l>
+          <label>Date of Birth</label>
+          <xdtemporal-date>1957-11-02</xdtemporal-date>
+        </sdc4:ms-js564tazefb6udqlh12rj04l>
+      </sdc4:ms-c5ueyww5kg8b7h3h3ipno6sk>
+    </party-details>
+  </subject>
+</sdc4:dm-yg61wcme1sjlnezxh0ho6nh0>
